@@ -2,71 +2,140 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles */
+/* Custom variables for themes */
+:root {
+    /* Cyberpunk defaults */
+    --bg-main: #0b1121;
+    --bg-main-image: radial-gradient(#1e293b 1px, transparent 1px);
+    --bg-app: #080b11;
+    --bg-sidebar: #0d121f;
+    --bg-header: rgba(13, 18, 31, 0.8);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-sidebar: rgba(148, 163, 184, 0.08); /* slate-800/60 */
+    --text-primary: #e2e8f0; /* slate-200 */
+    --text-muted: #64748b; /* slate-500 */
+    
+    /* Panel specifics */
+    --panel-bg: rgba(30, 41, 59, 0.7);
+    --panel-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    
+    /* Inputs */
+    --input-bg: #0f172a;
+    --input-border: #334155;
+    --input-text: #ffffff;
+    --input-focus-border: #38bdf8;
+    --input-focus-shadow: rgba(56, 189, 248, 0.2);
+    
+    /* Accents & Active States */
+    --accent-color: #38bdf8; /* cyan-400 */
+    --accent-glow: 0 0 10px rgba(56, 189, 248, 0.5);
+    --nav-active-bg: rgba(56, 189, 248, 0.15);
+    --nav-active-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.theme-cyberpunk {
+    /* Cyberpunk defaults (explicit overrides) */
+    --bg-main: #0b1121;
+    --bg-main-image: radial-gradient(#1e293b 1px, transparent 1px);
+    --bg-app: #080b11;
+    --bg-sidebar: #0d121f;
+    --bg-header: rgba(13, 18, 31, 0.8);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-sidebar: rgba(148, 163, 184, 0.08);
+    --text-primary: #e2e8f0;
+    --text-muted: #64748b;
+    
+    --panel-bg: rgba(30, 41, 59, 0.7);
+    --panel-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    
+    --input-bg: #0f172a;
+    --input-border: #334155;
+    --input-text: #ffffff;
+    --input-focus-border: #38bdf8;
+    --input-focus-shadow: rgba(56, 189, 248, 0.2);
+    
+    --accent-color: #38bdf8;
+    --accent-glow: 0 0 10px rgba(56, 189, 248, 0.5);
+    --nav-active-bg: rgba(56, 189, 248, 0.15);
+    --nav-active-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+
+
 body {
-    background-color: #0d1117;
+    background-color: var(--bg-main);
+    background-image: var(--bg-main-image);
+    background-size: 20px 20px;
+    transition: background-color 0.3s ease, background-image 0.3s ease;
 }
 
 .glass-panel {
-    background: rgba(30, 41, 59, 0.7);
+    background: var(--panel-bg);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--panel-shadow);
+    transition: all 0.3s ease;
 }
 
-.neon-text { 
-    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); 
+.theme-minimalist .glass-panel {
+    backdrop-filter: none;
 }
 
-.btn-press { 
-    transition: all 0.1s; 
+.neon-text {
+    text-shadow: var(--accent-glow);
+    transition: text-shadow 0.3s ease;
 }
 
-.btn-press:active { 
-    transform: scale(0.95); 
+.btn-press {
+    transition: all 0.1s;
+}
+
+.btn-press:active {
+    transform: scale(0.95);
 }
 
 .nav-active {
-    background-color: rgba(56, 189, 248, 0.15);
-    border: 1px solid #38bdf8;
-    color: #38bdf8;
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    background-color: var(--nav-active-bg);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: var(--nav-active-shadow);
+    transition: all 0.2s ease;
 }
 
 /* Input Styles */
 input, select {
-    background-color: #0f172a;
-    border: 1px solid #334155;
-    color: white;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
     transition: all 0.2s;
 }
 
 input:focus, select:focus {
     outline: none;
-    border-color: #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 10px var(--input-focus-shadow);
 }
 
-::-webkit-scrollbar { 
-    width: 6px; 
+::-webkit-scrollbar {
+    width: 6px;
 }
 
-::-webkit-scrollbar-track { 
-    background: #0f172a; 
+::-webkit-scrollbar-track {
+    background: var(--input-bg);
 }
 
-::-webkit-scrollbar-thumb { 
-    background: #334155; 
-    border-radius: 3px; 
+::-webkit-scrollbar-thumb {
+    background: var(--input-border);
+    border-radius: 3px;
 }
 
-.tradingview-widget-container { 
-    height: 100%; 
-    width: 100%; 
+.tradingview-widget-container {
+    height: 100%;
+    width: 100%;
 }
 
-.loading-pulse { 
-    animation: pulse-blue 2s infinite; 
+.loading-pulse {
+    animation: pulse-blue 2s infinite;
 }
 
 @keyframes pulse-blue {
@@ -75,6 +144,8 @@ input:focus, select:focus {
     100% { opacity: 1; }
 }
 
-.price-text { 
-    transition: color 0.3s ease; 
+.price-text {
+    transition: color 0.3s ease;
 }
+
+

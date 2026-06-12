@@ -68,6 +68,7 @@ export class UIManager {
         this.initChartControls();
         this.initHistoryTabs();
         this.initStrategyLab();
+        this.setTheme('cyberpunk');
     }
 
     initChart() {
@@ -283,24 +284,30 @@ export class UIManager {
 
     showLogin(show) {
         if (show) {
-            this.dom.loginScreen.classList.remove('hidden');
-            this.dom.appContent.classList.add('hidden');
-            this.dom.appContent.classList.remove('flex');
+            if (this.dom.loginScreen) this.dom.loginScreen.classList.remove('hidden');
+            if (this.dom.appContent) {
+                this.dom.appContent.classList.add('hidden');
+                this.dom.appContent.classList.remove('flex');
+            }
         } else {
-            this.dom.loginScreen.classList.add('hidden');
-            this.dom.appContent.classList.remove('hidden');
-            this.dom.appContent.classList.add('flex');
+            if (this.dom.loginScreen) this.dom.loginScreen.classList.add('hidden');
+            if (this.dom.appContent) {
+                this.dom.appContent.classList.remove('hidden');
+                this.dom.appContent.classList.add('flex');
+            }
         }
     }
 
     showAuthError(isDomainError) {
         if (isDomainError) {
-            this.dom.errorBox.classList.remove('hidden');
-            this.dom.domainDisplay.innerText = window.location.hostname;
-            this.dom.loginStatus.innerText = "";
+            if (this.dom.errorBox) this.dom.errorBox.classList.remove('hidden');
+            if (this.dom.domainDisplay) this.dom.domainDisplay.innerText = window.location.hostname;
+            if (this.dom.loginStatus) this.dom.loginStatus.innerText = "";
         } else {
-            this.dom.loginStatus.innerText = "ACCESS DENIED";
-            this.dom.loginStatus.classList.add('text-red-500');
+            if (this.dom.loginStatus) {
+                this.dom.loginStatus.innerText = "ACCESS DENIED";
+                this.dom.loginStatus.classList.add('text-red-500');
+            }
         }
     }
 
@@ -627,6 +634,17 @@ export class UIManager {
     }
 
 
+    setTheme(theme) {
+        const body = document.body;
+        if (theme === 'minimalist') {
+            body.classList.remove('theme-cyberpunk');
+            body.classList.add('theme-minimalist');
+        } else {
+            body.classList.remove('theme-minimalist');
+            body.classList.add('theme-cyberpunk');
+        }
+    }
+
     switchTab(tabName) {
         const panels = {
             code: document.getElementById('journal-panel'),
@@ -657,8 +675,9 @@ export class UIManager {
                 panel.classList.remove('hidden');
                 if (key === 'code' || key === 'projects' || key === 'wiki' || key === 'settings') {
                     panel.classList.add('flex');
-                } else {
-                    panel.classList.remove('hidden');
+                } else if (key === 'pulls' || key === 'issues') {
+                    // health-menu-container and strategy-menu-container use flex-col
+                    panel.classList.add('flex', 'flex-col');
                 }
                 
                 // Active Sidebar style tab: border-cyan-500, bg-cyan-500/10, text-cyan-400, font-bold
@@ -672,6 +691,8 @@ export class UIManager {
                 panel.classList.add('hidden');
                 if (key === 'code' || key === 'projects' || key === 'wiki' || key === 'settings') {
                     panel.classList.remove('flex');
+                } else if (key === 'pulls' || key === 'issues') {
+                    panel.classList.remove('flex', 'flex-col');
                 }
                 
                 // Inactive Sidebar style tab: border-transparent, text-slate-400, hover styles

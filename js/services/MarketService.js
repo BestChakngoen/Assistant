@@ -56,7 +56,7 @@ export class MarketService {
         }
 
         try {
-            const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=THB', {
+            const res = await fetch('https://open.er-api.com/v6/latest/USD', {
                 signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : null
             });
             if(res.ok) {

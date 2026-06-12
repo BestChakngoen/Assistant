@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+// Force rebuild cache invalidation 2026-06-12
 export default {
   content: [
     "./TrackerView.html",

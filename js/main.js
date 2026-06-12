@@ -23,7 +23,7 @@ export class TradeApp {
 
     initListeners() {
         // Auth Events
-        this.auth.onStateChange((user) => {
+        this.auth.onStateChange(async (user) => {
             if (user) {
                 this.ui.showLogin(false);
                 
@@ -51,7 +51,7 @@ export class TradeApp {
 
                 // 3. Initialize Health Track Managers
                 if (!this.healthInitialized) {
-                    this.initHealthTrack();
+                    await this.initHealthTrack();
                 }
 
                 this.startMarketLoops();
@@ -522,7 +522,7 @@ export class TradeApp {
     }
 
     async initHealthTrack() {
-        if (!this.auth.user) return;
+        if (!this.auth.currentUser) return;
         
         const { default: SleepManager } = await import('./health/sleepManager.js');
         const { default: BodyManager } = await import('./health/bodyManager.js');
@@ -533,13 +533,13 @@ export class TradeApp {
 
         const healthFirebaseAdapter = {
             subscribe: (collectionName, callback) => {
-                return this.data.subscribeHealth(this.auth.user.uid, collectionName, callback);
+                return this.data.subscribeHealth(this.auth.currentUser.uid, collectionName, callback);
             },
             saveData: (collectionName, data) => {
-                return this.data.saveHealth(this.auth.user.uid, collectionName, data);
+                return this.data.saveHealth(this.auth.currentUser.uid, collectionName, data);
             },
             loadData: (collectionName) => {
-                return this.data.loadHealth(this.auth.user.uid, collectionName);
+                return this.data.loadHealth(this.auth.currentUser.uid, collectionName);
             }
         };
 
