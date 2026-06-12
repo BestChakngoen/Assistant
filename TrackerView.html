@@ -199,130 +199,106 @@
         </div>
     </div>
 
-    <!-- MAIN APP -->
-    <div id="app-content" class="hidden w-full min-h-screen flex flex-col bg-[#0d1117] text-[#c9d1d9]">
-        <!-- Global Header -->
-        <header class="w-full bg-[#161b22] border-b border-[#30363d] px-4 py-3 flex items-center justify-between shrink-0">
-            <div class="flex items-center gap-4">
-                <!-- GitHub Icon -->
-                <a href="#" class="text-white hover:text-slate-300 transition-colors">
-                    <svg class="w-8 h-8" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.35 3.12.88.01.47.01.84.01.93 0 .22-.16.47-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
-                    </svg>
-                </a>
-                <!-- Search bar -->
-                <div class="relative hidden md:block w-72">
-                    <input type="text" placeholder="Type / to search..." class="w-full text-xs bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-slate-300 focus:outline-none focus:border-blue-500 transition-colors" disabled>
-                    <span class="absolute right-2 top-1.5 text-[10px] text-slate-500 border border-[#30363d] px-1.5 py-0.5 rounded bg-[#161b22] font-mono select-none">/</span>
-                </div>
-                <!-- Global Nav Links -->
-                <nav class="hidden lg:flex items-center gap-4 text-xs font-semibold text-[#c9d1d9]">
-                    <a href="#" class="hover:text-white transition-colors">Pull requests</a>
-                    <a href="#" class="hover:text-white transition-colors">Issues</a>
-                    <a href="#" class="hover:text-white transition-colors">Codespaces</a>
-                    <a href="#" class="hover:text-white transition-colors">Marketplace</a>
-                    <a href="#" class="hover:text-white transition-colors flex items-center gap-1">
-                        Explore
-                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    </a>
-                </nav>
-            </div>
-
-            <!-- Right side details -->
-            <div class="flex items-center gap-4 text-xs font-mono text-[#c9d1d9]">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)] animate-pulse"></span>
-                    <span id="top-user-display" class="font-bold text-slate-300"></span>
-                </div>
-                <!-- Notification Bell -->
-                <button class="text-[#c9d1d9] hover:text-white p-1 rounded hover:bg-[#21262d] transition-colors relative">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                    </svg>
-                    <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Repository Header -->
-        <div class="w-full border-b border-[#21262d] bg-[#0d1117] pt-6 flex flex-col items-center shrink-0">
-            <div class="w-full max-w-7xl px-4 md:px-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div class="flex items-center gap-2 flex-wrap text-slate-300">
-                    <svg class="w-4 h-4 text-[#8b949e]" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 1 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1v9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 0 1 1-1h8Z"></path>
-                    </svg>
-                    <span class="text-[#58a6ff] hover:underline text-lg md:text-xl font-semibold font-mono cursor-pointer" id="user-display-name">guest</span>
-                    <span class="text-slate-500 text-lg md:text-xl">/</span>
-                    <span class="text-white hover:underline text-lg md:text-xl font-bold font-mono cursor-pointer">TradeTracker</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full border border-[#30363d] bg-[#161b22] text-[#8b949e] font-semibold">Public</span>
-                </div>
-                
-                <!-- Star / Fork controls -->
-                <div class="flex items-center gap-2 text-xs font-semibold text-[#c9d1d9] self-end md:self-auto">
-                    <!-- USD/THB exchange rate ticker embedded in header -->
-                    <div class="flex items-center gap-2 bg-[#161b22] px-3 py-1.5 rounded-md border border-[#30363d] mr-2">
-                        <span class="text-amber-400 font-mono">USD/THB:</span>
-                        <span id="thb-rate" class="price-text text-white font-mono font-bold">Loading...</span>
+    <!-- MAIN APP -    <div id="app-content" class="hidden w-full min-h-screen flex bg-[#080b11] text-slate-100 overflow-hidden relative">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0d121f] border-r border-slate-800/60 flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0">
+            <!-- Sidebar Header / Logo -->
+            <div class="p-6 border-b border-slate-800/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                        <i data-lucide="activity" class="w-5 h-5 text-white"></i>
                     </div>
-
-                    <button class="flex items-center gap-1.5 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] px-3 py-1.5 rounded-md transition-colors">
-                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        Watch <span class="bg-[#30363d] text-[10px] text-[#8b949e] px-1.5 py-0.5 rounded-full ml-1">3</span>
-                    </button>
-                    <button class="flex items-center gap-1.5 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] px-3 py-1.5 rounded-md transition-colors">
-                        <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm0 2.122a2.25 2.25 0 1 0-1.5 0v.878A2.25 2.25 0 0 0 5.75 8.5h1.5v2.128a2.251 2.251 0 1 0 1.5 0V8.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-.878a2.25 2.25 0 1 0-1.5 0v.878a.75.75 0 0 1-.75.75h-3.5A.75.75 0 0 1 5 6.25v-.878Zm3.75 7.378a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm3-7.5a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"></path></svg>
-                        Fork <span class="bg-[#30363d] text-[10px] text-[#8b949e] px-1.5 py-0.5 rounded-full ml-1">12</span>
-                    </button>
-                    <button class="flex items-center gap-1.5 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] px-3 py-1.5 rounded-md transition-colors text-yellow-500">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"></path></svg>
-                        Star <span class="bg-[#30363d] text-[10px] text-[#8b949e] px-1.5 py-0.5 rounded-full ml-1">142</span>
-                    </button>
+                    <div>
+                        <h1 class="text-base font-bold font-mono text-white tracking-wider">TRACKER PRO</h1>
+                        <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Workspace</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Tabs Navigation Bar -->
-            <div class="w-full max-w-7xl px-4 md:px-6 flex overflow-x-auto gap-2 mt-4 scrollbar-none" id="repo-tabs-container">
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto" id="repo-tabs-container">
                 <!-- Code (Journal/Dashboard) -->
-                <button id="tab-code" class="btn-press flex items-center gap-2 px-3 py-3 border-b-2 border-orange-500 text-white font-mono font-bold text-sm whitespace-nowrap">
-                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 16 16" fill="currentColor"><path d="M4.72 3.22a.75.75 0 0 1 1.06 1.06L2.06 8l3.72 3.72a.75.75 0 1 1-1.06 1.06L1 8.53a.75.75 0 0 1 0-1.06l3.72-3.72Zm6.56 0a.75.75 0 1 0-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 1 0 1.06 1.06l3.72-3.72a.75.75 0 0 0 0-1.06l-3.72-3.72Z"></path></svg>
-                    Code
+                <button id="tab-code" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-cyan-500 bg-cyan-500/10 text-cyan-400 font-bold text-sm rounded-r-xl transition-all btn-press">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Dashboard</span>
                 </button>
                 <!-- Issues (Strategy Lab) -->
-                <button id="tab-issues" class="btn-press flex items-center gap-2 px-3 py-3 border-b-2 border-transparent text-[#8b949e] hover:text-white font-mono font-medium text-sm whitespace-nowrap">
-                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg>
-                    Issues
+                <button id="tab-issues" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                    <span>Strategy Lab</span>
                 </button>
                 <!-- Pull Requests (Health Track) -->
-                <button id="tab-pulls" class="btn-press flex items-center gap-2 px-3 py-3 border-b-2 border-transparent text-[#8b949e] hover:text-white font-mono font-medium text-sm whitespace-nowrap">
-                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.67 1.88a.75.75 0 0 1 1.08-.02l2.25 2.25a.75.75 0 0 1 0 1.06l-2.25 2.25a.75.75 0 1 1-1.06-1.06L8.69 8 7.17 6.48a.75.75 0 0 1 .03-1.06ZM3.75 6a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM12 10.5a.75.75 0 1 0 0 1.5.75 0 0 0 0-1.5Z"></path></svg>
-                    Pull Requests
+                <button id="tab-pulls" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                    <i data-lucide="heart" class="w-4 h-4"></i>
+                    <span>Health Track</span>
                 </button>
                 <!-- Actions (Market) -->
-                <button id="tab-actions" class="btn-press flex items-center gap-2 px-3 py-3 border-b-2 border-transparent text-[#8b949e] hover:text-white font-mono font-medium text-sm whitespace-nowrap">
-                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 16 16" fill="currentColor"><path d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.5-3.25a.75.75 0 0 0-1.5 0v3c0 .199.079.39.22.53l2.24 2.24a.75.75 0 1 0 1.06-1.06l-2.02-2.02V4.75Z"></path></svg>
-                    Actions
+                <button id="tab-actions" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                    <i data-lucide="line-chart" class="w-4 h-4"></i>
+                    <span>Market Center</span>
                 </button>
                 <!-- Projects (Calculator) -->
-                <button id="tab-projects" class="btn-press flex items-center gap-2 px-3 py-3 border-b-2 border-transparent text-[#8b949e] hover:text-white font-mono font-medium text-sm whitespace-nowrap">
-                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0ZM1.5 1.75v12.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25H1.75a.25.25 0 0 0-.25.25Z"></path></svg>
-                    Projects
+                <button id="tab-projects" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                    <i data-lucide="calculator" class="w-4 h-4"></i>
+                    <span>Calculators</span>
                 </button>
                 <!-- Wiki (News) -->
-                <button id="tab-wiki" class="btn-press flex items-center gap-2 px-3 py-3 border-b-2 border-transparent text-[#8b949e] hover:text-white font-mono font-medium text-sm whitespace-nowrap">
-                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 16 16" fill="currentColor"><path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2ZM4 1.5h8a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5V2a.5.5 0 0 1 .5-.5Z"></path></svg>
-                    Wiki
+                <button id="tab-wiki" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                    <i data-lucide="newspaper" class="w-4 h-4"></i>
+                    <span>News Feed</span>
                 </button>
                 <!-- Settings -->
-                <button id="tab-settings" class="btn-press flex items-center gap-2 px-3 py-3 border-b-2 border-transparent text-[#8b949e] hover:text-white font-mono font-medium text-sm whitespace-nowrap">
-                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg>
-                    Settings
+                <button id="tab-settings" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>System Settings</span>
                 </button>
+            </nav>
+
+            <!-- User Info / Profile -->
+            <div class="p-4 border-t border-slate-800/60 bg-[#0a0d16]/40 flex items-center justify-between">
+                <div class="flex items-center gap-2.5 overflow-hidden">
+                    <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p id="top-user-display" class="text-xs font-bold text-slate-200 truncate font-mono">guest</p>
+                        <span class="text-[9px] text-green-400 font-mono font-bold tracking-wider flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                            ONLINE
+                        </span>
+                    </div>
+                </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- Main Panel Content -->
-        <main class="w-full max-w-7xl mx-auto p-4 md:p-6 flex-1 flex flex-col gap-6 relative min-h-[600px]">
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden lg:pl-64">
+            <!-- Top Nav Ticker / Header -->
+            <header class="h-16 border-b border-slate-800/60 bg-[#0d121f]/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-30">
+                <div class="flex items-center gap-4">
+                    <!-- Hamburger button for mobile -->
+                    <button onclick="window.toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700 text-slate-300">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <!-- Exchange rate widget -->
+                    <div class="flex items-center gap-2 bg-slate-900/60 px-3.5 py-1.5 rounded-full border border-slate-800/80">
+                        <span class="text-[10px] text-amber-500 font-bold tracking-wider uppercase">USD/THB</span>
+                        <span id="thb-rate" class="price-text text-white text-xs font-mono font-bold">Loading...</span>
+                    </div>
+                </div>
 
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-400">
+                        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                        <span id="header-time">--:--:--</span>
+                    </div>
+                    <!-- Hidden element to satisfy main.js user-display-name binding -->
+                    <span id="user-display-name" class="hidden"></span>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Grid -->
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-[#080b11]">
 
             <!-- TAB 1: JOURNAL -->
             <div id="journal-panel" class="animate-fade-in flex flex-col gap-6">
@@ -1319,6 +1295,26 @@
 
         // --- BOOTSTRAP ---
         const app = new TradeApp(userFirebaseConfig, appId);
+
+        // --- STATIC CORE EVENTS ---
+        if (window.lucide) window.lucide.createIcons();
+
+        // Clock Update Loop
+        setInterval(() => {
+            const now = new Date();
+            const optionTime = { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const localTimeString = now.toLocaleTimeString('th-TH', optionTime);
+            const headerTimeEl = document.getElementById('header-time');
+            if (headerTimeEl) headerTimeEl.innerText = localTimeString;
+        }, 1000);
+
+        // Sidebar mobile toggle
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('-translate-x-full');
+            }
+        };
     </script>
 </body>
 

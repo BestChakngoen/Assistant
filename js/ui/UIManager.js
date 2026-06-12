@@ -661,9 +661,9 @@ export class UIManager {
                     panel.classList.remove('hidden');
                 }
                 
-                // Active GitHub style tab: text-white, border-orange-500, font-bold
-                tab.classList.remove('border-transparent', 'text-[#8b949e]', 'font-medium');
-                tab.classList.add('border-orange-500', 'text-white', 'font-bold');
+                // Active Sidebar style tab: border-cyan-500, bg-cyan-500/10, text-cyan-400, font-bold
+                tab.classList.remove('border-transparent', 'text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/30');
+                tab.classList.add('border-cyan-500', 'bg-cyan-500/10', 'text-cyan-400', 'font-bold');
                 
                 if (key === 'issues') {
                     this.updateStrategyLabTime();
@@ -674,9 +674,9 @@ export class UIManager {
                     panel.classList.remove('flex');
                 }
                 
-                // Inactive GitHub style tab: border-transparent, text-[#8b949e], font-medium
-                tab.classList.remove('border-orange-500', 'text-white', 'font-bold');
-                tab.classList.add('border-transparent', 'text-[#8b949e]', 'font-medium');
+                // Inactive Sidebar style tab: border-transparent, text-slate-400, hover styles
+                tab.classList.remove('border-cyan-500', 'bg-cyan-500/10', 'text-cyan-400', 'font-bold');
+                tab.classList.add('border-transparent', 'text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/30');
             }
         });
     }
