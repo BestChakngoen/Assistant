@@ -1,7 +1,7 @@
 [build]
-  # For a plain static site with no build step, publish the repo root
+  # Build Tailwind CSS on deployment
   publish = "."
-  command = ""
+  command = "npm run build"
 
 [dev]
   # Optional: command to run a local dev server when using `netlify dev`
