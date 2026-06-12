@@ -1,7 +1,7 @@
-import { AuthService } from './AuthService.js';
-import { DataService } from './DataService.js';
-import { MarketService } from './MarketService.js';
-import { UIManager } from './UIManager.js';
+import { AuthService } from './services/AuthService.js';
+import { DataService } from './services/DataService.js';
+import { MarketService } from './services/MarketService.js';
+import { UIManager } from './ui/UIManager.js';
 
 // --- FILE 5: MAIN APP CONTROLLER ---
 export class TradeApp {
@@ -30,6 +30,8 @@ export class TradeApp {
                 // UPDATED: Handle display name for Guest vs Google User
                 const displayName = user.isAnonymous ? '// GUEST' : `// ${user.email}`;
                 document.getElementById('user-display-name').innerText = displayName;
+                const topUserDisplay = document.getElementById('top-user-display');
+                if (topUserDisplay) topUserDisplay.innerText = displayName;
                 
                 // 1. Subscribe to Trades
                 this.data.subscribeTrades(user.uid, (data, meta) => {
@@ -46,6 +48,11 @@ export class TradeApp {
                     this.notes = notesData || { title: 'My Trading Rules', items: [] };
                     this.ui.renderNotes(this.notes, (index) => this.handleDeleteNoteItem(index));
                 });
+
+                // 3. Initialize Health Track Managers
+                if (!this.healthInitialized) {
+                    this.initHealthTrack();
+                }
 
                 this.startMarketLoops();
             } else {
@@ -97,16 +104,28 @@ export class TradeApp {
             this.ui.dom.inputs.date.value = this.getThaiDateString();
         };
 
-        // Tabs
-        document.getElementById('tab-journal').onclick = () => this.ui.switchTab('journal');
-        document.getElementById('tab-market').onclick = () => {
-            this.ui.switchTab('market');
-            this.initTradingView('BINANCE:BTCUSDT');
+        // GitHub-style main menu tabs
+        const bindTab = (id, target) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.onclick = () => this.ui.switchTab(target);
+            }
         };
 
-        document.getElementById('tab-calc').onclick = () => this.ui.switchTab('calc');
-        // ADDED: News Tab Handler
-        document.getElementById('tab-news').onclick = () => this.ui.switchTab('news');
+        bindTab('tab-code', 'code');
+        bindTab('tab-issues', 'issues');
+        bindTab('tab-pulls', 'pulls');
+        bindTab('tab-projects', 'projects');
+        bindTab('tab-wiki', 'wiki');
+        bindTab('tab-settings', 'settings');
+
+        const tabActions = document.getElementById('tab-actions');
+        if (tabActions) {
+            tabActions.onclick = () => {
+                this.ui.switchTab('actions');
+                this.initTradingView('BINANCE:BTCUSDT');
+            };
+        }
 
         document.getElementById('btn-calculate-compound').onclick = () => this.calculateCompoundInterest();
         this.calculateCompoundInterest(); // สั่งรันครั้งแรกเมื่อโหลดแอปเพื่อตั้งค่า Default
@@ -500,5 +519,39 @@ export class TradeApp {
             });
         };
         document.head.appendChild(sc);
+    }
+
+    async initHealthTrack() {
+        if (!this.auth.user) return;
+        
+        const { default: SleepManager } = await import('./health/sleepManager.js');
+        const { default: BodyManager } = await import('./health/bodyManager.js');
+        const { default: DietManager } = await import('./health/dietManager.js');
+        const { default: DataManager } = await import('./health/dataManager.js');
+        const { default: TabManager } = await import('./health/tabManager.js');
+        const { default: GlobalSaveManager } = await import('./health/globalSaveManager.js');
+
+        const healthFirebaseAdapter = {
+            subscribe: (collectionName, callback) => {
+                return this.data.subscribeHealth(this.auth.user.uid, collectionName, callback);
+            },
+            saveData: (collectionName, data) => {
+                return this.data.saveHealth(this.auth.user.uid, collectionName, data);
+            },
+            loadData: (collectionName) => {
+                return this.data.loadHealth(this.auth.user.uid, collectionName);
+            }
+        };
+
+        this.healthTabManager = new TabManager();
+        this.healthDietManager = new DietManager(healthFirebaseAdapter);
+        this.healthBodyManager = new BodyManager(healthFirebaseAdapter, (newTarget) => {
+            this.healthDietManager.setTarget(newTarget);
+        });
+        this.healthSleepManager = new SleepManager(healthFirebaseAdapter);
+        this.healthDataManager = new DataManager(healthFirebaseAdapter);
+        this.healthGlobalSaveManager = new GlobalSaveManager();
+
+        this.healthInitialized = true;
     }
 }

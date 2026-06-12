@@ -67,6 +67,7 @@ export class UIManager {
         this.initTradesChart();
         this.initChartControls();
         this.initHistoryTabs();
+        this.initStrategyLab();
     }
 
     initChart() {
@@ -627,23 +628,55 @@ export class UIManager {
 
 
     switchTab(tabName) {
-        ['journal', 'market', 'calc', 'news'].forEach(name => {
-            const panel = document.getElementById(`${name}-panel`);
-            const tab = document.getElementById(`tab-${name}`);
+        const panels = {
+            code: document.getElementById('journal-panel'),
+            issues: document.getElementById('strategy-menu-container'),
+            pulls: document.getElementById('health-menu-container'),
+            actions: document.getElementById('market-panel'),
+            projects: document.getElementById('calc-panel'),
+            wiki: document.getElementById('news-panel'),
+            settings: document.getElementById('settings-panel')
+        };
+        
+        const tabs = {
+            code: document.getElementById('tab-code'),
+            issues: document.getElementById('tab-issues'),
+            pulls: document.getElementById('tab-pulls'),
+            actions: document.getElementById('tab-actions'),
+            projects: document.getElementById('tab-projects'),
+            wiki: document.getElementById('tab-wiki'),
+            settings: document.getElementById('tab-settings')
+        };
+
+        Object.keys(panels).forEach(key => {
+            const panel = panels[key];
+            const tab = tabs[key];
             if (!panel || !tab) return;
 
-            if (name === tabName) {
+            if (key === tabName) {
                 panel.classList.remove('hidden');
-                // Added check for news panel display mode
-                if (name === 'journal' || name === 'calc' || name === 'news') panel.classList.add('flex');
-                tab.classList.add('nav-active', 'text-cyan-400');
-                tab.classList.remove('text-slate-500');
+                if (key === 'code' || key === 'projects' || key === 'wiki' || key === 'settings') {
+                    panel.classList.add('flex');
+                } else {
+                    panel.classList.remove('hidden');
+                }
+                
+                // Active GitHub style tab: text-white, border-orange-500, font-bold
+                tab.classList.remove('border-transparent', 'text-[#8b949e]', 'font-medium');
+                tab.classList.add('border-orange-500', 'text-white', 'font-bold');
+                
+                if (key === 'issues') {
+                    this.updateStrategyLabTime();
+                }
             } else {
                 panel.classList.add('hidden');
-                // Added check for news panel display mode removal
-                if (name === 'journal' || name === 'calc' || name === 'news') panel.classList.remove('flex');
-                tab.classList.remove('nav-active', 'text-cyan-400');
-                tab.classList.add('text-slate-500');
+                if (key === 'code' || key === 'projects' || key === 'wiki' || key === 'settings') {
+                    panel.classList.remove('flex');
+                }
+                
+                // Inactive GitHub style tab: border-transparent, text-[#8b949e], font-medium
+                tab.classList.remove('border-orange-500', 'text-white', 'font-bold');
+                tab.classList.add('border-transparent', 'text-[#8b949e]', 'font-medium');
             }
         });
     }
@@ -664,6 +697,87 @@ export class UIManager {
         } else {
             asset.disabled = false;
             asset.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    switchMainMenu(menuName) {
+        // Compatibility wrapper for any legacy calls
+        if (menuName === 'dashboard') this.switchTab('code');
+        else if (menuName === 'strategy') this.switchTab('issues');
+        else if (menuName === 'health') this.switchTab('pulls');
+    }
+
+    initStrategyLab() {
+        const checklist = document.querySelectorAll('.checklist-item');
+        const statusBox = document.getElementById('strategy-status-box');
+        const statusText = document.getElementById('strategy-status-text');
+
+        if (checklist.length > 0 && statusBox && statusText) {
+            checklist.forEach(item => {
+                item.addEventListener('change', () => {
+                    const checkedCount = document.querySelectorAll('.checklist-item:checked').length;
+                    const totalCount = checklist.length;
+
+                    if (checkedCount === totalCount) {
+                        statusBox.className = "mt-6 p-5 rounded-xl border border-green-500/50 bg-green-950/20 text-center transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.2)]";
+                        statusText.className = "text-green-400 font-mono font-bold text-sm tracking-wider uppercase animate-pulse";
+                        statusText.innerText = "✅ STRATEGY CONFIRMED: READY TO TRADE (ผ่านเงื่อนไขการเทรดทั้งหมด!)";
+                    } else {
+                        statusBox.className = "mt-6 p-5 rounded-xl border border-slate-800 bg-slate-900/50 text-center transition-all duration-300";
+                        statusText.className = "text-slate-500 font-mono font-bold text-sm tracking-wider uppercase";
+                        statusText.innerText = `⚠️ CHECK ALL ITEMS TO VERIFY STRATEGY (${checkedCount}/${totalCount})`;
+                    }
+                });
+            });
+        }
+
+        // Start session time updates
+        this.updateStrategyLabTime();
+        setInterval(() => this.updateStrategyLabTime(), 1000);
+    }
+
+    updateStrategyLabTime() {
+        const localTimeEl = document.getElementById('session-local-time');
+        if (!localTimeEl) return;
+
+        const now = new Date();
+        const optionTime = { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const localTimeString = now.toLocaleTimeString('th-TH', optionTime);
+        localTimeEl.innerText = localTimeString;
+
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Bangkok',
+            hour: 'numeric',
+            hour12: false
+        });
+        const currentHour = parseInt(formatter.format(now), 10);
+
+        const tokyoEl = document.getElementById('session-tokyo');
+        const londonEl = document.getElementById('session-london');
+        const nyEl = document.getElementById('session-ny');
+
+        if (tokyoEl) {
+            const isTokyoOpen = currentHour >= 7 && currentHour < 15;
+            tokyoEl.className = isTokyoOpen 
+                ? "text-xs font-mono font-bold px-2 py-1 rounded bg-green-500/20 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.2)]" 
+                : "text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800";
+            tokyoEl.innerText = isTokyoOpen ? "ACTIVE" : "CLOSED";
+        }
+
+        if (londonEl) {
+            const isLondonOpen = currentHour >= 14 && currentHour < 22;
+            londonEl.className = isLondonOpen 
+                ? "text-xs font-mono font-bold px-2 py-1 rounded bg-green-500/20 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.2)]" 
+                : "text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800";
+            londonEl.innerText = isLondonOpen ? "ACTIVE" : "CLOSED";
+        }
+
+        if (nyEl) {
+            const isNyOpen = currentHour >= 19 || currentHour < 3;
+            nyEl.className = isNyOpen 
+                ? "text-xs font-mono font-bold px-2 py-1 rounded bg-green-500/20 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.2)]" 
+                : "text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800";
+            nyEl.innerText = isNyOpen ? "ACTIVE" : "CLOSED";
         }
     }
 }

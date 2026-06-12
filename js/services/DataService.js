@@ -50,6 +50,12 @@ export class DataService {
         return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'learningLog');
     }
 
+    // --- NEW: HEALTH TRACK PATH ---
+    getHealthDoc(uid, collectionName) {
+        if (this.useCustomConfig) return doc(this.db, 'users', uid, 'health', collectionName);
+        return doc(this.db, 'artifacts', this.appId, 'users', uid, 'health', collectionName);
+    }
+
     subscribeTrades(uid, callback, errorCallback) {
         if (this.unsubscribe) this.unsubscribe();
         // Listen to trades collection
@@ -130,6 +136,29 @@ export class DataService {
         const docRef = this.getNotesDoc(uid);
         // notesData expected structure: { title: string, items: array of strings }
         await setDoc(docRef, { ...notesData, lastUpdated: new Date().toISOString() }, { merge: true });
+    }
+
+    // --- NEW: HEALTH TRACK METHODS ---
+    subscribeHealth(uid, collectionName, callback) {
+        const docRef = this.getHealthDoc(uid, collectionName);
+        return onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                callback(docSnap.data());
+            } else {
+                callback(null);
+            }
+        });
+    }
+
+    async saveHealth(uid, collectionName, data) {
+        const docRef = this.getHealthDoc(uid, collectionName);
+        await setDoc(docRef, { ...data, lastUpdated: new Date().toISOString() }, { merge: true });
+    }
+
+    async loadHealth(uid, collectionName) {
+        const docRef = this.getHealthDoc(uid, collectionName);
+        const docSnap = await getDoc(docRef);
+        return docSnap.exists() ? docSnap.data() : null;
     }
 
     async addTrade(uid, trade) {

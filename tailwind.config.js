@@ -3,8 +3,7 @@ export default {
   content: [
     "./TrackerView.html",
     "./index.html",
-    "./main.js",
-    "./UIManager.js",
+    "./js/**/*.js",
   ],
   theme: {
     extend: {
