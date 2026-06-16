@@ -109,32 +109,27 @@
                 <!-- Code (Journal/Dashboard) -->
                 <button id="tab-code" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-cyan-500 bg-cyan-500/10 text-cyan-400 font-bold text-sm rounded-r-xl transition-all btn-press">
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                    <span>Dashboard</span>
+                    <span>Trade Track</span>
                 </button>
                 <!-- Issues (Strategy Lab) -->
                 <button id="tab-issues" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                     <i data-lucide="check-square" class="w-4 h-4"></i>
                     <span>Strategy Lab</span>
                 </button>
-                <!-- Pull Requests (Health Track) -->
-                <button id="tab-pulls" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
-                    <i data-lucide="heart" class="w-4 h-4"></i>
-                    <span>Health Track</span>
-                </button>
                 <!-- Actions (Market) -->
                 <button id="tab-actions" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                     <i data-lucide="line-chart" class="w-4 h-4"></i>
                     <span>Market Center</span>
                 </button>
-                <!-- Projects (Calculator) -->
-                <button id="tab-projects" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
-                    <i data-lucide="calculator" class="w-4 h-4"></i>
-                    <span>Calculators</span>
-                </button>
                 <!-- Wiki (News) -->
                 <button id="tab-wiki" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                     <i data-lucide="newspaper" class="w-4 h-4"></i>
                     <span>News Feed</span>
+                </button>
+                <!-- Pull Requests (Health Track) -->
+                <button id="tab-pulls" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                    <i data-lucide="heart" class="w-4 h-4"></i>
+                    <span>Health Track</span>
                 </button>
                 <!-- Settings -->
                 <button id="tab-settings" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
@@ -220,17 +215,20 @@
                         <h2 id="summary-profit" class="text-2xl font-mono font-bold text-white">0.00</h2>
                         <span class="text-xs text-slate-500" id="summary-roi">0% ROI</span>
                     </div>
-                    <div class="glass-panel p-4 rounded-xl border-l-4 border-purple-500">
+                    <div class="glass-panel p-4 rounded-xl border-l-4 border-purple-500 col-span-2 md:col-span-1">
                         <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Win Rate</p>
                         <h2 id="summary-winrate" class="text-2xl font-mono font-bold text-white">0%</h2>
                         <span id="summary-wincount" class="text-xs text-slate-500">0W - 0L</span>
                     </div>
-
-
-                    <div class="glass-panel p-4 rounded-xl border-l-4 border-amber-400">
+                    <div class="glass-panel p-4 rounded-xl border-l-4 border-amber-400 col-span-2 md:col-span-1">
                         <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Total Trades</p>
                         <h2 id="summary-totaltrades" class="text-2xl font-mono font-bold text-white">0</h2>
                         <span class="text-xs text-slate-500">Total number of trades</span>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl border-l-4 border-emerald-500 col-span-2 md:col-span-1">
+                        <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Expected Return</p>
+                        <h2 id="summary-expectancy" class="text-2xl font-mono font-bold text-white">0.00</h2>
+                        <span class="text-xs text-slate-500">Expectancy per trade</span>
                     </div>
                 </div>
 
@@ -319,55 +317,11 @@
                                     class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
                             </div>
                         </div>
-
-                        <!-- NEW: LEARNING LOG (JOURNAL) -->
-                        <div class="glass-panel p-6 rounded-2xl border-t-4 border-amber-500">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-mono font-bold text-lg text-amber-400 flex items-center gap-2">
-                                    <span class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
-                                    LEARNING LOG
-                                </h3>
-                                <span class="text-[10px] text-slate-500 uppercase tracking-widest">Auto-Synced</span>
-                            </div>
-
-                            <div class="space-y-4">
-                                <!-- Title Input -->
-                                <div>
-                                    <label class="block text-xs text-slate-500 mb-1">TOPIC / MAIN FOCUS</label>
-                                    <input type="text" id="note-title" 
-                                        placeholder="e.g. My Rules, Mistakes to avoid..." 
-                                        class="w-full px-3 py-2 rounded-lg font-mono text-lg font-bold text-amber-100 bg-slate-900 border-amber-900/50 focus:border-amber-500">
-                                </div>
-
-                                <!-- List Container -->
-                                <ul id="note-list" class="space-y-2 pl-2">
-                                    <!-- Items will be injected here -->
-                                </ul>
-
-                                <!-- Add Item Input -->
-                                <div class="flex gap-2 mt-4">
-                                    <input type="text" id="note-input" 
-                                        placeholder="Add a new point..." 
-                                        class="flex-1 px-3 py-2 rounded-lg text-sm bg-slate-800 border-slate-700 focus:border-amber-500 text-slate-300">
-                                    <button id="btn-add-note" 
-                                        class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold btn-press">
-                                        +
-                                    </button>
-                                </div>
-
-                                <!-- Save Button -->
-                                <button id="btn-save-note" 
-                                    class="w-full mt-2 btn-press border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 py-2 rounded-lg font-mono text-sm tracking-wider flex items-center justify-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                                    SAVE NOTES TO CLOUD
-                                </button>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Right Panel -->
-                    <div class="lg:col-span-1 flex flex-col h-full"> 
-                        <div class="glass-panel flex-1 rounded-2xl flex flex-col overflow-hidden sticky top-6 max-h-[calc(100vh-2rem)]">
+                    <div class="lg:col-span-1 flex flex-col gap-6"> 
+                        <div class="glass-panel flex-1 rounded-2xl flex flex-col overflow-hidden max-h-[500px]">
                             <!-- Header Area -->
                             <div class="bg-slate-900/50 border-b border-slate-700 p-4 pb-3">
                                 <div class="flex justify-between items-center mb-3">
@@ -386,8 +340,25 @@
                                 </div>
                             </div>
 
-                            <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3">
+                            <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px]">
                                 <div class="text-center text-slate-500 py-10 text-sm loading-pulse">Syncing...</div>
+                            </div>
+                        </div>
+
+                        <!-- Data Management Card -->
+                        <div class="glass-panel p-6 rounded-2xl border-t-4 border-cyan-500 bg-[#0d1117]/50">
+                            <div>
+                                <h3 class="font-mono text-sm font-bold text-slate-300 mb-2 uppercase tracking-wider">CSV Data Operations</h3>
+                                <p class="text-xs text-slate-400 mb-4">Export or import your trading journal database in CSV format.</p>
+                            </div>
+                            <div class="flex gap-3 mt-4">
+                                <button id="btn-export" class="flex-1 btn-press bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white text-xs py-3 rounded-xl font-mono font-bold">
+                                    EXPORT CSV
+                                </button>
+                                <button id="btn-import-trigger" class="flex-1 btn-press bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white text-xs py-3 rounded-xl font-mono font-bold">
+                                    IMPORT CSV
+                                </button>
+                                <input type="file" id="file-import" accept=".csv" class="hidden">
                             </div>
                         </div>
                     </div>
@@ -402,239 +373,6 @@
                 </div>
                 <div class="glass-panel rounded-2xl overflow-hidden border border-slate-700 flex-1 relative">
                     <div id="tv-chart-container" class="w-full h-full"></div>
-                </div>
-            </div>
-
-            <!-- TAB 3: CALCULATOR -->
-            <div id="calc-panel" class="hidden flex-col gap-6 animate-fade-in pb-10">
-
-                <!-- POSITION SIZE & RISK MANAGER (MOVED HERE) -->
-                <div class="glass-panel p-6 rounded-2xl border-t-4 border-pink-500">
-                    <div class="flex items-center gap-2 mb-6">
-                        <span class="w-2 h-2 bg-pink-400 rounded-full animate-pulse"></span>
-                        <h3 class="font-mono font-bold text-lg text-pink-400">POSITION SIZE & RISK MANAGER</h3>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        <div class="lg:col-span-4 space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs text-slate-400 mb-1">ACCOUNT BALANCE</label>
-                                    <input type="number" id="risk-balance"
-                                        class="w-full px-3 py-2 rounded-lg font-mono text-white bg-slate-900 border border-slate-700"
-                                        placeholder="Auto">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-slate-400 mb-1">RISK (%)</label>
-                                    <input type="number" id="risk-percent" value="2" step="0.5"
-                                        class="w-full px-3 py-2 rounded-lg font-mono text-red-400 font-bold border border-red-900/50">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">ASSET & LEVERAGE</label>
-                                <div class="flex gap-2">
-                                    <select id="risk-asset"
-                                        class="flex-1 px-3 py-2 rounded-lg font-mono text-white bg-slate-800 border border-slate-600">
-                                        <option value="BTC" data-size="1">BTC/USD (1 Coin)</option>
-                                        <option value="XAU" data-size="100">GOLD (100 Oz)</option>
-                                        <option value="EUR" data-size="100000">EUR/USD (100k Unit)</option>
-                                    </select>
-                                    <input type="number" id="risk-leverage" value="100"
-                                        class="w-20 px-2 py-2 rounded-lg font-mono text-center text-slate-300 bg-slate-800 border border-slate-600"
-                                        title="Leverage">
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="block text-xs text-slate-400 mb-1">DIRECTION (ทิศทาง)</label>
-                                <div class="flex gap-2">
-                                    <label class="flex-1 cursor-pointer group">
-                                        <input type="radio" name="risk-side" value="LONG" class="peer hidden" checked>
-                                        <div
-                                            class="py-2 text-center rounded-lg border border-slate-600 text-slate-500 bg-slate-800/50 peer-checked:bg-green-600 peer-checked:text-white peer-checked:border-green-500 peer-checked:shadow-[0_0_10px_rgba(22,163,74,0.5)] transition-all font-mono font-bold text-xs flex items-center justify-center gap-2">
-                                            <span
-                                                class="w-2 h-2 rounded-full bg-green-400 group-hover:animate-pulse"></span>
-                                            BUY / LONG
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer group">
-                                        <input type="radio" name="risk-side" value="SHORT" class="peer hidden">
-                                        <div
-                                            class="py-2 text-center rounded-lg border border-slate-600 text-slate-500 bg-slate-800/50 peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-500 peer-checked:shadow-[0_0_10px_rgba(220,38,38,0.5)] transition-all font-mono font-bold text-xs flex items-center justify-center gap-2">
-                                            <span
-                                                class="w-2 h-2 rounded-full bg-red-400 group-hover:animate-pulse"></span>
-                                            SELL / SHORT
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="space-y-2 pt-2 border-t border-slate-700/50">
-                                <div
-                                    class="grid grid-cols-3 gap-2 text-center text-[10px] text-slate-500 uppercase font-mono">
-                                    <span>Entry Price</span>
-                                    <span>Stop Loss</span>
-                                    <span>Take Profit</span>
-                                </div>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <input type="number" id="risk-entry" placeholder="Entry"
-                                        class="w-full px-2 py-2 rounded-lg font-mono text-sm text-center text-blue-400 border border-blue-900/30 bg-blue-900/10">
-                                    <input type="number" id="risk-sl" placeholder="SL"
-                                        class="w-full px-2 py-2 rounded-lg font-mono text-sm text-center text-red-400 border border-red-900/30 bg-red-900/10">
-                                    <input type="number" id="risk-tp" placeholder="TP"
-                                        class="w-full px-2 py-2 rounded-lg font-mono text-sm text-center text-green-400 border border-green-900/30 bg-green-900/10">
-                                </div>
-                            </div>
-
-                            <button id="btn-calc-position"
-                                class="w-full btn-press bg-pink-600 hover:bg-pink-500 text-white py-2 rounded-lg font-bold font-mono shadow-lg shadow-pink-500/20 text-sm">
-                                CALCULATE LOTS
-                            </button>
-                        </div>
-
-                        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div
-                                class="md:col-span-3 bg-slate-900/50 p-4 rounded-xl border border-pink-500/30 flex justify-between items-center relative overflow-hidden">
-                                <div class="relative z-10">
-                                    <p class="text-xs text-pink-400 uppercase tracking-widest mb-1">Recommended Position
-                                    </p>
-                                    <div class="flex items-baseline gap-3">
-                                        <h2 id="res-lot" class="text-4xl font-mono font-bold text-white">0.00</h2>
-                                        <span class="text-sm text-slate-400 font-mono">LOTS</span>
-                                    </div>
-                                </div>
-                                <div class="text-right relative z-10">
-                                    <p class="text-xs text-slate-500 uppercase">Margin Required</p>
-                                    <p id="res-margin" class="text-xl font-mono text-slate-300">$0.00</p>
-                                </div>
-                                <div
-                                    class="absolute right-0 top-0 h-full w-32 bg-gradient-to-l from-pink-500/10 to-transparent pointer-events-none">
-                                </div>
-                            </div>
-
-                            <div
-                                class="bg-slate-800/30 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                                <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Risk Amount</p>
-                                <h3 id="res-risk-amt" class="text-xl font-mono font-bold text-red-400">$0.00</h3>
-                                <span class="text-[10px] text-slate-600 mt-1">Loss if SL hit</span>
-                            </div>
-
-                            <div
-                                class="bg-slate-800/30 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                                <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Reward Amount</p>
-                                <h3 id="res-reward-amt" class="text-xl font-mono font-bold text-green-400">$0.00</h3>
-                                <span class="text-[10px] text-slate-600 mt-1">Profit if TP hit</span>
-                            </div>
-
-                            <div
-                                class="bg-slate-800/30 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                                <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">R:R Ratio</p>
-                                <h3 id="res-rr" class="text-xl font-mono font-bold text-blue-400">0 : 0</h3>
-                                <span id="res-rr-eval" class="text-[10px] text-slate-600 mt-1">-</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Calculator Inputs -->
-                    <div class="glass-panel p-6 rounded-2xl border-t-4 border-purple-500 lg:col-span-1">
-                        <div class="flex items-center gap-2 mb-6">
-                            <span class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
-                            <h3 class="font-mono font-bold text-lg text-purple-400">COMPOUND INTEREST</h3>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">INITIAL INVESTMENT
-                                    (เงินต้นเริ่มต้น)</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-2 text-slate-500">$</span>
-                                    <input type="number" id="calc-principal" value="1000" min="0" step="100"
-                                        class="w-full pl-8 pr-3 py-2 rounded-lg font-mono text-white">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">MONTHLY DEPOSIT
-                                    (ฝากเพิ่มรายเดือน)</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-2 text-slate-500">$</span>
-                                    <input type="number" id="calc-monthly" value="100" min="0" step="50"
-                                        class="w-full pl-8 pr-3 py-2 rounded-lg font-mono text-white">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">ANNUAL RETURN RATE
-                                    (ผลตอบแทน/ปี)</label>
-                                <div class="relative">
-                                    <span class="absolute right-3 top-2 text-slate-500">%</span>
-                                    <input type="number" id="calc-rate" value="10" min="0" step="0.5"
-                                        class="w-full px-3 py-2 rounded-lg font-mono text-white">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">YEARS TO GROW (ระยะเวลา/ปี)</label>
-                                <div class="relative">
-                                    <span class="absolute right-3 top-2 text-slate-500">Y</span>
-                                    <input type="number" id="calc-years" value="5" min="1" step="1"
-                                        class="w-full px-3 py-2 rounded-lg font-mono text-white">
-                                </div>
-                            </div>
-                            <button id="btn-calculate-compound"
-                                class="w-full mt-4 btn-press bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-lg font-bold font-mono shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2">
-                                <span>CALCULATE</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 7h6m0 0v6m0-6L9 17"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Calculator Results -->
-                    <div class="glass-panel p-6 rounded-2xl lg:col-span-2 flex flex-col gap-6 justify-center">
-                        <div class="text-center mb-2">
-                            <p class="text-sm text-slate-400 uppercase tracking-widest mb-2">Total Future Value</p>
-                            <h2
-                                class="text-4xl md:text-5xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 neon-text break-all">
-                                $<span id="calc-result-total">0.00</span>
-                            </h2>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div
-                                class="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-center">
-                                <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Total Principal
-                                    (เงินต้นรวม)
-                                </p>
-                                <h3 class="text-2xl font-mono font-bold text-blue-400 break-all">$<span
-                                        id="calc-result-invested">0.00</span></h3>
-                            </div>
-                            <div
-                                class="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-center">
-                                <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Total Interest
-                                    (ดอกเบี้ยรวม)
-                                </p>
-                                <h3 class="text-2xl font-mono font-bold text-green-400 break-all">$<span
-                                        id="calc-result-interest">0.00</span></h3>
-                            </div>
-                        </div>
-
-                        <!-- Visual Breakdown Bar -->
-                        <div class="mt-4">
-                            <div class="w-full h-4 bg-slate-800 rounded-full overflow-hidden flex">
-                                <div id="calc-bar-principal" class="h-full bg-blue-500 transition-all duration-700"
-                                    style="width: 50%;"></div>
-                                <div id="calc-bar-interest" class="h-full bg-green-500 transition-all duration-700"
-                                    style="width: 50%;"></div>
-                            </div>
-                            <div class="flex justify-between text-xs text-slate-500 font-mono mt-2">
-                                <span>PRINCIPAL</span>
-                                <span>INTEREST</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -668,99 +406,413 @@
 
         <!-- Menu Content 2: Strategy Lab -->
         <div id="strategy-menu-container" class="w-full hidden flex-col gap-6 animate-fade-in pb-10">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Checklist Panel -->
-                <div class="glass-panel p-6 rounded-2xl border-t-4 border-cyan-500 lg:col-span-2">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
-                        <h3 class="font-mono font-bold text-lg text-cyan-400">PRE-TRADE STRATEGY CHECKLIST</h3>
+            <!-- Diagram Board Panel -->
+            <div class="glass-panel p-4 rounded-2xl border-t-4 border-cyan-500 flex flex-col h-[calc(100vh-160px)] min-h-[700px]">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-3 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                            <h3 class="font-mono font-bold text-lg text-cyan-400">STRATEGY LAB (DIAGRAM)</h3>
+                        </div>
+                        <!-- Canvas Controls -->
+                        <div class="flex items-center gap-2 bg-slate-900/85 p-1 rounded-xl border border-slate-800/80">
+                            <button id="diagram-btn-zoom-out" class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition" title="Zoom Out">
+                                <i data-lucide="zoom-out" class="w-4 h-4"></i>
+                            </button>
+                            <span id="diagram-zoom-percent" class="font-mono text-xs text-slate-300 min-w-[3.5rem] text-center font-bold">100%</span>
+                            <button id="diagram-btn-zoom-in" class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition" title="Zoom In">
+                                <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                            </button>
+                            <div class="w-px h-4 bg-slate-800"></div>
+                            <button id="diagram-btn-reset-zoom" class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition" title="Reset view">
+                                <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                            </button>
+                            <div class="w-px h-4 bg-slate-800"></div>
+                            <button id="diagram-btn-undo" class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition" title="Undo (Ctrl+Z)">
+                                <i data-lucide="undo" class="w-4 h-4"></i>
+                            </button>
+                            <button id="diagram-btn-redo" class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition" title="Redo (Ctrl+Y)">
+                                <i data-lucide="redo" class="w-4 h-4"></i>
+                            </button>
+                            <div class="w-px h-4 bg-slate-800"></div>
+                            <button id="diagram-btn-clear" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition" title="Clear board">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                            <div class="w-px h-4 bg-slate-800"></div>
+                            <button id="diagram-btn-help" class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition" title="Shortcuts Info">
+                                <i data-lucide="help-circle" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
-                    <p class="text-slate-400 text-xs mb-6">ตรวจสอบเงื่อนไขความพร้อมทุกข้อเพื่อวินัยการเทรดที่ยอดเยี่ยมและลดอารมณ์ในการตัดสินใจ (Verify rules before entry)</p>
-                    
-                    <div id="strategy-checklist" class="space-y-4">
-                        <label class="flex items-start gap-4 p-4 rounded-xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/30 transition cursor-pointer select-none">
-                            <input type="checkbox" class="checklist-item mt-1 w-5 h-5 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500">
-                            <div>
-                                <h4 class="font-bold text-slate-200 text-sm">Trend Alignment (สอดคล้องกับแนวโน้มหลัก)</h4>
-                                <p class="text-xs text-slate-500">ทิศทางการเทรดสอดคล้องกับทิศทางของเทรนหลักในกรอบเวลาใหญ่ (เช่น H4 หรือ D1) หรือไม่?</p>
-                            </div>
-                        </label>
-                        
-                        <label class="flex items-start gap-4 p-4 rounded-xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/30 transition cursor-pointer select-none">
-                            <input type="checkbox" class="checklist-item mt-1 w-5 h-5 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500">
-                            <div>
-                                <h4 class="font-bold text-slate-200 text-sm">Key Levels & Zones (แนวรับ-แนวต้าน & Supply/Demand)</h4>
-                                <p class="text-xs text-slate-500">จุดเข้าเทรดอยู่ใกล้แนวรับสำคัญ, แนวต้าน, Key Level, Order Block หรือสะท้อนการกลับตัวที่ชัดเจนหรือไม่?</p>
-                            </div>
-                        </label>
-                        
-                        <label class="flex items-start gap-4 p-4 rounded-xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/30 transition cursor-pointer select-none">
-                            <input type="checkbox" class="checklist-item mt-1 w-5 h-5 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500">
-                            <div>
-                                <h4 class="font-bold text-slate-200 text-sm">Risk-to-Reward Ratio (อัตราส่วนความเสี่ยงเทียบผลตอบแทน)</h4>
-                                <p class="text-xs text-slate-500">โอกาสทำกำไร (Reward) คุ้มค่าเมื่อเทียบกับความเสี่ยง (Risk) หรือไม่? อัตราส่วน R:R ควรดีกว่า 1:1.5 หรือ 1:2 ขึ้นไป</p>
-                            </div>
-                        </label>
-                        
-                        <label class="flex items-start gap-4 p-4 rounded-xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/30 transition cursor-pointer select-none">
-                            <input type="checkbox" class="checklist-item mt-1 w-5 h-5 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500">
-                            <div>
-                                <h4 class="font-bold text-slate-200 text-sm">No High-Impact News (ปฏิทินข่าวสารทางเศรษฐกิจ)</h4>
-                                <p class="text-xs text-slate-500">ไม่มีประกาศตัวเลขเศรษฐกิจสำคัญ (เช่น แฟ้มสีแดง/ตัวเลขสำคัญของสกุลเงินที่เทรด) ภายในช่วง 1 ชั่วโมงถัดไป</p>
-                            </div>
-                        </label>
 
-                        <label class="flex items-start gap-4 p-4 rounded-xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/30 transition cursor-pointer select-none">
-                            <input type="checkbox" class="checklist-item mt-1 w-5 h-5 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500">
-                            <div>
-                                <h4 class="font-bold text-slate-200 text-sm">Emotional & Focus Check (ความพร้อมของสติอารมณ์)</h4>
-                                <p class="text-xs text-slate-500">สภาพจิตใจปกติสงบ ไม่มีความรู้สึกล้างแค้น (Revenge Trade), ไม่โลภหรือตื่นตระหนก (FOMO) และพร้อมยอมรับความเสี่ยงได้</p>
-                            </div>
+                    <!-- Toolbar -->
+                    <div class="flex flex-wrap items-center gap-3 bg-slate-900/40 p-2 rounded-xl border border-slate-800/60 mb-3 shrink-0">
+                        <div class="flex items-center bg-slate-950 rounded-lg p-0.5 border border-slate-800">
+                            <button data-tool="select" class="tool-btn active bg-slate-800 text-cyan-400 p-1.5 rounded-md transition" title="Select / Move (V)">
+                                <i data-lucide="mouse-pointer" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="pan" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Pan (H / Spacebar)">
+                                <i data-lucide="hand" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="pencil" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Pencil (O)">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="line" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Line (L)">
+                                <i data-lucide="minus" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="arrow" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Connector / Arrow (U)">
+                                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="rect" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Rectangle (T)">
+                                <i data-lucide="square" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="circle" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Circle (C)">
+                                <i data-lucide="circle" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="diamond" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Decision / Diamond (Y)">
+                                <i data-lucide="diamond" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="parallelogram" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Input-Output / Parallelogram (P)">
+                                <i data-lucide="italic" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="text" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Text (W)">
+                                <i data-lucide="type" class="w-4 h-4"></i>
+                            </button>
+                            <button data-tool="eraser" class="tool-btn p-1.5 rounded-md text-slate-400 hover:text-cyan-400 transition" title="Eraser (E)">
+                                <i data-lucide="eraser" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <!-- Color Palette -->
+                        <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                            <button data-color="#22c55e" class="color-btn w-5 h-5 rounded-md bg-green-500 border border-transparent active-color border-cyan-400 scale-110" title="Green"></button>
+                            <button data-color="#ef4444" class="color-btn w-5 h-5 rounded-md bg-red-500 border border-transparent" title="Red"></button>
+                            <button data-color="#38bdf8" class="color-btn w-5 h-5 rounded-md bg-sky-400 border border-transparent" title="Blue"></button>
+                            <button data-color="#eab308" class="color-btn w-5 h-5 rounded-md bg-yellow-500 border border-transparent" title="Yellow"></button>
+                            <button data-color="#ec4899" class="color-btn w-5 h-5 rounded-md bg-pink-500 border border-transparent" title="Pink"></button>
+                            <button data-color="#ffffff" class="color-btn w-5 h-5 rounded-md bg-white border border-transparent" title="White"></button>
+                        </div>
+
+                        <!-- Stroke width -->
+                        <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
+                            <span class="text-[9px] font-mono text-slate-500 uppercase font-bold">Stroke</span>
+                            <select id="diagram-select-width" class="bg-transparent border-none text-xs text-white font-mono outline-none cursor-pointer">
+                                <option value="2">2px</option>
+                                <option value="4" selected>4px</option>
+                                <option value="6">6px</option>
+                                <option value="8">8px</option>
+                            </select>
+                        </div>
+
+                        <!-- Fill Shape -->
+                        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" id="diagram-toggle-fill" class="w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500">
+                            <span class="text-[10px] font-mono text-slate-500 uppercase font-bold">Fill Shape</span>
                         </label>
                     </div>
-                    
-                    <div id="strategy-status-box" class="mt-6 p-5 rounded-xl border border-slate-800 bg-slate-900/50 text-center transition-all duration-300">
-                        <p id="strategy-status-text" class="text-slate-500 font-mono font-bold text-sm tracking-wider uppercase">⚠️ CHECK ALL ITEMS TO VERIFY STRATEGY</p>
+
+                    <!-- Canvas Container -->
+                    <div id="canvas-container" class="relative flex-1 bg-slate-950/80 rounded-xl border border-slate-800 overflow-hidden">
+                        <canvas id="diagram-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                        <!-- Grid overlay -->
+                        <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                        <!-- Hint overlay -->
+                        <div class="absolute bottom-3 right-3 pointer-events-none text-[10px] font-mono text-slate-400 bg-slate-950/80 px-2 py-1.5 rounded-lg border border-slate-800/80 flex gap-2">
+                            <span>Double click to edit/create text</span>
+                            <span>•</span>
+                            <span>[Del] to delete shape</span>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Side Panel: Trading Sessions & Market Hours -->
-                <div class="glass-panel p-6 rounded-2xl border-t-4 border-amber-500 lg:col-span-1 flex flex-col gap-6">
+
+                <!-- Diagram Shortcuts Modal -->
+                <div id="diagram-help-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+                    <div class="glass-panel p-6 rounded-3xl shadow-xl max-w-md w-full border border-slate-800">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                            <h3 class="text-base font-bold text-cyan-400 font-mono flex items-center gap-2">
+                                <i data-lucide="keyboard" class="w-5 h-5 text-cyan-400"></i> คีย์ลัดเครื่องมือ Diagram
+                            </h3>
+                            <button id="diagram-btn-close-help" class="text-slate-400 hover:text-white transition">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-2.5 max-h-[400px] overflow-y-auto pr-1 text-slate-300 text-xs font-mono">
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Select / Move (เลือกจับวัตถุ)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">V / A</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Pan Board (เลื่อนบอร์ด)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">H / Spacebar</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Freehand Pencil (วาดดินสอ)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">O</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Straight Line (เส้นตรง)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">L</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Arrow Connector (เส้นลูกศร)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">U</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Rectangle (สี่เหลี่ยม / Toggle Fill)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">T</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Circle (วงกลม / Toggle Fill)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">C</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Decision Diamond (รูปเพชร / Toggle Fill)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">Y</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Parallelogram (ด้านขนาน / Toggle Fill)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">P</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Text Label (ข้อความ)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">W</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Eraser Tool (ยางลบ)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">E</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Delete Shape (ลบวัตถุที่เลือก)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-red-400 font-bold border border-slate-850">Del / Backspace</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Undo Action (ย้อนกลับ)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">Ctrl + Z</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Redo Action (ทำซ้ำ)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">Ctrl + Y</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
+                                <span class="text-slate-400">Duplicate Shape (ก๊อปปี้คัดลอก)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">Hold D + Drag</span>
+                            </div>
+                            <div class="flex justify-between pb-1">
+                                <span class="text-slate-400">Edit Text (แก้ไขข้อความ)</span>
+                                <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">Double Click</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            <!-- Position Calculator Sub-Section -->
+            <div id="calc-panel" class="w-full mt-6 animate-fade-in pb-6">
+                <!-- POSITION SIZE & RISK MANAGER (Standard Trading Layout) -->
+                <div class="flex flex-col gap-6">
+                    
+                    <!-- TOP ROW: SETTINGS (Left) & TARGET PRICES (Right) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                        <!-- LEFT COLUMN: ACCOUNT SETTINGS & BIAS -->
+                        <div class="glass-panel p-6 rounded-2xl border-t-4 border-pink-500 flex flex-col justify-between">
+                            <!-- Header Title -->
+                            <div class="flex items-center gap-2 border-b border-slate-800 pb-3 mb-4">
+                                <span class="w-2.5 h-2.5 bg-pink-500 rounded-full animate-pulse"></span>
+                                <h3 class="font-mono font-bold text-base text-pink-400 tracking-wider">POSITION SIZING</h3>
+                            </div>
+
+                            <!-- Account Settings & Direction -->
+                            <div class="space-y-4 flex-1 flex flex-col justify-center">
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label class="block text-[9px] text-slate-500 mb-1 font-bold">BALANCE</label>
+                                        <input type="text" id="risk-balance"
+                                            class="w-full px-2 py-2 rounded-lg font-mono text-xs text-blue-400 font-bold bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-blue-400/60 text-center"
+                                            placeholder="Auto">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-500 mb-1 font-bold">RISK (%)</label>
+                                        <input type="number" id="risk-percent" value="2" step="0.5"
+                                            class="w-full px-2 py-2 rounded-lg font-mono text-xs text-red-400 font-bold bg-slate-950 border border-slate-900 focus:border-red-500 focus:ring-1 focus:ring-red-500 text-center">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-500 mb-1 font-bold">R:R RATIO</label>
+                                        <input type="number" id="risk-rr-ratio" value="2" step="0.5"
+                                            class="w-full px-2 py-2 rounded-lg font-mono text-xs text-green-400 font-bold bg-slate-950 border border-slate-900 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-center">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-4 gap-2 items-end">
+                                    <div class="col-span-2">
+                                        <label class="block text-[9px] text-slate-500 mb-1 font-bold">ASSET</label>
+                                        <select id="risk-asset"
+                                            class="w-full px-2 py-2 rounded-lg font-mono text-xs text-white bg-slate-950 border border-slate-800">
+                                            <option value="BTC" data-size="1">BTC/USD (1 Coin)</option>
+                                            <option value="XAU" data-size="100">GOLD (100 Oz)</option>
+                                            <option value="EUR" data-size="100000">EUR/USD (100k Unit)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-500 mb-1 font-bold">LEVERAGE</label>
+                                        <input type="number" id="risk-leverage" value="400"
+                                            class="w-full px-2 py-2 rounded-lg font-mono text-xs text-center text-slate-300 bg-slate-950 border border-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                                            title="Leverage">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-500 mb-1 font-bold">SPREAD (PTS)</label>
+                                        <input type="number" id="risk-spread" value="0" step="0.1" min="0"
+                                            class="w-full px-2 py-2 rounded-lg font-mono text-xs text-center text-yellow-500 bg-slate-950 border border-slate-800 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
+                                            title="Spread in points">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[9px] text-slate-500 mb-1 font-bold">BIAS DIRECTION</label>
+                                    <div class="flex gap-2">
+                                        <label class="flex-1 cursor-pointer group">
+                                            <input type="radio" name="risk-side" value="LONG" class="peer hidden" checked>
+                                            <div
+                                                class="py-2 text-center rounded-lg border border-slate-800 text-slate-500 bg-slate-950 peer-checked:bg-green-600 peer-checked:text-white peer-checked:border-green-500 peer-checked:shadow-[0_0_10px_rgba(22,163,74,0.3)] transition-all font-mono font-bold text-xs flex items-center justify-center gap-2">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-green-400 group-hover:animate-pulse"></span>
+                                                LONG / BUY
+                                            </div>
+                                        </label>
+                                        <label class="flex-1 cursor-pointer group">
+                                            <input type="radio" name="risk-side" value="SHORT" class="peer hidden">
+                                            <div
+                                                class="py-2 text-center rounded-lg border border-slate-800 text-slate-500 bg-slate-950 peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-500 peer-checked:shadow-[0_0_10px_rgba(220,38,38,0.3)] transition-all font-mono font-bold text-xs flex items-center justify-center gap-2">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-red-400 group-hover:animate-pulse"></span>
+                                                SHORT / SELL
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN: TARGET PRICE SETTINGS (ENTRY, SL, TP) -->
+                        <div class="glass-panel p-6 rounded-2xl border-t-4 border-pink-500 flex flex-col justify-between">
+                            <!-- Header Title -->
+                            <div class="flex items-center gap-2 border-b border-slate-800 pb-3 mb-4">
+                                <span class="w-2.5 h-2.5 bg-pink-500 rounded-full animate-pulse"></span>
+                                <h3 class="font-mono font-bold text-base text-pink-400 tracking-wider">ENTRY & TARGETS</h3>
+                            </div>
+
+                            <div class="space-y-4 flex-1 flex flex-col justify-center">
+                                <div>
+                                    <label class="block text-[9px] text-slate-500 mb-1 font-bold">ENTRY PRICE</label>
+                                    <input type="text" id="risk-entry" placeholder="Entry"
+                                        class="w-full px-3 py-2.5 rounded-lg font-mono text-sm font-bold text-center text-blue-300 border border-blue-900/50 bg-slate-950 focus:border-blue-400 focus:ring-1 focus:ring-blue-400">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[9px] text-slate-500 mb-1 font-bold">STOP LOSS (SL)</label>
+                                        <input type="text" id="risk-sl" placeholder="SL"
+                                            class="w-full px-3 py-2.5 rounded-lg font-mono text-sm font-bold text-center text-red-300 border border-red-900/50 bg-slate-950 focus:border-red-400 focus:ring-1 focus:ring-red-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-500 mb-1 font-bold">TAKE PROFIT (TP)</label>
+                                        <input type="text" id="risk-tp" placeholder="TP"
+                                            class="w-full px-3 py-2.5 rounded-lg font-mono text-sm font-bold text-center text-green-300 border border-green-900/50 bg-slate-950 focus:border-green-400 focus:ring-1 focus:ring-green-400">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-900">
+                                    <div class="text-[10px] font-mono text-slate-500">
+                                        SL Distance: <span id="dist-sl-val" class="font-bold text-red-400">-</span>
+                                    </div>
+                                    <div class="text-[10px] font-mono text-slate-500">
+                                        TP Distance: <span id="dist-tp-val" class="font-bold text-emerald-400">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BOTTOM ROW: RESULTS & METRICS -->
+                    <div class="w-full">
+                        <!-- Big Result Panel -->
+                        <div class="glass-panel p-6 rounded-2xl border-t-4 border-pink-500 flex flex-col justify-between relative overflow-hidden bg-slate-950/20">
+                            <div>
+                                <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                                    <span class="text-xs text-slate-400 font-mono font-bold tracking-wider">CALCULATION RESULTS</span>
+                                    <span class="text-[9px] bg-pink-500/20 text-pink-400 font-mono font-bold px-2 py-0.5 rounded border border-pink-500/20">RISK CONTROL ACTIVE</span>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 py-4">
+                                    <div class="glass-panel p-5 rounded-xl border-l-4 border-pink-500 bg-slate-950/40">
+                                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Recommended Position</p>
+                                        <div class="flex items-baseline gap-2">
+                                            <h2 id="res-lot" class="text-3xl font-mono font-bold text-pink-400">0.00</h2>
+                                            <span class="text-xs text-slate-500 font-mono">LOTS</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="glass-panel p-5 rounded-xl border-l-4 border-blue-500 bg-slate-950/40">
+                                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Margin Required</p>
+                                        <h2 id="res-margin" class="text-3xl font-mono font-bold text-blue-400">$0.00</h2>
+                                        <span class="text-[10px] text-slate-500 font-mono">Capital Allocated</span>
+                                    </div>
+
+                                    <div class="glass-panel p-5 rounded-xl border-l-4 border-red-500 bg-slate-950/40">
+                                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Risk Amount</p>
+                                        <h2 id="res-risk-amt" class="text-3xl font-mono font-bold text-red-400">$0.00</h2>
+                                        <span class="text-[10px] text-slate-500 font-mono">Loss if SL hit</span>
+                                    </div>
+
+                                    <div class="glass-panel p-5 rounded-xl border-l-4 border-emerald-400 bg-slate-950/40">
+                                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Reward Amount</p>
+                                        <h2 id="res-reward-amt" class="text-3xl font-mono font-bold text-emerald-400">$0.00</h2>
+                                        <span class="text-[10px] text-slate-500 font-mono">Profit if TP hit</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-500 font-mono leading-relaxed flex justify-between items-center">
+                                <span>* การคำนวณขนาด Position (Lots) จะอิงตามสัดส่วนความเสี่ยง (Risk %) และการวางระยะ Stop Loss (SL) เสมอ</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-slate-500">ACTUAL R:R:</span>
+                                    <span id="res-rr" class="font-bold text-sm text-yellow-400 font-mono">1 : 2.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Trading Sessions Panel (Bottom) -->
+            <div class="glass-panel p-6 rounded-2xl border-t-4 border-amber-500">
+                <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
                         <h3 class="font-mono font-bold text-lg text-amber-400">TRADING SESSIONS (TH)</h3>
                     </div>
-                    <p class="text-slate-400 text-xs">เวลาทำการของตลาดหลักสำคัญเทียบเป็นเวลาประเทศไทย เพื่อประกอบการตัดสินใจเรื่องปริมาณซื้อขาย (Volume)</p>
-                    
-                    <div class="space-y-4">
-                        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 flex justify-between items-center">
-                            <div>
-                                <h4 class="font-bold text-sm text-slate-300">Tokyo Session (Asia)</h4>
-                                <p class="text-[10px] text-slate-500">07:00 - 15:00 (เวลาไทย)</p>
-                            </div>
-                            <span id="session-tokyo" class="text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800">CLOSED</span>
-                        </div>
-                        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 flex justify-between items-center">
-                            <div>
-                                <h4 class="font-bold text-sm text-slate-300">London Session (Europe)</h4>
-                                <p class="text-[10px] text-slate-500">14:00 - 22:00 (เวลาไทย)</p>
-                            </div>
-                            <span id="session-london" class="text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800">CLOSED</span>
-                        </div>
-                        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 flex justify-between items-center">
-                            <div>
-                                <h4 class="font-bold text-sm text-slate-300">New York Session (US)</h4>
-                                <p class="text-[10px] text-slate-500">19:00 - 03:00 (เวลาไทย)</p>
-                            </div>
-                            <span id="session-ny" class="text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800">CLOSED</span>
-                        </div>
+                    <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+                        <span>Local Time (Thai):</span>
+                        <span id="session-local-time" class="text-cyan-400 font-bold text-sm">--:--:--</span>
                     </div>
-                    
-                    <div class="mt-auto pt-4 border-t border-slate-800/80 flex flex-col gap-2">
-                        <div class="flex justify-between text-xs font-mono text-slate-400">
-                            <span>Local Time (Thai):</span>
-                            <span id="session-local-time" class="text-cyan-400 font-bold">--:--:--</span>
+                </div>
+                <p class="text-slate-400 text-xs mb-4">เวลาทำการของตลาดหลักสำคัญเทียบเป็นเวลาประเทศไทย เพื่อประกอบการตัดสินใจเรื่องปริมาณซื้อขาย (Volume)</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-300">Tokyo Session (Asia)</h4>
+                            <p class="text-[10px] text-slate-500">07:00 - 15:00 (เวลาไทย)</p>
                         </div>
+                        <span id="session-tokyo" class="text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800">CLOSED</span>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-300">London Session (Europe)</h4>
+                            <p class="text-[10px] text-slate-500">14:00 - 22:00 (เวลาไทย)</p>
+                        </div>
+                        <span id="session-london" class="text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800">CLOSED</span>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-300">New York Session (US)</h4>
+                            <p class="text-[10px] text-slate-500">19:00 - 03:00 (เวลาไทย)</p>
+                        </div>
+                        <span id="session-ny" class="text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800">CLOSED</span>
                     </div>
                 </div>
             </div>
@@ -1078,22 +1130,6 @@
                 </h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Data Management Card -->
-                    <div class="bg-[#161b22] p-4 rounded-xl border border-[#30363d] flex flex-col justify-between">
-                        <div>
-                            <h3 class="font-mono text-sm font-bold text-slate-300 mb-2 uppercase tracking-wider">CSV Data Operations</h3>
-                            <p class="text-xs text-slate-400 mb-4">Export or import your trading journal database in CSV format.</p>
-                        </div>
-                        <div class="flex gap-3 mt-4">
-                            <button id="btn-export" class="flex-1 btn-press bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white text-xs py-3 rounded-xl font-mono font-bold">
-                                EXPORT CSV
-                            </button>
-                            <button id="btn-import-trigger" class="flex-1 btn-press bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white text-xs py-3 rounded-xl font-mono font-bold">
-                                IMPORT CSV
-                            </button>
-                            <input type="file" id="file-import" accept=".csv" class="hidden">
-                        </div>
-                    </div>
 
                     <!-- Danger Zone Card -->
                     <div class="bg-[#161b22] p-4 rounded-xl border border-red-500/20 flex flex-col justify-between">
@@ -1204,6 +1240,66 @@
                 sidebar.classList.toggle('-translate-x-full');
             }
         };
+
+        // Auto-close sidebar on screen shrink
+        window.addEventListener('resize', () => {
+            if (window.innerWidth < 1024) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            }
+        });
+
+        // Close sidebar on mobile interaction (clicking tabs or clicking outside)
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024) {
+                const sidebar = document.getElementById('sidebar');
+                const hamburger = document.querySelector('button[onclick="window.toggleSidebar()"]');
+                
+                if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                    if (sidebar.contains(e.target)) {
+                        // Close sidebar if a link or button inside sidebar is clicked (e.g. switching tabs)
+                        if (e.target.closest('a') || e.target.closest('button')) {
+                            sidebar.classList.add('-translate-x-full');
+                        }
+                    } else if (!hamburger || !hamburger.contains(e.target)) {
+                        // Close sidebar if clicked outside the sidebar entirely (interacting with dashboard)
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                }
+            }
+        });
+
+        // Auto-close sidebar on screen shrink
+        window.addEventListener('resize', () => {
+            if (window.innerWidth < 1024) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            }
+        });
+
+        // Close sidebar on mobile interaction (clicking tabs or clicking outside)
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024) {
+                const sidebar = document.getElementById('sidebar');
+                const hamburger = document.querySelector('button[onclick="window.toggleSidebar()"]');
+                
+                if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                    if (sidebar.contains(e.target)) {
+                        // Close sidebar if a link or button inside sidebar is clicked (e.g. switching tabs)
+                        if (e.target.closest('a') || e.target.closest('button')) {
+                            sidebar.classList.add('-translate-x-full');
+                        }
+                    } else if (!hamburger || !hamburger.contains(e.target)) {
+                        // Close sidebar if clicked outside the sidebar entirely (interacting with dashboard)
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                }
+            }
+        });
     </script>
 </body>
 

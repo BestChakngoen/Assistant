@@ -42,14 +42,25 @@ export class TradeApp {
                     if (meta) this.ui.updateCloudStats(meta);
                 }, (err) => console.error(err));
 
-                // 2. Subscribe to Notes (Learning Log)
-                this.data.subscribeNotes(user.uid, (notesData) => {
-                    // Update local state and UI
-                    this.notes = notesData || { title: 'My Trading Rules', items: [] };
-                    this.ui.renderNotes(this.notes, (index) => this.handleDeleteNoteItem(index));
-                });
 
-                // 3. Initialize Health Track Managers
+
+                // 3. Subscribe to Strategy Diagram
+                if (this.ui.diagram) {
+                    this.data.subscribeDiagram(user.uid, (shapes) => {
+                        if (shapes && shapes.length > 0) {
+                            this.ui.diagram.shapes = shapes;
+                            this.ui.diagram.draw();
+                        } else if (this.ui.diagram.shapes.length > 0) {
+                            this.data.saveDiagram(user.uid, this.ui.diagram.shapes).catch(err => console.error("Firestore diagram seed error:", err));
+                        }
+                    });
+
+                    this.ui.diagram.onSaveCallback = (shapes) => {
+                        this.data.saveDiagram(user.uid, shapes).catch(err => console.error("Firestore diagram save error:", err));
+                    };
+                }
+
+                // 4. Initialize Health Track Managers
                 if (!this.healthInitialized) {
                     await this.initHealthTrack();
                 }
@@ -57,12 +68,18 @@ export class TradeApp {
                 this.startMarketLoops();
             } else {
                 this.ui.showLogin(true);
+                if (this.ui.diagram) {
+                    this.ui.diagram.onSaveCallback = null;
+                }
+                if (this.data.unsubscribeDiagram) {
+                    this.data.unsubscribeDiagram();
+                }
             }
         });
 
 
         // Risk Calculator Listeners
-        ['risk-balance', 'risk-percent', 'risk-leverage', 'risk-asset', 'risk-entry', 'risk-sl', 'risk-tp'].forEach(id => {
+        ['risk-balance', 'risk-percent', 'risk-leverage', 'risk-asset', 'risk-entry', 'risk-sl', 'risk-tp', 'risk-rr-ratio', 'risk-spread'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.oninput = () => this.calculateRisk();
@@ -70,12 +87,50 @@ export class TradeApp {
             }
         });
 
+        // Setup auto commas for text inputs (Balance, Entry, SL, TP)
+        ['risk-balance', 'risk-entry', 'risk-sl', 'risk-tp'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('focus', () => {
+                    // Strip commas when user clicks to edit
+                    const cleanVal = el.value.replace(/,/g, '');
+                    if (!isNaN(parseFloat(cleanVal)) && cleanVal !== '') {
+                        el.value = cleanVal;
+                    }
+                });
+                el.addEventListener('blur', () => {
+                    // Add commas back when user clicks away
+                    const cleanVal = el.value.replace(/,/g, '');
+                    const val = parseFloat(cleanVal);
+                    if (!isNaN(val) && cleanVal !== '') {
+                        el.value = val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }
+                });
+            }
+        });
+
+        // Auto leverage change when changing asset
+        const assetSelect = document.getElementById('risk-asset');
+        if (assetSelect) {
+            assetSelect.addEventListener('change', () => {
+                const levInput = document.getElementById('risk-leverage');
+                if (levInput) {
+                    if (assetSelect.value === 'BTC') {
+                        levInput.value = '400';
+                    } else {
+                        levInput.value = '100';
+                    }
+                }
+                this.calculateRisk();
+            });
+        }
+
         // เพิ่ม Listener สำหรับ Radio Buttons (Buy/Sell)
         document.querySelectorAll('input[name="risk-side"]').forEach(radio => {
             radio.onchange = () => this.calculateRisk();
         });
 
-        document.getElementById('btn-calc-position').onclick = () => this.calculateRisk();
+
 
         // Button Clicks
         document.getElementById('btn-login').onclick = () => this.handleLogin();
@@ -92,12 +147,7 @@ export class TradeApp {
         document.getElementById('btn-import-trigger').onclick = () => document.getElementById('file-import').click();
         document.getElementById('file-import').onchange = (e) => this.handleImport(e);
 
-        // --- NEW: NOTE LISTENERS ---
-        document.getElementById('btn-add-note').onclick = () => this.handleAddNoteItem();
-        document.getElementById('btn-save-note').onclick = () => this.handleSaveNotes();
-        document.getElementById('note-input').onkeypress = (e) => {
-            if(e.key === 'Enter') this.handleAddNoteItem();
-        };
+
 
         // Date Manual Reset Button (New Feature) - Adjusted for Thai Time
         document.getElementById('btn-set-today').onclick = () => {
@@ -115,7 +165,6 @@ export class TradeApp {
         bindTab('tab-code', 'code');
         bindTab('tab-issues', 'issues');
         bindTab('tab-pulls', 'pulls');
-        bindTab('tab-projects', 'projects');
         bindTab('tab-wiki', 'wiki');
         bindTab('tab-settings', 'settings');
 
@@ -126,9 +175,6 @@ export class TradeApp {
                 this.initTradingView('BINANCE:BTCUSDT');
             };
         }
-
-        document.getElementById('btn-calculate-compound').onclick = () => this.calculateCompoundInterest();
-        this.calculateCompoundInterest(); // สั่งรันครั้งแรกเมื่อโหลดแอปเพื่อตั้งค่า Default
 
         // Inputs
         document.getElementById('input-type').onchange = () => {
@@ -319,48 +365,16 @@ export class TradeApp {
         reader.readAsText(file);
     }
     // --- Calculator Logic ---
-    calculateCompoundInterest() {
-        const principal = parseFloat(document.getElementById('calc-principal').value) || 0;
-        const monthly = parseFloat(document.getElementById('calc-monthly').value) || 0;
-        const rate = parseFloat(document.getElementById('calc-rate').value) || 0;
-        const years = parseFloat(document.getElementById('calc-years').value) || 0;
-
-        const r = rate / 100 / 12; // monthly interest rate
-        const n = years * 12; // total months
-
-        let futureValue = 0;
-        let totalInvested = principal + (monthly * n);
-
-        if (r === 0) {
-            futureValue = totalInvested;
-        } else {
-            futureValue = principal * Math.pow(1 + r, n) + monthly * ((Math.pow(1 + r, n) - 1) / r);
-        }
-
-        const totalInterest = futureValue - totalInvested;
-
-        // อัปเดต UI
-        document.getElementById('calc-result-total').innerText = futureValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        document.getElementById('calc-result-invested').innerText = totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        document.getElementById('calc-result-interest').innerText = totalInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        // อัปเดต Progress Bar
-        const principalPercent = totalInvested > 0 ? (totalInvested / futureValue) * 100 : 0;
-        const interestPercent = totalInvested > 0 ? (totalInterest / futureValue) * 100 : 0;
-
-        document.getElementById('calc-bar-principal').style.width = `${principalPercent}%`;
-        document.getElementById('calc-bar-interest').style.width = `${interestPercent}%`;
-    }
-
     calculateRisk() {
         const dom = {
             bal: document.getElementById('risk-balance'),
             pct: document.getElementById('risk-percent'),
             lev: document.getElementById('risk-leverage'),
             asset: document.getElementById('risk-asset'),
-            entry: parseFloat(document.getElementById('risk-entry').value) || 0,
-            sl: parseFloat(document.getElementById('risk-sl').value) || 0,
-            tp: parseFloat(document.getElementById('risk-tp').value) || 0,
+            entry: parseFloat(document.getElementById('risk-entry').value.replace(/,/g, '')) || 0,
+            slInput: document.getElementById('risk-sl'),
+            tpInput: document.getElementById('risk-tp'),
+            rrRatio: parseFloat(document.getElementById('risk-rr-ratio').value) || 2,
             side: document.querySelector('input[name="risk-side"]:checked').value, // รับค่า LONG หรือ SHORT
             // Outputs
             oLot: document.getElementById('res-lot'),
@@ -371,12 +385,64 @@ export class TradeApp {
             oEval: document.getElementById('res-rr-eval')
         };
 
+        let rawSl = parseFloat(dom.slInput.value.replace(/,/g, ''));
+        let rawTp = parseFloat(dom.tpInput.value.replace(/,/g, ''));
+
+        // Automatic SL / TP calculation if entry exists
+        if (dom.entry > 0) {
+            // Find default tick sizes / distances based on asset
+            const assetSelect = document.getElementById('risk-asset');
+            const assetName = assetSelect ? assetSelect.value : 'BTC';
+            
+            // Default SL distance: BTC = 200$, XAU = 5$, EUR = 0.0020
+            let defaultDistSL = 200;
+            if (assetName === 'XAU') defaultDistSL = 5;
+            else if (assetName === 'EUR') defaultDistSL = 0.0020;
+
+            const isLong = (dom.side === 'LONG');
+
+            // Force recalculate SL/TP if Entry input is the active element (being actively typed/changed)
+            const entryInputActive = (document.activeElement && document.activeElement.id === 'risk-entry');
+            const rrInputActive = (document.activeElement && document.activeElement.id === 'risk-rr-ratio');
+
+            // If SL is not set, violates direction rules, or Entry input is being changed: recalculate SL
+            const slIsInvalidDirection = isLong ? (rawSl >= dom.entry) : (rawSl <= dom.entry && rawSl > 0);
+            if (isNaN(rawSl) || rawSl === 0 || slIsInvalidDirection || entryInputActive) {
+                if (isLong) {
+                    rawSl = dom.entry - defaultDistSL;
+                } else {
+                    rawSl = dom.entry + defaultDistSL;
+                }
+                dom.slInput.value = rawSl.toLocaleString('en-US', { minimumFractionDigits: assetName === 'EUR' ? 4 : 2, maximumFractionDigits: assetName === 'EUR' ? 4 : 2 });
+            }
+
+            // If TP is not set, violates direction rules, Entry is being changed, or R:R Ratio input is active: recalculate TP based on R:R
+            const slDistance = Math.abs(dom.entry - rawSl);
+            const tpDistance = slDistance * dom.rrRatio;
+            const tpIsInvalidDirection = isLong ? (rawTp <= dom.entry) : (rawTp >= dom.entry && rawTp > 0);
+
+            if (isNaN(rawTp) || rawTp === 0 || tpIsInvalidDirection || entryInputActive || rrInputActive) {
+                if (isLong) {
+                    rawTp = dom.entry + tpDistance;
+                } else {
+                    rawTp = dom.entry - tpDistance;
+                }
+                dom.tpInput.value = rawTp.toLocaleString('en-US', { minimumFractionDigits: assetName === 'EUR' ? 4 : 2, maximumFractionDigits: assetName === 'EUR' ? 4 : 2 });
+            }
+        }
+
+        const sl = rawSl || 0;
+        const tp = rawTp || 0;
+
         // 1. Get Balance
-        let balance = parseFloat(dom.bal.value);
+        let balance = parseFloat(dom.bal.value.replace(/,/g, ''));
         if (isNaN(balance) || balance === 0) {
             const currentBalText = document.getElementById('summary-balance').innerText;
-            balance = parseFloat(currentBalText) || 0;
+            balance = parseFloat(currentBalText.replace(/,/g, '')) || 0;
             if (balance === 0) balance = 1000;
+            dom.bal.placeholder = balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " (Auto)";
+        } else {
+            dom.bal.placeholder = "Auto";
         }
 
         // 2. Calculate Risk Amount ($)
@@ -391,89 +457,132 @@ export class TradeApp {
         let setupError = "";
 
         // ตรวจสอบเงื่อนไขราคาตามทิศทาง
-        if (dom.entry > 0 && dom.sl > 0) {
+        if (dom.entry > 0 && sl > 0) {
             if (dom.side === 'LONG') {
-                if (dom.sl >= dom.entry) {
+                if (sl >= dom.entry) {
                     isValidSetup = false;
                     setupError = "Invalid Long: SL ≥ Entry";
                 }
             } else { // SHORT
-                if (dom.sl <= dom.entry) {
+                if (sl <= dom.entry) {
                     isValidSetup = false;
                     setupError = "Invalid Short: SL ≤ Entry";
                 }
             }
         }
 
-        // คำนวณระยะห่าง (Distance) เป็น Absolute เสมอสำหรับการคำนวณ Lot
-        const distSL = Math.abs(dom.entry - dom.sl);
-        const distTP = Math.abs(dom.tp - dom.entry);
+        // คำนวณระยะห่างทางราคาจริง (Price Distance)
+        const rawDistSL = Math.abs(dom.entry - sl);
+        const rawDistTP = Math.abs(tp - dom.entry);
+
+        // ค่า Spread ที่ป้อนเข้ามาคือ Spread Cost ($) ต่อ 0.01 Lot
+        const spreadPer01 = parseFloat(document.getElementById('risk-spread').value) || 0;
 
         let lots = 0;
         let rewardAmt = 0;
         let margin = 0;
         let rr = 0;
+        let actualRiskAmt = 0;
 
-        if (dom.entry > 0 && distSL > 0 && isValidSetup) {
-            // Formula: RiskAmt / (Distance * Contract)
-            lots = riskAmt / (distSL * contractSize);
+        if (dom.entry > 0 && rawDistSL > 0 && isValidSetup) {
+            // เพื่อจำกัดความเสี่ยงรวม (ผลขาดทุนจากจุด SL + ค่า Spread) ไม่ให้เกิน Risk Amount ($)
+            // สูตร: Lots = RiskAmt / (PriceDistanceSL * ContractSize + SpreadPer0.01 * 100)
+            lots = riskAmt / ((rawDistSL * contractSize) + (spreadPer01 * 100));
 
-            // Calculate Reward
-            rewardAmt = lots * contractSize * distTP;
+            // คำนวณค่าธรรมเนียม Spread ทั้งหมด: Total Spread Cost ($) = (Lots / 0.01) * SpreadPer0.01
+            const totalSpreadCost = (lots / 0.01) * spreadPer01;
+
+            // มูลค่าขาดทุนจริงรวมค่า Spread เมื่อชน SL
+            actualRiskAmt = (lots * rawDistSL * contractSize) + totalSpreadCost;
+
+            // มูลค่ากำไรจริงสุทธิเมื่อชน TP (หักลบค่า Spread ออก)
+            rewardAmt = Math.max(0, (lots * rawDistTP * contractSize) - totalSpreadCost);
 
             // Calculate Margin
             const leverage = parseFloat(dom.lev.value) || 100;
             margin = (lots * contractSize * dom.entry) / leverage;
 
-            // Calculate R:R
-            rr = distTP / distSL;
+            // อัตราส่วน R:R จริงหลังหักค่าธรรมเนียม Spread สุทธิ
+            rr = actualRiskAmt > 0 ? (rewardAmt / actualRiskAmt) : 0;
         }
 
+        // นำระยะจริงไปแสดงผลที่ป้ายบอกระยะทางราคา (Pts)
+        const distSL = rawDistSL;
+        const distTP = rawDistTP;
+
         // 5. Update UI
-        if (!isValidSetup && dom.entry > 0 && dom.sl > 0) {
+        if (!isValidSetup && dom.entry > 0 && sl > 0) {
             // กรณี Setup ผิดพลาด
             dom.oLot.innerText = "ERROR";
             dom.oLot.classList.add('text-red-500');
             dom.oLot.classList.remove('text-white');
 
-            dom.oEval.innerText = setupError;
-            dom.oEval.className = "text-[10px] text-red-500 mt-1 font-bold animate-pulse";
+            if (dom.oEval) {
+                dom.oEval.innerText = setupError;
+                dom.oEval.className = "text-[10px] text-red-500 mt-1 font-bold animate-pulse";
+            }
 
             dom.oRisk.innerText = "$0.00";
             dom.oReward.innerText = "$0.00";
             dom.oMargin.innerText = "$0.00";
-            dom.oRR.innerText = "- : -";
+            if (dom.oRR) dom.oRR.innerText = "- : -";
         } else {
             // กรณีปกติ
             dom.oLot.classList.remove('text-red-500');
             dom.oLot.classList.add('text-white');
             dom.oLot.innerText = lots > 0 ? lots.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00";
 
-            dom.oRisk.innerText = "$" + riskAmt.toLocaleString('en-US', { minimumFractionDigits: 2 });
+            dom.oRisk.innerText = "$" + actualRiskAmt.toLocaleString('en-US', { minimumFractionDigits: 2 });
             dom.oReward.innerText = "$" + rewardAmt.toLocaleString('en-US', { minimumFractionDigits: 2 });
             dom.oMargin.innerText = "$" + margin.toLocaleString('en-US', { minimumFractionDigits: 2 });
 
-            if (dom.entry > 0 && dom.sl > 0 && dom.tp > 0) {
-                dom.oRR.innerText = `1 : ${rr.toFixed(2)}`;
+            if (dom.entry > 0 && sl > 0 && tp > 0) {
+                if (dom.oRR) {
+                    dom.oRR.innerText = `1 : ${rr.toFixed(2)}`;
+                    if (rr < 1) {
+                        dom.oRR.className = "text-sm font-mono font-bold text-red-400";
+                    } else if (rr < 2) {
+                        dom.oRR.className = "text-sm font-mono font-bold text-yellow-400";
+                    } else {
+                        dom.oRR.className = "text-sm font-mono font-bold text-green-400";
+                    }
+                }
 
-                if (rr < 1) {
-                    dom.oRR.className = "text-xl font-mono font-bold text-red-400";
-                    dom.oEval.innerText = "Poor Risk/Reward";
-                    dom.oEval.className = "text-[10px] text-red-500 mt-1";
-                } else if (rr < 2) {
-                    dom.oRR.className = "text-xl font-mono font-bold text-yellow-400";
-                    dom.oEval.innerText = "Moderate";
-                    dom.oEval.className = "text-[10px] text-yellow-500 mt-1";
-                } else {
-                    dom.oRR.className = "text-xl font-mono font-bold text-green-400";
-                    dom.oEval.innerText = "Excellent Setup!";
-                    dom.oEval.className = "text-[10px] text-green-500 mt-1";
+                if (dom.oEval) {
+                    if (rr < 1) {
+                        dom.oEval.innerText = "Poor Risk/Reward";
+                        dom.oEval.className = "text-[10px] text-red-500 mt-1";
+                    } else if (rr < 2) {
+                        dom.oEval.innerText = "Moderate";
+                        dom.oEval.className = "text-[10px] text-yellow-500 mt-1";
+                    } else {
+                        dom.oEval.innerText = "Excellent Setup!";
+                        dom.oEval.className = "text-[10px] text-green-500 mt-1";
+                    }
                 }
             } else {
-                dom.oRR.innerText = "0 : 0";
-                dom.oRR.className = "text-xl font-mono font-bold text-slate-500";
-                dom.oEval.innerText = "Waiting for inputs...";
-                dom.oEval.className = "text-[10px] text-slate-600 mt-1";
+                if (dom.oRR) {
+                    dom.oRR.innerText = "0 : 0";
+                    dom.oRR.className = "text-sm font-mono font-bold text-slate-500";
+                }
+                if (dom.oEval) {
+                    dom.oEval.innerText = "Waiting for inputs...";
+                    dom.oEval.className = "text-[10px] text-slate-600 mt-1";
+                }
+            }
+
+            // Real-time update of SL/TP distances
+            const distSlEl = document.getElementById('dist-sl-val');
+            const distTpEl = document.getElementById('dist-tp-val');
+            const assetSelect = document.getElementById('risk-asset');
+            const assetName = assetSelect ? assetSelect.value : 'BTC';
+            const decimals = assetName === 'EUR' ? 4 : 2;
+
+            if (distSlEl) {
+                distSlEl.innerText = distSL > 0 ? distSL.toFixed(decimals) + " pts" : "-";
+            }
+            if (distTpEl) {
+                distTpEl.innerText = distTP > 0 ? distTP.toFixed(decimals) + " pts" : "-";
             }
         }
     }

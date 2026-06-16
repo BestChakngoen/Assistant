@@ -1,4 +1,6 @@
 // --- FILE 4: UI MANAGER ---
+import { DiagramManager } from './DiagramManager.js';
+
 export class UIManager {
     constructor() {
         this.dom = {
@@ -11,9 +13,6 @@ export class UIManager {
             panels: {
                 journal: document.getElementById('journal-panel'),
                 market: document.getElementById('market-panel'),
-                // Added calc panel to dom tracking
-                calc: document.getElementById('calc-panel'), 
-                // ADDED: News Panel
                 news: document.getElementById('news-panel')
             },
             inputs: {
@@ -374,7 +373,7 @@ export class UIManager {
                     <div class="text-xs ${textClass} font-bold">${label}</div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="font-mono font-bold text-lg ${textClass}">${t.amount > 0 ? '+' : ''}${Math.abs(t.amount).toFixed(2)}</span>
+                    <span class="font-mono font-bold text-lg ${textClass}">${t.amount > 0 ? '+' : ''}${Math.abs(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     <button class="delete-btn opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition" data-id="${t.firestoreId}">✕</button>
                 </div>`;
 
@@ -467,10 +466,17 @@ export class UIManager {
             const roi = fund > 0 ? (net / fund) * 100 : 0;
 
             // DOM Updates
-            document.getElementById('summary-balance').innerText = (fund + net).toFixed(2);
-            document.getElementById('summary-fund').innerText = fund.toFixed(2);
+            document.getElementById('summary-balance').innerText = (fund + net).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            // Dispatch event to recalculate risk calculator and update the Auto Balance display
+            const balInput = document.getElementById('risk-balance');
+            if (balInput) {
+                balInput.dispatchEvent(new Event('input'));
+            }
+
+            document.getElementById('summary-fund').innerText = fund.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const pEl = document.getElementById('summary-profit');
-            pEl.innerText = (net >= 0 ? '+' : '') + net.toFixed(2);
+            pEl.innerText = (net >= 0 ? '+' : '') + net.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             pEl.className = `text-2xl font-mono font-bold ${net >= 0 ? 'text-green-400' : 'text-red-400'}`;
 
             const roiEl = document.getElementById('summary-roi');
@@ -478,7 +484,14 @@ export class UIManager {
             roiEl.className = `text-xs ${roi >= 0 ? 'text-green-400' : 'text-red-400'}`;
 
             document.getElementById('summary-winrate').innerText = (wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : 0) + '%';
-            document.getElementById('summary-wincount').innerText = `${wins}W - ${losses}L`;
+            document.getElementById('summary-wincount').innerText = `${wins.toLocaleString('en-US')}W - ${losses.toLocaleString('en-US')}L`;
+
+            const expectancy = (wins + losses) > 0 ? (net / (wins + losses)) : 0;
+            const expEl = document.getElementById('summary-expectancy');
+            if (expEl) {
+                expEl.innerText = (expectancy >= 0 ? '+' : '') + expectancy.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                expEl.className = `text-2xl font-mono font-bold ${expectancy >= 0 ? 'text-green-400' : 'text-red-400'}`;
+            }
 
             // --- CHART DATA PREPARATION ---
             // Get all unique dates involved (Trades or Deposits)
@@ -586,7 +599,7 @@ export class UIManager {
             const colorClass = totalSlicePnL >= 0 ? 'text-green-400' : 'text-red-400';
             const sign = totalSlicePnL >= 0 ? '+' : '';
             
-            this.periodStatsEl.innerHTML = `<span class="text-slate-500 hidden md:inline">SUMMARY:</span> <span class="${colorClass}">${sign}${periodRoi.toFixed(2)}% (${sign}${totalSlicePnL.toFixed(2)})</span>`;
+            this.periodStatsEl.innerHTML = `<span class="text-slate-500 hidden md:inline">SUMMARY:</span> <span class="${colorClass}">${sign}${periodRoi.toFixed(2)}% (${sign}${totalSlicePnL.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>`;
         } else if (this.periodStatsEl) {
             this.periodStatsEl.innerHTML = '<span class="text-slate-500">NO DATA</span>';
         }
@@ -651,7 +664,6 @@ export class UIManager {
             issues: document.getElementById('strategy-menu-container'),
             pulls: document.getElementById('health-menu-container'),
             actions: document.getElementById('market-panel'),
-            projects: document.getElementById('calc-panel'),
             wiki: document.getElementById('news-panel'),
             settings: document.getElementById('settings-panel')
         };
@@ -661,7 +673,6 @@ export class UIManager {
             issues: document.getElementById('tab-issues'),
             pulls: document.getElementById('tab-pulls'),
             actions: document.getElementById('tab-actions'),
-            projects: document.getElementById('tab-projects'),
             wiki: document.getElementById('tab-wiki'),
             settings: document.getElementById('tab-settings')
         };
@@ -673,7 +684,7 @@ export class UIManager {
 
             if (key === tabName) {
                 panel.classList.remove('hidden');
-                if (key === 'code' || key === 'projects' || key === 'wiki' || key === 'settings') {
+                if (key === 'code' || key === 'wiki' || key === 'settings') {
                     panel.classList.add('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     // health-menu-container and strategy-menu-container use flex-col
@@ -689,7 +700,7 @@ export class UIManager {
                 }
             } else {
                 panel.classList.add('hidden');
-                if (key === 'code' || key === 'projects' || key === 'wiki' || key === 'settings') {
+                if (key === 'code' || key === 'wiki' || key === 'settings') {
                     panel.classList.remove('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     panel.classList.remove('flex', 'flex-col');
@@ -729,28 +740,8 @@ export class UIManager {
     }
 
     initStrategyLab() {
-        const checklist = document.querySelectorAll('.checklist-item');
-        const statusBox = document.getElementById('strategy-status-box');
-        const statusText = document.getElementById('strategy-status-text');
-
-        if (checklist.length > 0 && statusBox && statusText) {
-            checklist.forEach(item => {
-                item.addEventListener('change', () => {
-                    const checkedCount = document.querySelectorAll('.checklist-item:checked').length;
-                    const totalCount = checklist.length;
-
-                    if (checkedCount === totalCount) {
-                        statusBox.className = "mt-6 p-5 rounded-xl border border-green-500/50 bg-green-950/20 text-center transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.2)]";
-                        statusText.className = "text-green-400 font-mono font-bold text-sm tracking-wider uppercase animate-pulse";
-                        statusText.innerText = "✅ STRATEGY CONFIRMED: READY TO TRADE (ผ่านเงื่อนไขการเทรดทั้งหมด!)";
-                    } else {
-                        statusBox.className = "mt-6 p-5 rounded-xl border border-slate-800 bg-slate-900/50 text-center transition-all duration-300";
-                        statusText.className = "text-slate-500 font-mono font-bold text-sm tracking-wider uppercase";
-                        statusText.innerText = `⚠️ CHECK ALL ITEMS TO VERIFY STRATEGY (${checkedCount}/${totalCount})`;
-                    }
-                });
-            });
-        }
+        // Initialize the Diagram whiteboard
+        this.diagram = new DiagramManager('diagram-canvas', 'canvas-container');
 
         // Start session time updates
         this.updateStrategyLabTime();

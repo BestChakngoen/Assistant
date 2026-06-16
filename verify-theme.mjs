@@ -10,7 +10,10 @@ const mockClassList = {
     reset() { this.classes.clear(); }
 };
 
-global.window = {};
+global.window = {
+    addEventListener() {},
+    removeEventListener() {}
+};
 global.document = {
     body: {
         classList: mockClassList
@@ -18,7 +21,15 @@ global.document = {
     getElementById(id) {
         return {
             id,
-            getContext() { return {}; },
+            getContext() {
+                return new Proxy({}, {
+                    get: (target, prop) => {
+                        if (prop === 'measureText') return () => ({ width: 100 });
+                        return () => {};
+                    }
+                });
+            },
+            getBoundingClientRect() { return { width: 800, height: 600 }; },
             classList: {
                 add() {},
                 remove() {},
@@ -40,6 +51,16 @@ global.Chart = class {
     constructor() {}
 };
 global.ChartDataLabels = {};
+
+global.localStorage = {
+    getItem() { return null; },
+    setItem() {}
+};
+
+global.ResizeObserver = class {
+    observe() {}
+    disconnect() {}
+};
 
 // Import UIManager dynamically after environment mock
 const { UIManager } = await import('./js/ui/UIManager.js');
@@ -73,20 +94,20 @@ try {
     mockClassList.reset();
     const ui = new UIManager();
     
-    // Switch to 'pulls' -> Minimalist
+    // Switch to 'pulls' -> Should remain theme-cyberpunk (unified theme)
     ui.switchTab('pulls');
-    assert(mockClassList.contains('theme-minimalist'), "switchTab('pulls') should apply theme-minimalist");
-    assert(!mockClassList.contains('theme-cyberpunk'), "switchTab('pulls') should remove theme-cyberpunk");
+    assert(mockClassList.contains('theme-cyberpunk'), "switchTab('pulls') should keep theme-cyberpunk under unified theme rule");
+    assert(!mockClassList.contains('theme-minimalist'), "switchTab('pulls') should not apply theme-minimalist");
     
     // Switch back to 'code' -> Cyberpunk
     ui.switchTab('code');
     assert(mockClassList.contains('theme-cyberpunk'), "switchTab('code') should apply theme-cyberpunk");
-    assert(!mockClassList.contains('theme-minimalist'), "switchTab('code') should remove theme-minimalist");
+    assert(!mockClassList.contains('theme-minimalist'), "switchTab('code') should not apply theme-minimalist");
 
     // Switch to 'issues' -> Cyberpunk
     ui.switchTab('issues');
     assert(mockClassList.contains('theme-cyberpunk'), "switchTab('issues') should apply theme-cyberpunk");
-    assert(!mockClassList.contains('theme-minimalist'), "switchTab('issues') should remove theme-minimalist");
+    assert(!mockClassList.contains('theme-minimalist'), "switchTab('issues') should not apply theme-minimalist");
 } catch (e) {
     console.error('Failed during tab switching verification:', e);
     passed = false;

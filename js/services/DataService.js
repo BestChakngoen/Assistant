@@ -31,6 +31,7 @@ export class DataService {
         this.appId = appId;
         this.unsubscribe = null;
         this.unsubscribeNotes = null;
+        this.unsubscribeDiagram = null;
     }
 
     getCollectionPath(uid) {
@@ -48,6 +49,11 @@ export class DataService {
         // Store notes in a separate document under 'data' collection (or distinct path)
         if (this.useCustomConfig) return doc(this.db, 'users', uid, 'data', 'learningLog');
         return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'learningLog');
+    }
+
+    getDiagramDoc(uid) {
+        if (this.useCustomConfig) return doc(this.db, 'users', uid, 'data', 'diagram');
+        return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'diagram');
     }
 
     // --- NEW: HEALTH TRACK PATH ---
@@ -136,6 +142,23 @@ export class DataService {
         const docRef = this.getNotesDoc(uid);
         // notesData expected structure: { title: string, items: array of strings }
         await setDoc(docRef, { ...notesData, lastUpdated: new Date().toISOString() }, { merge: true });
+    }
+
+    subscribeDiagram(uid, callback) {
+        if (this.unsubscribeDiagram) this.unsubscribeDiagram();
+        const docRef = this.getDiagramDoc(uid);
+        this.unsubscribeDiagram = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                callback(docSnap.data().shapes || []);
+            } else {
+                callback([]);
+            }
+        });
+    }
+
+    async saveDiagram(uid, shapes) {
+        const docRef = this.getDiagramDoc(uid);
+        await setDoc(docRef, { shapes, lastUpdated: new Date().toISOString() }, { merge: true });
     }
 
     // --- NEW: HEALTH TRACK METHODS ---

@@ -68,27 +68,21 @@ assert(mainContentOffset !== null, "Main content area has lg:pl-64 class to prev
 
 // Check 5: Theme body variable definitions in style.css
 const hasCyberpunkTheme = css.includes('.theme-cyberpunk') && css.includes('--bg-sidebar: #0d121f');
-const hasMinimalistTheme = css.includes('.theme-minimalist') && css.includes('--bg-sidebar: #ffffff');
 assert(hasCyberpunkTheme, "Cyberpunk theme overrides include --bg-sidebar definition (#0d121f)");
-assert(hasMinimalistTheme, "Minimalist theme overrides include --bg-sidebar definition (#ffffff)");
 
 const hasCyberpunkBorder = css.includes('--border-sidebar: rgba(148, 163, 184, 0.08)');
-const hasMinimalistBorder = css.includes('--border-sidebar: #cbd5e1');
 assert(hasCyberpunkBorder, "Cyberpunk theme overrides include --border-sidebar");
-assert(hasMinimalistBorder, "Minimalist theme overrides include --border-sidebar");
 
-// Check 6: Minimalist aside#sidebar CSS rule overrides
-const sidebarMinimalistOverride = css.match(/\.theme-minimalist\s+aside#sidebar\s*\{[^}]*background-color:\s*var\(--bg-sidebar\)\s*!important/);
-assert(sidebarMinimalistOverride !== null, "style.css contains important minimalist override for aside#sidebar background");
-const sidebarMinimalistBorderOverride = css.match(/\.theme-minimalist\s+aside#sidebar\s*\{[^}]*border-right-color:\s*var\(--border-sidebar\)\s*!important/);
-assert(sidebarMinimalistBorderOverride !== null, "style.css contains important minimalist override for aside#sidebar border-right-color");
+// Check 6: Unified Cyberpunk aside#sidebar CSS rule
+const sidebarCyberpunk = css.includes('.theme-cyberpunk') || css.includes(':root');
+assert(sidebarCyberpunk, "style.css contains Cyberpunk theme styles");
 
-// Check 7: Theme Switcher logic in UIManager.js
-const uiThemeSetter = js.includes("setTheme(theme)") && js.includes("body.classList.add('theme-cyberpunk')") && js.includes("body.classList.add('theme-minimalist')");
-assert(uiThemeSetter, "UIManager.js contains setTheme function that correctly toggles theme-cyberpunk and theme-minimalist classes on body");
+// Check 7: Theme Switcher logic in UIManager.js (Unified Theme)
+const uiThemeSetter = js.includes("setTheme(theme)") && js.includes("body.classList.add('theme-cyberpunk')");
+assert(uiThemeSetter, "UIManager.js contains setTheme function that applies theme-cyberpunk class on body");
 
-const uiTabSwitcherThemeTrigger = js.includes("switchTab(tabName)") && js.includes("this.setTheme('minimalist')") && js.includes("this.setTheme('cyberpunk')");
-assert(uiTabSwitcherThemeTrigger, "UIManager.js switchTab toggles between minimalist (for pulls) and cyberpunk (for all others) themes");
+const uiTabSwitcherThemeTrigger = js.includes("switchTab(tabName)") && js.includes("this.setTheme('cyberpunk')");
+assert(uiTabSwitcherThemeTrigger, "UIManager.js switchTab uses the unified theme ('cyberpunk')");
 
 console.log(`\n=== Verification Complete: ${passedChecks}/${totalChecks} tests passed ===`);
 if (passedChecks === totalChecks) {

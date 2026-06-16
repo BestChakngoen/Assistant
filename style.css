@@ -60,6 +60,38 @@
     --nav-active-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
 }
 
+.theme-minimalist {
+    /* Minimalist overrides */
+    --bg-main: #f8fafc;
+    --bg-main-image: none;
+    --bg-app: #ffffff;
+    --bg-sidebar: #ffffff;
+    --bg-header: rgba(255, 255, 255, 0.8);
+    --border-color: #cbd5e1;
+    --border-sidebar: #cbd5e1;
+    --text-primary: #0f172a;
+    --text-muted: #64748b;
+    
+    --panel-bg: #ffffff;
+    --panel-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --input-text: #0f172a;
+    --input-focus-border: #3b82f6;
+    --input-focus-shadow: rgba(59, 130, 246, 0.2);
+    
+    --accent-color: #3b82f6;
+    --accent-glow: none;
+    --nav-active-bg: rgba(59, 130, 246, 0.1);
+    --nav-active-shadow: none;
+}
+
+.theme-minimalist aside#sidebar {
+    background-color: var(--bg-sidebar) !important;
+    border-right-color: var(--border-sidebar) !important;
+}
+
 
 
 body {
