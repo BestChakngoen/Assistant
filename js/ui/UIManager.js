@@ -746,6 +746,61 @@ export class UIManager {
         // Start session time updates
         this.updateStrategyLabTime();
         setInterval(() => this.updateStrategyLabTime(), 1000);
+
+        // Initialize PDF Playbook Viewer
+        this.initPdfViewer();
+    }
+
+    initPdfViewer() {
+        const urlInput = document.getElementById('pdf-firebase-url');
+        const saveBtn = document.getElementById('pdf-btn-save');
+        const iframe = document.getElementById('pdf-viewer-iframe');
+        const placeholder = document.getElementById('pdf-placeholder');
+
+        if (!urlInput || !saveBtn || !iframe || !placeholder) return;
+
+        const setIframeSource = (url) => {
+            if (url && !url.includes('#') && (url.toLowerCase().endsWith('.pdf') || url === 'financial_bible.pdf')) {
+                iframe.src = `${url}#zoom=page-width`;
+            } else {
+                iframe.src = url;
+            }
+        };
+
+        // Load saved PDF URL from localStorage, defaulting to 'financial_bible.pdf' if not set
+        const savedUrl = localStorage.getItem('firebase_strategy_pdf_url') || 'financial_bible.pdf';
+        if (savedUrl) {
+            urlInput.value = savedUrl;
+            setIframeSource(savedUrl);
+            iframe.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        }
+
+        // Save button click event
+        saveBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+            if (url) {
+                localStorage.setItem('firebase_strategy_pdf_url', url);
+                setIframeSource(url);
+                iframe.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                
+                // Show temporary success feedback
+                saveBtn.innerText = 'SAVED!';
+                saveBtn.classList.remove('text-cyan-400', 'border-cyan-500/30', 'bg-cyan-500/10', 'hover:bg-cyan-500/20');
+                saveBtn.classList.add('text-green-400', 'border-green-500/30', 'bg-green-500/10', 'hover:bg-green-500/20');
+                setTimeout(() => {
+                    saveBtn.innerText = 'SAVE';
+                    saveBtn.classList.remove('text-green-400', 'border-green-500/30', 'bg-green-500/10', 'hover:bg-green-500/20');
+                    saveBtn.classList.add('text-cyan-400', 'border-cyan-500/30', 'bg-cyan-500/10', 'hover:bg-cyan-500/20');
+                }, 2000);
+            } else {
+                localStorage.removeItem('firebase_strategy_pdf_url');
+                iframe.src = '';
+                iframe.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        });
     }
 
     updateStrategyLabTime() {

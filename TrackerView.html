@@ -363,6 +363,42 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- CYBER PHONK RUNNER GAME -->
+                <div class="glass-panel rounded-2xl overflow-hidden border border-purple-500/30" style="background: linear-gradient(135deg, #0a0015 0%, #0d0020 50%, #080010 100%);">
+                    <div class="p-4 border-b border-purple-500/20 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+                            <h3 class="font-mono font-bold text-purple-400 tracking-widest text-sm uppercase">⚡ CYBER PHONK RUNNER — Kill Time Protocol</h3>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <p class="text-[9px] text-slate-400 font-mono font-bold uppercase tracking-widest">HIGH SCORE</p>
+                                <p id="game-hi-score" class="text-lg font-mono font-bold text-yellow-300" style="text-shadow: 0 0 10px rgba(253, 224, 71, 0.6);">000000</p>
+                            </div>
+                            <!-- Hidden from UI to avoid JS crash, since active score is drawn directly inside the canvas -->
+                            <div class="text-right hidden">
+                                <p class="text-[9px] text-slate-400 font-mono font-bold uppercase tracking-widest">SCORE</p>
+                                <p id="game-score" class="text-lg font-mono font-bold text-cyan-300" style="text-shadow: 0 0 10px rgba(6, 182, 212, 0.65);">000000</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative flex justify-center" style="background: #04000a;">
+                        <canvas id="phonkRunnerCanvas" width="1100" height="260"
+                            style="image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; width: 100%; border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; box-shadow: 0 0 30px rgba(168,85,247,0.2), 0 0 60px rgba(0,200,255,0.1);">
+                        </canvas>
+                    </div>
+                    <div class="px-4 pb-3 flex items-center justify-between">
+                        <p class="text-[10px] text-slate-600 font-mono">SPACE / ↑ / TAP = JUMP &nbsp;|&nbsp; DOUBLE JUMP UNLOCKED</p>
+                        <div class="flex items-center gap-2">
+                            <button id="game-mute-btn" title="Toggle Sound"
+                                onclick="window.__phonkToggleMute && window.__phonkToggleMute()"
+                                class="text-sm px-2 py-0.5 rounded border border-purple-500/40 text-purple-400 hover:bg-purple-500/10 transition font-mono">🔊</button>
+                            <div id="game-level-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-purple-500/40 text-purple-400">LVL 1</div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- TAB 2: MARKET -->
@@ -523,6 +559,7 @@
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Diagram Shortcuts Modal -->
                 <div id="diagram-help-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
@@ -813,6 +850,44 @@
                             <p class="text-[10px] text-slate-500">19:00 - 03:00 (เวลาไทย)</p>
                         </div>
                         <span id="session-ny" class="text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800/80 text-slate-500 border border-slate-800">CLOSED</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Viewer Panel -->
+            <div class="glass-panel p-4 rounded-2xl border-t-4 border-cyan-500 mt-6 flex flex-col">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-5 h-5 text-cyan-400"></i>
+                        <h3 class="font-mono font-bold text-lg text-cyan-400">STRATEGY PLAYBOOK (PDF)</h3>
+                    </div>
+                    <!-- PDF URL Input and Configuration -->
+                    <div class="flex items-center gap-2 flex-1 max-w-md justify-end">
+                        <input type="text" id="pdf-firebase-url" 
+                            class="px-3 py-1.5 rounded-lg font-mono text-xs text-cyan-400 bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 placeholder:text-slate-600 text-left w-full"
+                            placeholder="e.g. financial_bible.pdf or external direct URL...">
+                        <button id="pdf-btn-save" class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 hover:text-white border border-cyan-500/30 transition text-xs font-mono font-bold shrink-0">
+                            SAVE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Guide instructions -->
+                <div class="bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 mb-3 text-[11px] font-mono text-slate-400">
+                    <p class="text-cyan-400 font-bold mb-1">💡 How to host your PDF on Firebase Hosting / Netlify for FREE:</p>
+                    <ol class="list-decimal list-inside space-y-1">
+                        <li>Put your PDF file in the project folder (e.g. name the file <code class="text-slate-300">financial_bible.pdf</code> and place it in the same directory as <code class="text-slate-300">index.html</code>).</li>
+                        <li>When you deploy your site to <strong>Firebase Hosting</strong> or <strong>Netlify</strong>, the PDF will automatically be hosted online for free.</li>
+                        <li>In the input box above, simply type the filename: <code class="text-cyan-300">financial_bible.pdf</code> (or relative path like <code class="text-cyan-300">./financial_bible.pdf</code>) and click <strong>SAVE</strong>!</li>
+                    </ol>
+                </div>
+
+                <!-- PDF Display Frame -->
+                <div id="pdf-frame-container" class="relative bg-slate-950/80 rounded-xl border border-slate-800 overflow-hidden h-[calc(100vh-120px)] min-h-[850px] flex items-center justify-center">
+                    <iframe id="pdf-viewer-iframe" class="w-full h-full border-none hidden" src=""></iframe>
+                    <div id="pdf-placeholder" class="text-center p-6 flex flex-col items-center gap-3">
+                        <i data-lucide="file-warning" class="w-12 h-12 text-slate-500"></i>
+                        <p class="font-mono text-xs text-slate-400">No PDF configured. Paste your hosted PDF URL or local file path (e.g., financial_bible.pdf) above to view it.</p>
                     </div>
                 </div>
             </div>
@@ -1300,6 +1375,1282 @@
                 }
             }
         });
+
+
+    // ============================================================
+    //  CYBER PHONK RUNNER  —  Pixel Art Endless Side-Scroller
+    // ============================================================
+    (function initPhonkRunner() {
+
+        const canvas = document.getElementById('phonkRunnerCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        const W = 1100, H = 260;
+        const GROUND = H - 42;
+        const GRAVITY = 0.55;
+        const JUMP_V = -5.6;   // tuned: full-hold double-jump reaches ceiling exactly
+
+        // ── State ──────────────────────────────────────────────
+        let state = 'idle'; // idle | running | dead
+        let score = 0;
+        let hiScore = parseInt(localStorage.getItem('phonkRunnerHi') || '0');
+        let frame = 0;
+        let speed = 3.2;
+        let spawnTimer = 0;
+        let spawnInterval = 100;
+        let level = 1;
+        let rafId = null;
+
+        // ── Player ─────────────────────────────────────────────
+        const player = {
+            x: 80, y: GROUND, w: 20, h: 28,
+            vy: 0, jumps: 0, maxJumps: 2,
+            animFrame: 0, animTimer: 0,
+            dead: false, deathTimer: 0,
+        };
+
+        // ── Obstacles ──────────────────────────────────────────
+        let obstacles = [];
+
+        // ── Particles ──────────────────────────────────────────
+        let particles = [];
+
+        // ── Parallax layers ────────────────────────────────────
+        const layers = [
+            { x: 0, speed: 0.2, draw: drawFarCity },
+            { x: 0, speed: 0.5, draw: drawMidCity },
+            { x: 0, speed: 0.8, draw: drawNearCity },
+        ];
+
+        let farCityQueue = [];
+        let midCityQueue = [];
+        let nearCityQueue = [];
+
+        // ── Audio Engine ────────────────────────────────────
+        let audioCtx = null, masterGain = null;
+        let muted = false;
+        let bgmPlaying = false, seqTimer = null;
+        let seqStep = 0, nextStepTime = 0;
+        const BPM = 82;
+        const STEP = 60 / BPM / 4; // 16th note ~0.183s at 82 BPM
+
+        function getACtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = muted ? 0 : 0.82;
+                masterGain.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        window.__phonkToggleMute = function() {
+            muted = !muted;
+            if (masterGain) masterGain.gain.value = muted ? 0 : 0.82;
+            const btn = document.getElementById('game-mute-btn');
+            if (btn) btn.textContent = muted ? '🔇' : '🔊';
+        };
+
+        // — R&B Kick (soft thump) —
+        function playKick(when) {
+            const ctx = getACtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(masterGain);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(90, when);
+            osc.frequency.exponentialRampToValueAtTime(45, when + 0.08);
+            gain.gain.setValueAtTime(1.1, when);
+            gain.gain.exponentialRampToValueAtTime(0.001, when + 0.28);
+            osc.start(when); osc.stop(when + 0.28);
+        }
+
+        // — R&B Hi-hat (soft, warm) —
+        function playHihat(when, vol = 0.28) {
+            const ctx = getACtx();
+            const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.09), ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+            const src = ctx.createBufferSource(); src.buffer = buf;
+            const hpf = ctx.createBiquadFilter();
+            hpf.type = 'highpass'; hpf.frequency.value = 6000;
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(vol, when);
+            gain.gain.exponentialRampToValueAtTime(0.001, when + 0.09);
+            src.connect(hpf); hpf.connect(gain); gain.connect(masterGain);
+            src.start(when); src.stop(when + 0.1);
+        }
+
+        // — R&B Snare (roomy, smooth) —
+        function playSnare(when) {
+            const ctx = getACtx();
+            // Tone layer
+            const osc = ctx.createOscillator();
+            const og = ctx.createGain();
+            osc.type = 'triangle'; osc.frequency.value = 200;
+            og.gain.setValueAtTime(0.28, when);
+            og.gain.exponentialRampToValueAtTime(0.001, when + 0.12);
+            osc.connect(og); og.connect(masterGain);
+            osc.start(when); osc.stop(when + 0.12);
+            // Noise layer
+            const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.18), ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+            const src = ctx.createBufferSource(); src.buffer = buf;
+            const bpf = ctx.createBiquadFilter();
+            bpf.type = 'bandpass'; bpf.frequency.value = 900; bpf.Q.value = 0.7;
+            const ng = ctx.createGain();
+            ng.gain.setValueAtTime(0.32, when);
+            ng.gain.exponentialRampToValueAtTime(0.001, when + 0.2);
+            src.connect(bpf); bpf.connect(ng); ng.connect(masterGain);
+            src.start(when); src.stop(when + 0.2);
+        }
+
+        // — R&B Bass (warm, smooth — triangle+saw blend) —
+        function playBass(when, freq, beats = 2) {
+            const ctx = getACtx();
+            const dur = STEP * beats * 3.8;
+            // Triangle (warm fundamental)
+            const osc1 = ctx.createOscillator();
+            const lpf1 = ctx.createBiquadFilter();
+            lpf1.type = 'lowpass'; lpf1.frequency.value = 320; lpf1.Q.value = 1.5;
+            osc1.type = 'triangle'; osc1.frequency.value = freq;
+            // Sawtooth (add harmonics)
+            const osc2 = ctx.createOscillator();
+            const lpf2 = ctx.createBiquadFilter();
+            lpf2.type = 'lowpass'; lpf2.frequency.value = 260; lpf2.Q.value = 2;
+            osc2.type = 'sawtooth'; osc2.frequency.value = freq;
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(0, when);
+            gain.gain.linearRampToValueAtTime(0.7, when + 0.015); // soft attack
+            gain.gain.setValueAtTime(0.55, when + dur * 0.6);
+            gain.gain.exponentialRampToValueAtTime(0.001, when + dur);
+            osc1.connect(lpf1); lpf1.connect(gain);
+            osc2.connect(lpf2); lpf2.connect(gain);
+            gain.connect(masterGain);
+            osc1.start(when); osc1.stop(when + dur);
+            osc2.start(when); osc2.stop(when + dur);
+        }
+
+        // — R&B Chord Pad (detuned saws → warm Rhodes feel) —
+        // Chords: Am7, Em7, Dm7, G7  (2 bars each in 32-step cycle)
+        const _CHORDS = [
+            [110, 131, 165, 196, 220], // Am7:  A3 C4 E4 G4 A4
+            [110, 131, 165, 196, 220], // Am7 (bar 2)
+            [82,  98, 123, 155, 196],  // Em7:  E3 G3 B3 D4 G4
+            [82,  98, 123, 155, 196],  // Em7 (bar 2)
+        ];
+
+        function playPad(when, chordIdx) {
+            const ctx = getACtx();
+            const freqs = _CHORDS[chordIdx % _CHORDS.length];
+            const dur = STEP * 16;  // hold for 1 bar
+            freqs.forEach((freq, i) => {
+                const o1 = ctx.createOscillator();
+                const o2 = ctx.createOscillator();
+                o1.type = 'sawtooth'; o1.frequency.value = freq;
+                o2.type = 'sawtooth'; o2.frequency.value = freq * 1.007; // detune
+                const lpf = ctx.createBiquadFilter();
+                lpf.type = 'lowpass'; lpf.frequency.value = 1200; lpf.Q.value = 0.5;
+                const g = ctx.createGain();
+                const vol = 0.04 - i * 0.003; // higher notes quieter
+                g.gain.setValueAtTime(0, when);
+                g.gain.linearRampToValueAtTime(vol, when + 0.3);
+                g.gain.setValueAtTime(vol, when + dur - 0.4);
+                g.gain.linearRampToValueAtTime(0, when + dur);
+                o1.connect(lpf); o2.connect(lpf); lpf.connect(g); g.connect(masterGain);
+                o1.start(when); o1.stop(when + dur);
+                o2.start(when); o2.stop(when + dur);
+            });
+        }
+
+        // — R&B Beat Pattern (16-step, 82 BPM, Chill groove) —
+        // Bass: A2=110, E2=82, D2=73, G2=98, C2=65, F2=87
+        const _KICK = [1,0,0,0, 0,0,0,0, 0,1,0,0, 0,0,0,0]; // beat 1, syncopated 3
+        const _SNAP = [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]; // snare on 2 & 4
+        const _HAT  = [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0]; // off-beat 8ths
+        const _HATG = [0,1,0,0, 0,1,0,0, 0,1,0,0, 0,1,0,0]; // ghost 16th hats
+        // Bass notes: A2 on 1, hold; E2 on 3; A2 on 5; G2 on 9; D2 on 13
+        const _BASS = [110,0,0,0, 82,0,0,0, 110,0,0,0, 98,0,73,0];
+
+        let _padBar = 0; // track which chord to play
+        function schedBGMStep(step, when) {
+            const s = step % 16;
+            if (_KICK[s])        playKick(when);
+            if (_SNAP[s])        playSnare(when);
+            if (_HAT[s])         playHihat(when, 0.30);
+            if (_HATG[s])        playHihat(when, 0.13);
+            if (_BASS[s] > 0)    playBass(when, _BASS[s]);
+            // Chord pad: every 16 steps (1 bar)
+            if (s === 0)         playPad(when, Math.floor(step / 16) % _CHORDS.length);
+        }
+
+        function bgmTick() {
+            const ctx = getACtx();
+            while (nextStepTime < ctx.currentTime + 0.15) {
+                schedBGMStep(seqStep, nextStepTime);
+                nextStepTime += STEP;
+                seqStep++;
+            }
+        }
+
+        function startBGM() {
+            stopBGM(); // always restart fresh
+            bgmPlaying = true;
+            const ctx = getACtx();
+            seqStep = 0;
+            nextStepTime = ctx.currentTime + 0.05;
+            seqTimer = setInterval(bgmTick, 50);
+        }
+
+        function stopBGM() {
+            bgmPlaying = false;
+            clearInterval(seqTimer);
+            seqTimer = null;
+        }
+
+        // — Jump SFX —
+        function playJumpSfx(isDouble) {
+            const ctx = getACtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(masterGain);
+            osc.type = 'square';
+            const t = ctx.currentTime;
+            if (isDouble) {
+                // Double jump: higher + two-tone chirp
+                osc.frequency.setValueAtTime(380, t);
+                osc.frequency.exponentialRampToValueAtTime(780, t + 0.07);
+                osc.frequency.exponentialRampToValueAtTime(550, t + 0.15);
+            } else {
+                // Single jump: rising chirp
+                osc.frequency.setValueAtTime(190, t);
+                osc.frequency.exponentialRampToValueAtTime(420, t + 0.1);
+            }
+            gain.gain.setValueAtTime(0.65, t);  // louder than BGM
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+            osc.start(t); osc.stop(t + 0.18);
+        }
+
+        // — Death SFX —
+        function playDeathSfx() {
+            const ctx = getACtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(masterGain);
+            osc.type = 'sawtooth';
+            const t = ctx.currentTime;
+            osc.frequency.setValueAtTime(320, t);
+            osc.frequency.exponentialRampToValueAtTime(55, t + 0.45);
+            gain.gain.setValueAtTime(0.45, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+            osc.start(t); osc.stop(t + 0.5);
+        }
+
+        // ── Input ────────────────────────────────────
+        // Holding longer = higher jump (Mario-style)
+        // Hold reduces gravity during ascent (floaty extension) — jump fires instantly
+        const GRAVITY_HELD = 0.05;    // near-zero gravity while holding & ascending
+        const MAX_HOLD_FRAMES = 18;   // max frames of reduced gravity
+        let jumpHeld = false;
+        let jumpHeldFrames = 0;
+
+        function pressJump() {
+            if (state === 'idle') { startGame(); jumpHeld = true; return; }
+            if (state === 'dead') { resetGame(); jumpHeld = true; return; }
+            if (player.jumps < player.maxJumps) {
+                player.vy = JUMP_V;        // full impulse immediately on press
+                const isDouble = player.jumps >= 1;
+                player.jumps++;
+                jumpHeld = true;
+                jumpHeldFrames = 0;
+                spawnJumpParticles();
+                playJumpSfx(isDouble);     // ◄ SFX
+            }
+        }
+
+        function releaseJump() {
+            jumpHeld = false;
+            // Cut ascent short — gravity snaps back to normal on release
+            // (no need to modify vy; just stopping gravity reduction is enough)
+        }
+
+        document.addEventListener('keydown', e => {
+            if ((e.code === 'Space' || e.code === 'ArrowUp') && !e.repeat) {
+                e.preventDefault();
+                pressJump();
+            }
+        });
+        document.addEventListener('keyup', e => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') releaseJump();
+        });
+
+        // Touch/click: simulate hold for ~250 ms then release
+        let _lastTouch = 0;
+        canvas.addEventListener('click', () => {
+            // Block ghost click generated after touchend (within 350ms)
+            if (Date.now() - _lastTouch < 350) return;
+            pressJump();
+            setTimeout(releaseJump, 250);
+        });
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            _lastTouch = Date.now();
+            pressJump();
+        }, { passive: false });
+        canvas.addEventListener('touchend', e => {
+            e.preventDefault();
+            releaseJump();
+        }, { passive: false });
+
+        // ── Game flow ──────────────────────────────────────────
+        function startGame() {
+            state = 'running';
+            startBGM();   // ◄ BGM
+            loop();
+        }
+
+        function resetGame() {
+            score = 0; speed = 3.2; spawnTimer = 0; spawnInterval = 100; level = 1; frame = 0;
+            obstacles = []; particles = [];
+            player.y = GROUND; player.vy = 0; player.jumps = 0;
+            player.dead = false; player.deathTimer = 0; player.animFrame = 0;
+            
+            // Reset background layers and queues for procedural generation
+            layers.forEach(l => { l.x = 0; });
+            farCityQueue = [];
+            midCityQueue = [];
+            nearCityQueue = [];
+            
+            updateHUD();
+            state = 'running';
+            stopBGM(); startBGM();   // ◄ restart BGM
+            if (!rafId) loop();
+        }
+
+        function killPlayer() {
+            if (player.dead) return;
+            player.dead = true;
+            state = 'dead';
+            stopBGM();
+            playDeathSfx();
+            spawnDeathParticles();
+            if (score > hiScore) {
+                hiScore = score;
+                localStorage.setItem('phonkRunnerHi', hiScore);
+            }
+            updateHUD();
+            // ไม่ auto-reset — รอให้ผู้เล่นกด Space / คลิก เพื่อเริ่มใหม่
+        }
+
+        // ── HUD ────────────────────────────────────────────────
+        function updateHUD() {
+            const pad = n => String(Math.floor(n)).padStart(6, '0');
+            document.getElementById('game-score').textContent = pad(score);
+            document.getElementById('game-hi-score').textContent = pad(hiScore);
+            document.getElementById('game-level-badge').textContent = 'LVL ' + level;
+        }
+
+        // ── Spawn ──────────────────────────────────────────────
+        function spawnObstacle() {
+            const types = ['spike', 'drone', 'wall'];
+            const type = types[Math.floor(Math.random() * (level < 5 ? 2 : 3))];
+            if (type === 'spike') {
+                // max 2 spikes until level 6, then up to 3
+                const maxCount = level < 6 ? 2 : 3;
+                const count = 1 + Math.floor(Math.random() * maxCount);
+                for (let i = 0; i < count; i++) {
+                    obstacles.push({ x: W + i * 24, y: GROUND, w: 16, h: 22, type: 'spike' });
+                }
+            } else if (type === 'drone') {
+                const flyH = GROUND - 55 - Math.random() * 35;
+                obstacles.push({ x: W, y: flyH, w: 28, h: 14, type: 'drone', floatT: 0 });
+            } else {
+                obstacles.push({ x: W, y: GROUND - 38, w: 12, h: 38, type: 'wall' });
+            }
+        }
+
+        // ── Particles ──────────────────────────────────────────
+        function spawnJumpParticles() {
+            for (let i = 0; i < 6; i++) {
+                particles.push({
+                    x: player.x + player.w / 2, y: player.y + player.h,
+                    vx: (Math.random() - 0.5) * 3, vy: Math.random() * 2 + 0.5,
+                    life: 25, color: Math.random() > 0.5 ? '#a855f7' : '#06b6d4', size: 2 + Math.random() * 2
+                });
+            }
+        }
+
+        function spawnDeathParticles() {
+            for (let i = 0; i < 18; i++) {
+                particles.push({
+                    x: player.x + player.w / 2, y: player.y + player.h / 2,
+                    vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8,
+                    life: 40, color: ['#f43f5e', '#a855f7', '#f97316', '#06b6d4'][Math.floor(Math.random() * 4)],
+                    size: 2 + Math.random() * 4
+                });
+            }
+        }
+
+        // ── Pixel Drawing Helpers ──────────────────────────────
+        function px(x, y, w, h, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(Math.round(x), Math.round(y), w, h);
+        }
+
+        function glowRect(x, y, w, h, color, blur) {
+            ctx.save();
+            ctx.shadowColor = color;
+            ctx.shadowBlur = blur;
+            ctx.fillStyle = color;
+            ctx.fillRect(Math.round(x), Math.round(y), w, h);
+            ctx.restore();
+        }
+
+        // ── Parallax Backgrounds — Seamless Scroll ─────────────
+        // Rule: tileW = sum of all (building widths + gaps) in one cycle
+        // offset wraps by exactly tileW → buildings slide fully off before looping
+
+        // ── Background Landmark Templates ───────────────────────
+        const farCityLandmarks = [
+            {
+                w: 45,
+                draw: (x) => {
+                    const h = 135;
+                    ctx.save();
+                    px(x, GROUND - h, 45, h, '#16033a');
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.moveTo(x + 30, GROUND - h);
+                    ctx.lineTo(x + 45, GROUND - h);
+                    ctx.lineTo(x + 45, GROUND - h + 15);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    px(x + 15, GROUND - h - 15, 2, 15, '#22084f');
+                    if (Math.floor(frame / 15) % 2 === 0) {
+                        glowRect(x + 14, GROUND - h - 18, 4, 4, '#f43f5e', 8);
+                    }
+                    for (let wy = GROUND - h + 25; wy < GROUND - 10; wy += 12) {
+                        for (let wx = x + 6; wx < x + 38; wx += 8) {
+                            if ((Math.floor(wx) + wy) % 5 !== 0) {
+                                px(wx, wy, 3, 5, '#1b004a');
+                            }
+                        }
+                    }
+                    ctx.restore();
+                }
+            },
+            {
+                w: 64,
+                draw: (x) => {
+                    ctx.save();
+                    const cx = x + 32;
+                    const cy = GROUND - 85;
+                    px(cx - 3, cy, 6, 85, '#16033a');
+                    px(cx - 10, GROUND - 12, 20, 12, '#16033a');
+                    
+                    const angle = frame * 0.03;
+                    ctx.strokeStyle = '#a855f7';
+                    ctx.lineWidth = 2;
+                    ctx.shadowColor = '#a855f7';
+                    ctx.shadowBlur = 4;
+                    for (let b = 0; b < 3; b++) {
+                        const a = angle + (b * Math.PI * 2) / 3;
+                        const bx = cx + Math.cos(a) * 32;
+                        const by = cy + Math.sin(a) * 32;
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy);
+                        ctx.lineTo(bx, by);
+                        ctx.stroke();
+                        
+                        glowRect(bx - 1.5, by - 1.5, 3, 3, '#06b6d4', 2);
+                    }
+                    glowRect(cx - 4, cy - 4, 8, 8, '#06b6d4', 6);
+                    ctx.restore();
+                }
+            },
+            {
+                w: 70,
+                draw: (x) => {
+                    ctx.save();
+                    const r = 35;
+                    const cx = x + 35;
+                    const cy = GROUND;
+                    
+                    ctx.fillStyle = '#150235';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, Math.PI, 0);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = 'rgba(168,85,247,0.35)';
+                    ctx.lineWidth = 1;
+                    
+                    for (let i = -2; i <= 2; i++) {
+                        const rx = r * (i / 3);
+                        ctx.beginPath();
+                        for (let angle = 0; angle <= Math.PI; angle += 0.1) {
+                            const px_val = cx + Math.cos(angle) * rx;
+                            const py_val = cy - Math.sin(angle) * r;
+                            if (angle === 0) ctx.moveTo(px_val, py_val);
+                            else ctx.lineTo(px_val, py_val);
+                        }
+                        ctx.stroke();
+                    }
+                    
+                    for (let h_ring = 1; h_ring <= 3; h_ring++) {
+                        const h_val = r * (h_ring / 4);
+                        const w_val = Math.sqrt(r * r - h_val * h_val);
+                        ctx.beginPath();
+                        ctx.moveTo(cx - w_val, cy - h_val);
+                        ctx.lineTo(cx + w_val, cy - h_val);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+            },
+            {
+                w: 40,
+                draw: (x) => {
+                    ctx.save();
+                    const h = 120;
+                    const cx = x + 20;
+                    ctx.strokeStyle = '#16033a';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 12, GROUND);
+                    ctx.lineTo(cx, GROUND - h + 40);
+                    ctx.lineTo(cx + 12, GROUND);
+                    ctx.stroke();
+                    
+                    px(cx - 2, GROUND - h, 4, h, '#16033a');
+                    
+                    const deckY = GROUND - h + 30;
+                    px(cx - 15, deckY, 30, 8, '#20054e');
+                    glowRect(cx - 16, deckY + 3, 32, 2, '#06b6d4', 4);
+                    
+                    px(cx - 1, GROUND - h - 15, 2, 15, '#16033a');
+                    if (Math.floor(frame / 10) % 2 === 0) {
+                        glowRect(cx - 2, GROUND - h - 18, 4, 4, '#f43f5e', 8);
+                    }
+                    ctx.restore();
+                }
+            },
+            {
+                w: 90,
+                draw: (x) => {
+                    ctx.save();
+                    const pyY = GROUND - 70;
+                    const p1 = x + 15;
+                    const p2 = x + 75;
+                    
+                    px(p1 - 4, pyY, 8, 70, '#150235');
+                    px(p2 - 4, pyY, 8, 70, '#150235');
+                    
+                    px(x, GROUND - 40, 90, 8, '#1b0445');
+                    glowRect(x, GROUND - 40, 90, 2, '#a855f7', 4);
+                    
+                    ctx.strokeStyle = 'rgba(6,182,212,0.4)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, GROUND - 40);
+                    ctx.lineTo(p1, pyY);
+                    ctx.lineTo(x + 45, GROUND - 40);
+                    ctx.lineTo(p2, pyY);
+                    ctx.lineTo(x + 90, GROUND - 40);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        ];
+
+        const midCityLandmarks = [
+            {
+                w: 50,
+                draw: (x) => {
+                    ctx.save();
+                    const h = 75;
+                    const cx = x + 25;
+                    ctx.fillStyle = '#240656';
+                    ctx.beginPath();
+                    ctx.moveTo(x + 5, GROUND);
+                    ctx.quadraticCurveTo(cx - 10, GROUND - h/2, cx - 12, GROUND - h);
+                    ctx.lineTo(cx + 12, GROUND - h);
+                    ctx.quadraticCurveTo(cx + 10, GROUND - h/2, x + 45, GROUND);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    glowRect(cx - 12, GROUND - h, 24, 2, '#06b6d4', 6);
+                    
+                    px(cx - 13, GROUND - h + 15, 26, 2, '#120033');
+                    px(cx - 15, GROUND - h + 35, 30, 2, '#120033');
+                    px(cx - 18, GROUND - h + 55, 36, 2, '#120033');
+                    ctx.restore();
+                }
+            },
+            {
+                w: 75,
+                draw: (x) => {
+                    ctx.save();
+                    const screenW = 65;
+                    const screenH = 45;
+                    const screenX = x + 5;
+                    const screenY = GROUND - 85;
+                    
+                    px(x + 20, screenY + screenH, 4, 85 - screenH, '#20044b');
+                    px(x + 50, screenY + screenH, 4, 85 - screenH, '#20044b');
+                    
+                    px(screenX, screenY, screenW, screenH, '#240656');
+                    glowRect(screenX, screenY, screenW, 2, '#f43f5e', 4);
+                    glowRect(screenX, screenY + screenH - 2, screenW, 2, '#f43f5e', 4);
+                    glowRect(screenX, screenY, 2, screenH, '#f43f5e', 4);
+                    glowRect(screenX + screenW - 2, screenY, 2, screenH, '#f43f5e', 4);
+                    
+                    const barCount = 7;
+                    const barW = 6;
+                    const spacing = 2;
+                    const startBarX = screenX + (screenW - (barCount * (barW + spacing) - spacing)) / 2;
+                    for (let b = 0; b < barCount; b++) {
+                        const val = Math.sin(frame * 0.15 + b) * 0.5 + 0.5;
+                        const barH = Math.max(4, Math.round(val * (screenH - 12)));
+                        const bx = startBarX + b * (barW + spacing);
+                        const by = screenY + screenH - 6 - barH;
+                        px(bx, by, barW, barH, '#06b6d4');
+                    }
+                    ctx.restore();
+                }
+            },
+            {
+                w: 60,
+                draw: (x) => {
+                    ctx.save();
+                    px(x, GROUND - 30, 35, 30, '#23054e');
+                    glowRect(x + 2, GROUND - 28, 2, 26, '#a855f7', 4);
+                    
+                    px(x + 30, GROUND - 25, 25, 25, '#1d0240');
+                    
+                    px(x + 10, GROUND - 55, 40, 28, '#2c0a68');
+                    glowRect(x + 10, GROUND - 55, 40, 2, '#06b6d4', 4);
+                    
+                    ctx.fillStyle = 'rgba(244,63,94,0.3)';
+                    for (let sx = x + 15; sx < x + 45; sx += 6) {
+                        ctx.beginPath();
+                        ctx.moveTo(sx, GROUND - 50);
+                        ctx.lineTo(sx + 3, GROUND - 50);
+                        ctx.lineTo(sx - 2, GROUND - 35);
+                        ctx.lineTo(sx - 5, GROUND - 35);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+            },
+            {
+                w: 55,
+                draw: (x) => {
+                    ctx.save();
+                    const cx = x + 27;
+                    const cy = GROUND - 50;
+                    
+                    ctx.strokeStyle = '#240656';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 15, GROUND);
+                    ctx.lineTo(cx, cy);
+                    ctx.lineTo(cx + 15, GROUND);
+                    ctx.stroke();
+                    
+                    ctx.strokeStyle = '#2c0a68';
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.lineWidth = 2;
+                    ctx.shadowColor = '#06b6d4';
+                    ctx.shadowBlur = 6;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 17, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    const pulse = Math.sin(frame * 0.1) * 0.5 + 0.5;
+                    glowRect(cx - 3, cy - 3, 6, 6, '#f43f5e', 4 + pulse * 6);
+                    ctx.restore();
+                }
+            }
+        ];
+
+        const nearCityLandmarks = [
+            {
+                w: 50,
+                draw: (x) => {
+                    ctx.save();
+                    const h = 75;
+                    px(x, GROUND - h, 50, h, '#320a75');
+                    
+                    const signX = x + 15;
+                    const signY = GROUND - h + 10;
+                    const signW = 20;
+                    const signH = 45;
+                    px(signX, signY, signW, signH, '#200252');
+                    glowRect(signX, signY, signW, 2, '#06b6d4', 4);
+                    glowRect(signX, signY + signH - 2, signW, 2, '#06b6d4', 4);
+                    
+                    px(signX + 6, signY + 6, 8, 8, '#06b6d4');
+                    px(signX + 8, signY + 8, 4, 4, '#110033');
+                    if (Math.floor(frame / 20) % 2 === 0) {
+                        px(signX + 6, signY + 22, 8, 2, '#f43f5e');
+                        px(signX + 9, signY + 19, 2, 8, '#f43f5e');
+                    } else {
+                        px(signX + 6, signY + 22, 8, 2, '#a855f7');
+                        px(signX + 9, signY + 19, 2, 8, '#a855f7');
+                    }
+                    px(signX + 6, signY + 33, 8, 2, '#06b6d4');
+                    px(signX + 6, signY + 37, 8, 2, '#06b6d4');
+                    ctx.restore();
+                }
+            },
+            {
+                w: 45,
+                draw: (x) => {
+                    ctx.save();
+                    const r = 16;
+                    const cx = x + 22;
+                    const cy = GROUND - 35;
+                    
+                    ctx.strokeStyle = '#2a0665';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 10, GROUND);
+                    ctx.lineTo(cx - 6, cy + 5);
+                    ctx.moveTo(cx + 10, GROUND);
+                    ctx.lineTo(cx + 6, cy + 5);
+                    ctx.moveTo(cx, GROUND);
+                    ctx.lineTo(cx, cy + 8);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#300772';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = '#a855f7';
+                    ctx.lineWidth = 2;
+                    ctx.shadowColor = '#a855f7';
+                    ctx.shadowBlur = 6;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, Math.PI * 0.25, Math.PI * 0.75);
+                    ctx.stroke();
+                    
+                    glowRect(cx - 2, cy - r - 4, 4, 4, '#f43f5e', 4);
+                    ctx.restore();
+                }
+            },
+            {
+                w: 60,
+                draw: (x) => {
+                    ctx.save();
+                    const h = 85;
+                    const mastX = x + 15;
+                    
+                    px(mastX, GROUND - h, 6, h, '#2a0665');
+                    ctx.strokeStyle = '#2a0665';
+                    ctx.lineWidth = 1;
+                    for (let ty = GROUND - h + 10; ty < GROUND; ty += 15) {
+                        ctx.beginPath();
+                        ctx.moveTo(mastX, ty);
+                        ctx.lineTo(mastX + 6, ty + 10);
+                        ctx.moveTo(mastX + 6, ty);
+                        ctx.lineTo(mastX, ty + 10);
+                        ctx.stroke();
+                    }
+                    
+                    px(x, GROUND - h, 55, 4, '#1c004d');
+                    
+                    px(x + 2, GROUND - h + 4, 8, 6, '#110033');
+                    
+                    const cableX = x + 42;
+                    const cableLen = 25 + Math.sin(frame * 0.05) * 5;
+                    ctx.strokeStyle = '#110033';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(cableX, GROUND - h + 4);
+                    ctx.lineTo(cableX, GROUND - h + 4 + cableLen);
+                    ctx.stroke();
+                    
+                    const crateY = GROUND - h + 4 + cableLen;
+                    px(cableX - 5, crateY, 10, 10, '#22005a');
+                    glowRect(cableX - 5, crateY, 10, 2, '#06b6d4', 4);
+                    ctx.restore();
+                }
+            },
+            {
+                w: 70,
+                draw: (x) => {
+                    ctx.save();
+                    px(x + 10, GROUND - 65, 8, 65, '#22005a');
+                    px(x + 52, GROUND - 65, 8, 65, '#22005a');
+                    
+                    px(x + 5, GROUND - 65, 60, 10, '#1c004d');
+                    
+                    const signX = x + 22;
+                    const signY = GROUND - 52;
+                    px(signX, signY, 26, 12, '#110033');
+                    const activeColor = Math.floor(frame / 30) % 2 === 0 ? '#a855f7' : '#f43f5e';
+                    glowRect(signX, signY, 26, 2, activeColor, 4);
+                    glowRect(signX, signY + 10, 26, 2, activeColor, 4);
+                    
+                    glowRect(signX + 11, signY + 4, 4, 4, '#06b6d4', 6);
+                    ctx.restore();
+                }
+            }
+        ];
+
+        // Helper function for procedural background queue generation
+        function updateBackgroundQueue(queue, landmarks, minGap, maxGap, offsetX) {
+            // Remove items that scrolled far left off-screen
+            while (queue.length > 0 && queue[0].x + queue[0].w + queue[0].gap < offsetX) {
+                queue.shift();
+            }
+
+            // If empty, start at current offsetX
+            if (queue.length === 0) {
+                const type = Math.floor(Math.random() * landmarks.length);
+                const gap = minGap + Math.random() * (maxGap - minGap);
+                queue.push({
+                    x: offsetX,
+                    w: landmarks[type].w,
+                    gap: gap,
+                    type: type
+                });
+            }
+
+            // Populate the queue to cover at least offsetX + W + 1000 pixels
+            let lastItem = queue[queue.length - 1];
+            while (lastItem.x + lastItem.w + lastItem.gap < offsetX + W + 1000) {
+                const nextX = lastItem.x + lastItem.w + lastItem.gap;
+                const type = Math.floor(Math.random() * landmarks.length);
+                
+                // 60% chance of standard scattered gap, 25% grouped (very small), 15% isolated (very large)
+                let gap;
+                const roll = Math.random();
+                if (roll < 0.25) {
+                    gap = Math.floor(10 + Math.random() * 30); // Grouped cluster
+                } else if (roll < 0.85) {
+                    gap = minGap + Math.random() * (maxGap - minGap); // Standard scattered
+                } else {
+                    gap = Math.floor(maxGap * 1.5 + Math.random() * maxGap); // Massive space
+                }
+
+                queue.push({
+                    x: nextX,
+                    w: landmarks[type].w,
+                    gap: gap,
+                    type: type
+                });
+                lastItem = queue[queue.length - 1];
+            }
+        }
+
+        function drawFarCity(offsetX) {
+            updateBackgroundQueue(farCityQueue, farCityLandmarks, 50, 180, offsetX);
+            farCityQueue.forEach(item => {
+                const bx = item.x - offsetX;
+                if (bx + item.w > 0 && bx < W) {
+                    farCityLandmarks[item.type].draw(bx);
+                }
+            });
+        }
+
+        function drawMidCity(offsetX) {
+            updateBackgroundQueue(midCityQueue, midCityLandmarks, 60, 240, offsetX);
+            midCityQueue.forEach(item => {
+                const bx = item.x - offsetX;
+                if (bx + item.w > 0 && bx < W) {
+                    midCityLandmarks[item.type].draw(bx);
+                }
+            });
+        }
+
+        function drawNearCity(offsetX) {
+            updateBackgroundQueue(nearCityQueue, nearCityLandmarks, 70, 280, offsetX);
+            nearCityQueue.forEach(item => {
+                const bx = item.x - offsetX;
+                if (bx + item.w > 0 && bx < W) {
+                    nearCityLandmarks[item.type].draw(bx);
+                }
+            });
+        }
+
+        function drawGround() {
+            // Ground base
+            ctx.fillStyle = '#0d0028';
+            ctx.fillRect(0, GROUND + 28, W, H - GROUND - 28);
+            // Neon ground line
+            glowRect(0, GROUND + 27, W, 2, '#a855f7', 10);
+            // Moving grid lines
+            ctx.strokeStyle = 'rgba(168,85,247,0.15)';
+            ctx.lineWidth = 1;
+            const gridSpacing = 40;
+            const offset = (frame * speed * 0.5) % gridSpacing;
+            for (let x = -offset; x < W; x += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, GROUND + 29);
+                ctx.lineTo(x + 20, H);
+                ctx.stroke();
+            }
+            // Ground surface strip
+            glowRect(0, GROUND + 26, W, 3, '#06b6d4', 6);
+        }
+
+        // ── Player Drawing ─────────────────────────────────────
+        function drawPlayer() {
+            const px_ = Math.round(player.x);
+            const py_ = Math.round(player.y);
+            const pw = player.w, ph = player.h;
+            const airborne = player.y < GROUND - 1;
+
+            ctx.save();
+            ctx.shadowColor = '#a855f7';
+            ctx.shadowBlur = 14;
+
+            if (player.dead) {
+                // Death: broken pixel scatter
+                const t = player.deathTimer / 30;
+                const pieces = [[0,0,10,14],[10,0,10,14],[0,14,10,14],[10,14,10,14]];
+                pieces.forEach((p, i) => {
+                    const dx = (i % 2 === 0 ? -1 : 1) * t * 15;
+                    const dy = -t * 10 + t * t * 20;
+                    ctx.globalAlpha = 1 - t;
+                    px(px_ + p[0] + dx, py_ + p[1] + dy, p[2], p[3], i % 2 === 0 ? '#a855f7' : '#06b6d4');
+                });
+                ctx.globalAlpha = 1;
+                ctx.restore();
+                return;
+            }
+
+            if (airborne) {
+                // Jump pose - streamlined body
+                // Body
+                px(px_ + 2, py_, pw - 4, ph, '#7c3aed');
+                // Highlight
+                px(px_ + 4, py_ + 2, 4, ph - 4, '#a855f7');
+                // Visor
+                px(px_ + 4, py_ + 3, pw - 8, 6, '#06b6d4');
+                glowRect(px_ + 4, py_ + 3, pw - 8, 6, '#06b6d4', 8);
+                // Jets
+                glowRect(px_ + 2, py_ + ph - 2, 4, 4, '#f97316', 10);
+                glowRect(px_ + pw - 6, py_ + ph - 2, 4, 4, '#f97316', 10);
+            } else {
+                // Run cycle - 4 frames
+                const af = player.animFrame;
+                // Body
+                px(px_ + 2, py_ + 2, pw - 4, ph - 6, '#7c3aed');
+                px(px_ + 4, py_ + 4, 4, ph - 10, '#a855f7');
+                // Visor
+                px(px_ + 4, py_ + 4, pw - 8, 5, '#06b6d4');
+                glowRect(px_ + 4, py_ + 4, pw - 8, 5, '#06b6d4', 6);
+                // Helmet top
+                px(px_ + 3, py_, pw - 6, 5, '#5b21b6');
+                // Legs - animated run cycle
+                const legY = py_ + ph - 4;
+                if (af < 2) {
+                    px(px_ + 3, legY, 5, 4, '#4c1d95'); // left forward
+                    px(px_ + pw - 8, legY - 2, 5, 6, '#4c1d95'); // right back
+                } else {
+                    px(px_ + 3, legY - 2, 5, 6, '#4c1d95'); // left back
+                    px(px_ + pw - 8, legY, 5, 4, '#4c1d95'); // right forward
+                }
+                // Neon trim
+                glowRect(px_, py_ + 6, 2, 12, '#a855f7', 5);
+                glowRect(px_ + pw - 2, py_ + 6, 2, 12, '#06b6d4', 5);
+            }
+
+            ctx.restore();
+        }
+
+        // ── Obstacle Drawing ───────────────────────────────────
+        function drawObstacle(ob) {
+            ctx.save();
+            if (ob.type === 'spike') {
+                ctx.shadowColor = '#f43f5e';
+                ctx.shadowBlur = 10;
+                // Triangle spike using fillRect columns
+                const hw = ob.w / 2;
+                for (let i = 0; i < ob.w; i++) {
+                    const colH = Math.round((ob.h * (i < hw ? i / hw : (ob.w - i) / hw)));
+                    ctx.fillStyle = i % 3 === 0 ? '#f43f5e' : '#be123c';
+                    ctx.fillRect(Math.round(ob.x + i), Math.round(ob.y + ob.h - colH), 1, colH);
+                }
+                // Hot base
+                glowRect(ob.x, ob.y + ob.h - 2, ob.w, 2, '#f43f5e', 8);
+            } else if (ob.type === 'drone') {
+                ob.floatT += 0.05;
+                const floatY = ob.y + Math.sin(ob.floatT) * 5;
+                ctx.shadowColor = '#06b6d4';
+                ctx.shadowBlur = 14;
+                // Drone body
+                px(ob.x + 6, floatY + 3, ob.w - 12, ob.h - 6, '#0e7490');
+                px(ob.x + 8, floatY + 5, ob.w - 16, ob.h - 10, '#06b6d4');
+                // Rotors
+                const rotorPhase = Math.sin(frame * 0.6) * 3;
+                glowRect(ob.x, floatY, 6, 2, '#67e8f9', 8);
+                glowRect(ob.x + ob.w - 6, floatY, 6, 2, '#67e8f9', 8);
+                glowRect(ob.x + rotorPhase, floatY + 2, 6, 1, '#a5f3fc', 5);
+                glowRect(ob.x + ob.w - 6 - rotorPhase, floatY + 2, 6, 1, '#a5f3fc', 5);
+                // Red targeting light
+                if (Math.floor(frame / 10) % 2 === 0) {
+                    glowRect(ob.x + ob.w / 2 - 2, floatY + ob.h - 4, 4, 4, '#f43f5e', 10);
+                }
+                // Update y for hitbox
+                ob._ry = floatY;
+            } else if (ob.type === 'wall') {
+                ctx.shadowColor = '#f97316';
+                ctx.shadowBlur = 12;
+                // Pixel wall blocks
+                for (let wy = ob.y; wy < GROUND + 28; wy += 8) {
+                    const bright = (wy + frame) % 24 < 12;
+                    px(ob.x, wy, ob.w, 8, bright ? '#7c2d12' : '#431407');
+                    px(ob.x + 1, wy, 2, 7, '#ea580c');
+                }
+                glowRect(ob.x, ob.y, 2, GROUND + 28 - ob.y, '#f97316', 8);
+                glowRect(ob.x + ob.w - 2, ob.y, 2, GROUND + 28 - ob.y, '#f97316', 8);
+                // Top hazard
+                glowRect(ob.x - 2, ob.y - 4, ob.w + 4, 4, '#f97316', 12);
+            }
+            ctx.restore();
+        }
+
+        // ── Scanlines / CRT effect ─────────────────────────────
+        function drawScanlines() {
+            ctx.save();
+            ctx.globalAlpha = 0.04;
+            ctx.fillStyle = '#000';
+            for (let y = 0; y < H; y += 3) {
+                ctx.fillRect(0, y, W, 1);
+            }
+            // Vignette
+            const vg = ctx.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H);
+            vg.addColorStop(0,'transparent');
+            vg.addColorStop(1,'rgba(0,0,0,0.4)');
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = vg;
+            ctx.fillRect(0,0,W,H);
+            ctx.restore();
+        }
+
+        // ── Glitch text ────────────────────────────────────────
+        function drawGlitchScore() {
+            if (state !== 'running') return;
+            ctx.save();
+            ctx.font = 'bold 14px monospace';
+            
+            // Neon cyan glow for maximum visibility
+            ctx.shadowColor = '#06b6d4';
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = '#00f5ff';
+            ctx.fillText('SCORE: ' + Math.floor(score).toString().padStart(6, '0'), 15, 25);
+            
+            // Glitch shadow effect
+            if (Math.random() > 0.93) {
+                ctx.shadowColor = '#f43f5e';
+                ctx.fillStyle = '#f43f5e';
+                ctx.fillText('SCORE: ' + Math.floor(score).toString().padStart(6, '0'), 16, 26);
+            }
+            ctx.restore();
+        }
+
+        // ── Collision ──────────────────────────────────────────
+        function checkCollision() {
+            const px_ = player.x + 4, py_ = player.y + 4;
+            const pw = player.w - 8, ph = player.h - 6;
+            for (const ob of obstacles) {
+                let ox = ob.x, oy = ob._ry !== undefined ? ob._ry : ob.y;
+                let ow = ob.w, oh = ob.h;
+                // Slim hitbox for obstacles too
+                ox += 2; ow -= 4;
+                if (px_ < ox + ow && px_ + pw > ox && py_ < oy + oh && py_ + ph > oy) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // ── Main Loop ──────────────────────────────────────────
+        function loop() {
+            rafId = requestAnimationFrame(loop);
+            frame++;
+
+            // ── Update ─────────────────────────────────────────
+            if (state === 'running') {
+                // Score & speed — gentle difficulty curve
+                score += speed * 0.07;
+                speed = 3.2 + score * 0.0018;
+                level = Math.min(10, 1 + Math.floor(score / 500));
+                spawnInterval = Math.max(55, 100 - level * 4);
+                if (frame % 120 === 0) updateHUD();
+
+                // Spawn
+                spawnTimer++;
+                if (spawnTimer >= spawnInterval) {
+                    spawnObstacle();
+                    spawnTimer = 0;
+                }
+
+                // Parallax
+                layers.forEach(l => { l.x += l.speed * speed; });
+
+                // Obstacles
+                obstacles.forEach(ob => { ob.x -= speed; });
+                obstacles = obstacles.filter(ob => ob.x > -60);
+
+                // Variable jump: hold = reduced gravity during ascent (floaty extension)
+                const activeGravity = (jumpHeld && player.vy < 0 && jumpHeldFrames < MAX_HOLD_FRAMES)
+                    ? GRAVITY_HELD
+                    : GRAVITY;
+                if (jumpHeld && player.vy < 0) jumpHeldFrames++;
+                player.vy += activeGravity;
+                player.y += player.vy;
+                if (player.y >= GROUND) {
+                    player.y = GROUND;
+                    player.vy = 0;
+                    player.jumps = 0;
+                    jumpHeld = false;
+                    jumpHeldFrames = 0;
+                }
+                // Ceiling clamp — double full-hold just reaches here
+                if (player.y < 0) {
+                    player.y = 0;
+                    if (player.vy < 0) player.vy = 0;
+                }
+
+                // Player animation
+                if (player.y >= GROUND - 1) {
+                    player.animTimer++;
+                    if (player.animTimer > 6) { player.animFrame = (player.animFrame + 1) % 4; player.animTimer = 0; }
+                }
+
+                // Particles
+                particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life--; });
+                particles = particles.filter(p => p.life > 0);
+
+                // Collision
+                if (checkCollision()) killPlayer();
+
+            } else if (state === 'dead') {
+                player.deathTimer = Math.min(player.deathTimer + 1, 30);
+                // Drift obstacles off
+                obstacles.forEach(ob => { ob.x -= speed * 0.3; });
+                layers.forEach(l => { l.x += l.speed * speed * 0.2; });
+                particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life--; });
+                particles = particles.filter(p => p.life > 0);
+            }
+
+            // ── Draw ───────────────────────────────────────────
+            // Sky - Uniform Brightness
+            ctx.fillStyle = '#0a001e';
+            ctx.fillRect(0, 0, W, H);
+
+            // Stars
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            for (let s = 0; s < 30; s++) {
+                const sx = ((s * 137 + frame * 0.2) % W);
+                const sy = (s * 53) % (GROUND * 0.5);
+                const ss = s % 3 === 0 ? 1.5 : 0.5;
+                if (Math.sin(frame * 0.03 + s) > 0.7) {
+                    glowRect(sx, sy, ss, ss, '#c4b5fd', 4);
+                } else {
+                    ctx.fillRect(sx, sy, ss, ss);
+                }
+            }
+
+            // Parallax layers
+            layers.forEach(l => l.draw(l.x));
+
+            // Ground
+            drawGround();
+
+            // Obstacles
+            obstacles.forEach(drawObstacle);
+
+            // Player
+            drawPlayer();
+
+            // Particles
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life / 40;
+                glowRect(p.x, p.y, p.size, p.size, p.color, 6);
+                ctx.restore();
+            });
+
+            // HUD overlay
+            drawGlitchScore();
+            drawScanlines();
+
+            // Dead screen overlay
+            if (state === 'dead' && player.deathTimer > 15) {
+                ctx.save();
+                ctx.globalAlpha = Math.min((player.deathTimer - 15) / 15, 0.78);
+                ctx.fillStyle = '#08000f';
+                ctx.fillRect(0, 0, W, H);
+                ctx.globalAlpha = 1;
+                ctx.textAlign = 'center';
+                // Title
+                ctx.font = 'bold 20px monospace';
+                ctx.shadowColor = '#f43f5e';
+                ctx.shadowBlur = 24;
+                ctx.fillStyle = '#f43f5e';
+                ctx.fillText('// SYSTEM FAILURE //', W / 2, H / 2 - 22);
+                // Score
+                ctx.font = 'bold 13px monospace';
+                ctx.fillStyle = '#a855f7';
+                ctx.shadowColor = '#a855f7';
+                ctx.shadowBlur = 12;
+                ctx.fillText('SCORE: ' + Math.floor(score).toString().padStart(6, '0'), W / 2, H / 2 + 4);
+                // Blinking retry prompt (blink every 30 frames)
+                if (Math.floor(frame / 30) % 2 === 0) {
+                    ctx.font = '11px monospace';
+                    ctx.fillStyle = '#67e8f9';
+                    ctx.shadowColor = '#06b6d4';
+                    ctx.shadowBlur = 10;
+                    ctx.fillText('[ PRESS SPACE / CLICK TO RETRY ]', W / 2, H / 2 + 26);
+                }
+                ctx.textAlign = 'left';
+                ctx.restore();
+            }
+
+            // Idle screen
+            if (state === 'idle') {
+                ctx.save();
+                ctx.globalAlpha = 0.6;
+                ctx.fillStyle = '#04000a';
+                ctx.fillRect(0, 0, W, H);
+                ctx.globalAlpha = 1;
+                ctx.font = 'bold 18px monospace';
+                ctx.shadowColor = '#a855f7';
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = '#a855f7';
+                ctx.textAlign = 'center';
+                const glitch = frame % 20 < 2;
+                ctx.fillText(glitch ? '⚡ CYBER PHONK RUNNER ⚡' : '⚡ CYBER PHONK RUNNER ⚡', W / 2 + (glitch ? 3 : 0), H / 2 - 10);
+                ctx.font = '10px monospace';
+                ctx.fillStyle = '#06b6d4';
+                ctx.shadowColor = '#06b6d4';
+                ctx.fillText('KILL TIME PROTOCOL — DOUBLE JUMP ENABLED', W / 2, H / 2 + 14);
+                ctx.textAlign = 'left';
+                ctx.restore();
+                if (!rafId) { /* keep animating idle */ }
+            }
+        }
+
+        // Start idle animation immediately
+        loop();
+
+    })();
+
     </script>
 </body>
 
