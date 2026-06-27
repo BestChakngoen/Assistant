@@ -20,7 +20,7 @@ export default class GlobalSaveManager {
         if (this.btnDiet) this.btnDiet.click();
         
         const originalHTML = this.btnSaveAll.innerHTML;
-        this.btnSaveAll.innerHTML = `<i data-lucide="check-circle" class="w-6 h-6"></i><span class="text-base tracking-wide font-mono">ALL DATA SAVED</span>`;
+        this.btnSaveAll.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span class="text-xs sm:text-sm tracking-wide font-mono">ALL DATA SAVED</span>`;
         if (window.lucide) window.lucide.createIcons();
         
         setTimeout(() => {

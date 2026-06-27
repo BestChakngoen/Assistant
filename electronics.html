@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity & Electronics — Learning Others</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="dist/style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #080b11;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .rajdhani {
+            font-family: 'Rajdhani', sans-serif;
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col items-center justify-start p-4 sm:p-8">
+    
+    <div class="max-w-4xl w-full space-y-8 mt-4 sm:mt-10">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-800/60">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white tracking-wide">การไฟฟ้าสำหรับอุปกรณ์อิเล็กทรอนิก</h1>
+                    <p class="text-xs text-amber-400 font-mono tracking-wider uppercase rajdhani">Learning Others / Electronics</p>
+                </div>
+            </div>
+            
+            <a href="TrackerView.html" class="btn-press flex items-center gap-2 px-4 py-2 bg-slate-850 hover:bg-slate-800 border border-slate-700/60 hover:border-amber-500/50 rounded-xl text-slate-300 hover:text-amber-400 transition-all font-mono text-sm self-start sm:self-center shadow-lg">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Back to Workspace</span>
+            </a>
+        </div>
+
+        <!-- Dashboard Content Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Microcontrollers -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 hover:border-amber-500/30 group transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/5 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-all"></div>
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 mb-4">
+                    <i data-lucide="cpu" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">Microcontrollers</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                    การศึกษาและเขียนโปรแกรมควบคุมบอร์ดไมโครคอนโทรลเลอร์ เซนเซอร์ และระบบสมองกลฝังตัว
+                </p>
+                <div class="flex flex-wrap gap-1.5 mt-auto">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">ESP32</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">Arduino</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">Sensors</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Circuit Design -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 hover:border-orange-500/30 group transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/5 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl group-hover:bg-orange-500/10 transition-all"></div>
+                <div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400 mb-4">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">Circuit & PCB Design</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                    การออกแบบวงจรไฟฟ้าจำลอง การคำนวณกำลังไฟ และการออกแบบแผ่นวงจรพิมพ์ (PCB Layout)
+                </p>
+                <div class="flex flex-wrap gap-1.5 mt-auto">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">KiCad</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">Schematics</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">5V/12V Rails</span>
+                </div>
+            </div>
+
+            <!-- Card 3: IoT Systems -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 hover:border-yellow-500/30 group transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/5 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-24 h-24 bg-yellow-500/5 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
+                <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400 mb-4">
+                    <i data-lucide="wifi" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">Internet of Things</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                    ระบบควบคุมอุปกรณ์ไฟฟ้าผ่านเครือข่ายอินเทอร์เน็ต การสื่อสารข้อมูลแบบไร้สายและการจัดเก็บข้อมูลย้อนหลัง
+                </p>
+                <div class="flex flex-wrap gap-1.5 mt-auto">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">MQTT</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">Wi-Fi / BLE</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-750">Smart Home</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Content Placeholder Panel -->
+        <div class="glass-panel p-8 rounded-2xl border border-slate-800/80 relative overflow-hidden flex flex-col items-center justify-center text-center py-16">
+            <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            
+            <div class="w-16 h-16 rounded-full bg-slate-850/50 flex items-center justify-center border border-slate-800/80 text-amber-400/80 mb-6">
+                <i data-lucide="settings-2" class="w-8 h-8 animate-pulse"></i>
+            </div>
+            
+            <span class="px-3 py-1 text-[10px] font-bold tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full mb-3 uppercase rajdhani">Ready to Customize</span>
+            <h2 class="text-xl font-bold text-white mb-2">พื้นที่สำหรับออกแบบเนื้อหาเพิ่มเติม</h2>
+            <p class="text-slate-400 text-sm max-w-md leading-relaxed">
+                คุณสามารถนำโครงสร้างของหน้านี้ไปแก้ไข ปรับเปลี่ยนดีไซน์ หรือเพิ่มข้อมูลการไฟฟ้าและระบบอิเล็กทรอนิกส์ของคุณได้ตามต้องการ
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-xs text-slate-500 pt-6 border-t border-slate-800/40 font-mono">
+            Learning Others Module &copy; 2026
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) window.lucide.createIcons();
+    </script>
+</body>
+</html>

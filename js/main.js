@@ -166,6 +166,7 @@ export class TradeApp {
         bindTab('tab-issues', 'issues');
         bindTab('tab-pulls', 'pulls');
         bindTab('tab-wiki', 'wiki');
+        bindTab('tab-share', 'share');
         bindTab('tab-settings', 'settings');
 
         const tabActions = document.getElementById('tab-actions');

@@ -153,7 +153,7 @@ export default class DietManager {
         this.dom.foodCal.value = item.calories;
         this.setFoodType(item.category);
         
-        this.dom.btnAdd.innerText = "บันทึกแก้ไข";
+        this.dom.btnAdd.innerText = "Save Edit";
         this.dom.btnAdd.classList.add('bg-blue-600', 'text-white');
         this.dom.btnCancelEdit.classList.remove('hidden');
     }
@@ -163,7 +163,7 @@ export default class DietManager {
         this.dom.foodName.value = '';
         this.dom.foodCal.value = '';
         
-        this.dom.btnAdd.innerText = "บันทึกรายการ";
+        this.dom.btnAdd.innerText = "Save Entry";
         this.dom.btnAdd.classList.remove('bg-blue-600', 'text-white');
         this.dom.btnCancelEdit.classList.add('hidden');
     }
@@ -223,13 +223,13 @@ export default class DietManager {
 
     renderList(dailyLogs) {
         if(!this.dom.foodCount) return;
-        this.dom.foodCount.innerText = `${dailyLogs.length} รายการ`;
+        this.dom.foodCount.innerText = `${dailyLogs.length} items`;
 
         if (dailyLogs.length === 0) {
              this.dom.listContainer.innerHTML = `
                 <div class="h-48 flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-slate-800 rounded-3xl mt-4">
                     <i data-lucide="cookie" class="mb-4 opacity-50 w-10 h-10 text-cyan-400"></i>
-                    <span class="text-sm font-medium">ไม่มีรายการสำหรับวันที่เลือก</span>
+                    <span class="text-sm font-medium">No entries for selected date</span>
                 </div>`;
         } else {
             this.dom.listContainer.innerHTML = dailyLogs.map(item => {
@@ -247,16 +247,16 @@ export default class DietManager {
                             <div>
                                 <div class="text-sm sm:text-base font-bold text-white">${item.name}</div>
                                 <div class="text-[10px] text-slate-400 mt-1">
-                                    ${item.category === 'meal' ? 'มื้อหลัก' : item.category === 'drink' ? 'เครื่องดื่ม' : 'ของว่าง'}
+                                    ${item.category === 'meal' ? 'Meal' : item.category === 'drink' ? 'Drink' : 'Snack'}
                                 </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-lg font-mono font-bold text-cyan-400 mr-4">${item.calories || 0} kcal</span>
-                            <button data-action="edit" data-id="${item.id}" class="text-slate-500 hover:text-cyan-400 p-2 transition" title="แก้ไข">
+                            <button data-action="edit" data-id="${item.id}" class="text-slate-500 hover:text-cyan-400 p-2 transition" title="Edit">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
                             </button>
-                            <button data-action="delete" data-id="${item.id}" class="text-slate-500 hover:text-red-400 p-2 transition" title="ลบ">
+                            <button data-action="delete" data-id="${item.id}" class="text-slate-500 hover:text-red-400 p-2 transition" title="Delete">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -334,31 +334,44 @@ export default class DietManager {
         const formatDate = (dStr) => {
             if(!dStr) return "-";
             const [_y, m, d] = dStr.split('-');
-            const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             return `${parseInt(d)} ${months[parseInt(m)-1]}`;
         };
 
         const hasData = rawPageData.length > 0;
         const startLabel = hasData ? formatDate(rawPageData[0].date) : "-";
         const endLabel = hasData ? formatDate(rawPageData[rawPageData.length-1].date) : "-";
-        const rangeLabel = hasData ? `${startLabel} - ${endLabel}` : "ยังไม่มีข้อมูล";
+        const rangeLabel = hasData ? `${startLabel} - ${endLabel}` : "No Data";
 
         const barsHTML = rawPageData.map((d) => {
             const dayNum = parseInt(d.date.split('-')[2]);
             const monthNum = parseInt(d.date.split('-')[1]);
             const displayDate = `${dayNum}/${monthNum}`;
             const isSelected = d.date === selectedDate;
-            const total = d.total || 1; 
+            const total = d.total || 1;
+            const barPct = isNaN((d.total / maxVal) * 100) ? 0 : (d.total / maxVal) * 100;
 
             return `
                 <div class="flex-1 flex flex-col items-center gap-2 z-10 group relative h-full justify-end">
-                    <div class="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 border border-slate-700 text-white text-xs p-2 rounded pointer-events-none whitespace-nowrap z-20 font-mono font-medium shadow-lg">
-                        ${d.total} kcal
-                    </div>
-                    <div class="w-full max-w-[32px] sm:max-w-[48px] bg-slate-800 rounded-t-md overflow-hidden flex flex-col-reverse relative transition-height duration-500 ${isSelected ? 'ring-2 ring-cyan-500' : ''}" style="height: ${isNaN((d.total / maxVal) * 100) ? 0 : (d.total / maxVal) * 100}%">
+                    <div class="w-full max-w-[32px] sm:max-w-[48px] bg-slate-800 rounded-t-md overflow-visible flex flex-col-reverse relative transition-height duration-500 ${isSelected ? 'ring-2 ring-cyan-500' : ''}" style="height: ${barPct}%">
+                        <!-- Tooltip pinned above bar top -->
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 scale-90 group-hover:scale-100 origin-bottom pointer-events-none z-30 whitespace-nowrap">
+                            <div class="bg-slate-900 border border-slate-700 text-white text-[10px] font-mono font-bold px-2 py-1 rounded-lg shadow-xl flex flex-col items-center gap-0.5">
+                                <span class="text-cyan-400">${d.total} kcal</span>
+                                <div class="flex gap-1.5 text-[9px]">
+                                    <span class="text-green-400">${d.meal || 0}M</span>
+                                    <span class="text-blue-400">${d.drink || 0}D</span>
+                                    <span class="text-yellow-400">${d.snack || 0}S</span>
+                                </div>
+                            </div>
+                            <div class="w-2 h-2 bg-slate-900 border-r border-b border-slate-700 rotate-45 mx-auto -mt-1"></div>
+                        </div>
+                        <!-- Stacked colour segments -->
+                        <div class="overflow-hidden w-full h-full flex flex-col-reverse rounded-t-md">
                             <div class="bg-green-500 w-full" style="height: ${isNaN((d.meal/total)*100) ? 0 : (d.meal/total)*100}%"></div>
                             <div class="bg-blue-400 w-full" style="height: ${isNaN((d.drink/total)*100) ? 0 : (d.drink/total)*100}%"></div>
                             <div class="bg-yellow-500 w-full" style="height: ${isNaN((d.snack/total)*100) ? 0 : (d.snack/total)*100}%"></div>
+                        </div>
                     </div>
                     <span class="text-xs ${isSelected ? 'font-bold text-cyan-400' : 'text-slate-500'} whitespace-nowrap">${displayDate}</span>
                 </div>
@@ -371,7 +384,7 @@ export default class DietManager {
             <div class="p-6 bg-slate-900/30 rounded-3xl border border-slate-800 w-full">
                 <div class="flex justify-between items-center mb-6">
                     <h4 class="text-xs uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-cyan-400"></i> สถิติแคลอรี่สะสม (${rawPageData.length}/${totalRecords})
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-cyan-400"></i> Calorie Intake History (${rawPageData.length}/${totalRecords})
                     </h4>
                     <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1">
                         <button id="btnPrevDietPage" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-all ${this.viewOffset >= totalPages - 1 ? 'text-slate-700 cursor-not-allowed' : ''}" ${this.viewOffset >= totalPages - 1 ? 'disabled' : ''}>
@@ -385,14 +398,14 @@ export default class DietManager {
                         </button>
                     </div>
                 </div>
-                <div class="flex items-end justify-between h-[250px] gap-4 pb-4 border-b-2 border-slate-800 relative">
+                <div class="flex items-end justify-between h-[250px] gap-4 pb-4 pt-8 border-b-2 border-slate-800 relative overflow-visible">
                     <div class="absolute w-full border-t-2 border-dashed border-slate-700/50 z-0 opacity-50" style="bottom: ${targetY}%"></div>
                     ${barsHTML}
                 </div>
                 <div class="flex justify-center gap-5 text-xs text-slate-400 font-medium mt-4">
-                    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500"></div>มื้อหลัก</div>
-                    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-400"></div>เครื่องดื่ม</div>
-                    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div>ของว่าง</div>
+                    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500"></div>Meal</div>
+                    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-400"></div>Drink</div>
+                    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div>Snack</div>
                 </div>
             </div>
         `;

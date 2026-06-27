@@ -13,6 +13,7 @@ export default class BodyManager {
             weightHistory: [] 
         };
         this.chartViewDate = new Date(); 
+        this.chartRange = '30d'; // '30d' or 'year'
 
         this.onTargetChange = onTargetChange;
         this.cacheDOM();
@@ -80,6 +81,8 @@ export default class BodyManager {
             btnPrevMonth: document.getElementById('btnPrevMonth'),
             btnNextMonth: document.getElementById('btnNextMonth'),
             chartMonthLabel: document.getElementById('chartMonthLabel'),
+            btnRange30d: document.getElementById('btnChartRange30d'),
+            btnRangeYear: document.getElementById('btnChartRangeYear'),
 
             bmiValue: document.getElementById('bmiValue'),
             bmiLabel: document.getElementById('bmiLabel'),
@@ -110,6 +113,13 @@ export default class BodyManager {
             this.dom.btnNextMonth.addEventListener('click', () => this.changeMonth(1));
         }
 
+        if(this.dom.btnRange30d) {
+            this.dom.btnRange30d.addEventListener('click', () => this.setChartRange('30d'));
+        }
+        if(this.dom.btnRangeYear) {
+            this.dom.btnRangeYear.addEventListener('click', () => this.setChartRange('year'));
+        }
+
         const updateState = (key, val) => {
             this.state[key] = key === 'gender' ? val : Number(val);
             this.saveData();
@@ -129,11 +139,11 @@ export default class BodyManager {
         
         if(entry) {
             this.dom.weight.value = entry.weight;
-            this.dom.btnRecordWeight.innerText = "อัปเดตน้ำหนัก";
+            this.dom.btnRecordWeight.innerText = "Update Weight Log";
             this.dom.btnDeleteWeight.classList.remove('hidden');
         } else {
             this.dom.weight.value = this.state.weight; 
-            this.dom.btnRecordWeight.innerText = "บันทึกน้ำหนัก";
+            this.dom.btnRecordWeight.innerText = "Save Weight Log";
             this.dom.btnDeleteWeight.classList.add('hidden');
         }
         this.render();
@@ -159,10 +169,10 @@ export default class BodyManager {
         this.chartViewDate = new Date(dateStr);
         
         const originalText = this.dom.btnRecordWeight.innerText;
-        this.dom.btnRecordWeight.innerText = "เรียบร้อย!";
+        this.dom.btnRecordWeight.innerText = "Success!";
         this.dom.btnRecordWeight.classList.add('bg-green-600', 'text-white');
         setTimeout(() => {
-            this.dom.btnRecordWeight.innerText = "อัปเดตน้ำหนัก";
+            this.dom.btnRecordWeight.innerText = "Update Weight Log";
             this.dom.btnRecordWeight.classList.remove('bg-green-600', 'text-white');
             this.render(); 
         }, 1500);
@@ -181,18 +191,45 @@ export default class BodyManager {
     }
 
     changeMonth(delta) {
-        this.chartViewDate.setMonth(this.chartViewDate.getMonth() + delta);
+        if (this.chartRange === 'year') {
+            this.chartViewDate.setFullYear(this.chartViewDate.getFullYear() + delta);
+        } else {
+            this.chartViewDate.setMonth(this.chartViewDate.getMonth() + delta);
+        }
+        this.renderWeightChart();
+    }
+
+    setChartRange(range) {
+        this.chartRange = range;
+        
+        // Update range button active styles
+        if (range === '30d') {
+            if (this.dom.btnRange30d) {
+                this.dom.btnRange30d.className = 'px-2.5 py-1 rounded-lg text-cyan-400 bg-cyan-500/10 transition-all';
+            }
+            if (this.dom.btnRangeYear) {
+                this.dom.btnRangeYear.className = 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-slate-200 transition-all';
+            }
+        } else {
+            if (this.dom.btnRange30d) {
+                this.dom.btnRange30d.className = 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-slate-200 transition-all';
+            }
+            if (this.dom.btnRangeYear) {
+                this.dom.btnRangeYear.className = 'px-2.5 py-1 rounded-lg text-cyan-400 bg-cyan-500/10 transition-all';
+            }
+        }
+        
         this.renderWeightChart();
     }
 
     render() {
         const bmi = Utils.calculateBMI(this.state.weight, this.state.height);
         
-        let bmiInfo = { label: 'ปกติ', color: 'text-green-400' };
-        if (bmi < 18.5) bmiInfo = { label: 'ผอม', color: 'text-red-400' };
-        else if (bmi >= 23 && bmi < 25) bmiInfo = { label: 'ท้วม', color: 'text-yellow-400' };
-        else if (bmi >= 25 && bmi < 30) bmiInfo = { label: 'อ้วน', color: 'text-orange-400' };
-        else if (bmi >= 30) bmiInfo = { label: 'อ้วนมาก', color: 'text-red-400' };
+        let bmiInfo = { label: 'Normal', color: 'text-green-400' };
+        if (bmi < 18.5) bmiInfo = { label: 'Underweight', color: 'text-red-400' };
+        else if (bmi >= 23 && bmi < 25) bmiInfo = { label: 'Overweight', color: 'text-yellow-400' };
+        else if (bmi >= 25 && bmi < 30) bmiInfo = { label: 'Obese', color: 'text-orange-400' };
+        else if (bmi >= 30) bmiInfo = { label: 'Extremely Obese', color: 'text-red-400' };
 
         if(this.dom.bmiValue) this.dom.bmiValue.innerText = isNaN(bmi) ? '-' : bmi.toFixed(1);
         if(this.dom.bmiLabel) {
@@ -224,94 +261,214 @@ export default class BodyManager {
         if (!this.dom.weightChartContainer) return;
 
         const viewYear = this.chartViewDate.getFullYear();
-        const viewMonth = this.chartViewDate.getMonth();
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         
-        const monthNames = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-        if(this.dom.chartMonthLabel) {
-            this.dom.chartMonthLabel.innerText = `${monthNames[viewMonth]} ${viewYear + 543}`;
-        }
+        let chartData = [];
+        let xTicks = [];
+        let points = '';
+        let areaPoints = '';
+        let dots = '';
+        let xLabels = '';
+        let minW = this.state.targetWeight - 4;
+        let maxW = this.state.targetWeight + 4;
 
-        const monthlyData = (this.state.weightHistory || []).filter(h => {
-            if(isNaN(h.weight)) return false;
-            const d = new Date(h.date);
-            return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
-        });
+        // Toggle Month Navigator buttons visibility and text based on chartRange
+        if (this.chartRange === '30d') {
+            if (this.dom.btnPrevMonth) this.dom.btnPrevMonth.classList.add('invisible');
+            if (this.dom.btnNextMonth) this.dom.btnNextMonth.classList.add('invisible');
+            if (this.dom.chartMonthLabel) {
+                this.dom.chartMonthLabel.innerText = "Last 30 Days";
+            }
 
-        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-        let minDay = 1;
-        let maxDay = daysInMonth;
-        
-        if (monthlyData.length > 1) {
-             const days = monthlyData.map(d => new Date(d.date).getDate());
-             minDay = Math.min(...days);
-             maxDay = Math.max(...days);
-        } else if (monthlyData.length === 1) {
-             const day = new Date(monthlyData[0].date).getDate();
-             minDay = Math.max(1, day - 2);
-             maxDay = Math.min(daysInMonth, day + 2);
-        }
-        
-        if (maxDay === minDay) {
-            minDay = Math.max(1, minDay - 1);
-            maxDay = Math.min(daysInMonth, maxDay + 1);
-        }
-
-        const xRange = maxDay - minDay;
-
-        let minW, maxW;
-        if(monthlyData.length > 0) {
-            const weights = monthlyData.map(d => d.weight);
-            minW = Math.min(...weights, this.state.targetWeight) - 2;
-            maxW = Math.max(...weights, this.state.targetWeight) + 2;
-        } else {
-            minW = this.state.targetWeight - 5;
-            maxW = this.state.targetWeight + 5;
-        }
-        const yRange = maxW - minW || 1;
-
-        monthlyData.sort((a,b) => new Date(a.date) - new Date(b.date));
-
-        const points = monthlyData.map(d => {
-            const day = new Date(d.date).getDate();
-            const x = ((day - minDay) / xRange) * 100;
-            const y = 100 - ((d.weight - minW) / yRange) * 100;
-            return `${x},${y}`;
-        }).join(' ');
-
-        const targetY = 100 - ((this.state.targetWeight - minW) / yRange) * 100;
-        const clampedTargetY = Math.min(Math.max(targetY, 0), 100);
-
-        const dots = monthlyData.map(d => {
-            const day = new Date(d.date).getDate();
-            const x = ((day - minDay) / xRange) * 100;
-            const y = 100 - ((d.weight - minW) / yRange) * 100;
-            const isSelected = d.date === this.dom.dateInput.value;
+            // Get last 30 recorded weight entries, sorted chronologically
+            const sortedHistory = [...(this.state.weightHistory || [])]
+                .filter(h => !isNaN(h.weight) && h.date)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
             
+            chartData = sortedHistory.slice(-30);
+
+            if (chartData.length > 0) {
+                const weights = chartData.map(d => d.weight);
+                minW = Math.min(...weights, this.state.targetWeight) - 1.5;
+                maxW = Math.max(...weights, this.state.targetWeight) + 1.5;
+            }
+            const yRange = maxW - minW || 1;
+
+            // Sequential X mapping to keep spacing consistent
+            points = chartData.map((d, index) => {
+                const x = 8 + (index / (chartData.length - 1 || 1)) * 90;
+                const y = 10 + (1 - (d.weight - minW) / yRange) * 70;
+                return `${x},${y}`;
+            }).join(' ');
+
+            if (chartData.length > 0) {
+                const firstX = 8;
+                const lastX = 98;
+                areaPoints = `${firstX},80 ${points} ${lastX},80`;
+            }
+
+            // Generate X ticks for 30d mode (select 5 evenly spaced points)
+            if (chartData.length > 0) {
+                const step = (chartData.length - 1) / 4;
+                for (let i = 0; i <= 4; i++) {
+                    const index = Math.round(i * step);
+                    if (chartData[index]) {
+                        const d = new Date(chartData[index].date);
+                        const label = `${d.getDate()} ${monthNames[d.getMonth()]}`;
+                        const xPos = 8 + (index / (chartData.length - 1 || 1)) * 90;
+                        xTicks.push({ label: label, x: xPos });
+                    }
+                }
+            }
+        } else {
+            // 'year' mode
+            if (this.dom.btnPrevMonth) this.dom.btnPrevMonth.classList.remove('invisible');
+            if (this.dom.btnNextMonth) this.dom.btnNextMonth.classList.remove('invisible');
+            if (this.dom.chartMonthLabel) {
+                this.dom.chartMonthLabel.innerText = `Year ${viewYear}`;
+            }
+
+            // Filter weight history entries of the selected viewYear
+            chartData = [...(this.state.weightHistory || [])]
+                .filter(h => {
+                    if (isNaN(h.weight) || !h.date) return false;
+                    const d = new Date(h.date);
+                    return d.getFullYear() === viewYear;
+                })
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if (chartData.length > 0) {
+                const weights = chartData.map(d => d.weight);
+                minW = Math.min(...weights, this.state.targetWeight) - 1.5;
+                maxW = Math.max(...weights, this.state.targetWeight) + 1.5;
+            }
+            const yRange = maxW - minW || 1;
+
+            const startOfYear = new Date(viewYear, 0, 1);
+            const endOfYear = new Date(viewYear, 11, 31);
+            const totalMs = endOfYear - startOfYear || 1;
+
+            points = chartData.map(d => {
+                const dateVal = new Date(d.date);
+                const msPassed = dateVal - startOfYear;
+                const x = 8 + (msPassed / totalMs) * 90;
+                const y = 10 + (1 - (d.weight - minW) / yRange) * 70;
+                return `${x},${y}`;
+            }).join(' ');
+
+            if (chartData.length > 0) {
+                const firstDate = new Date(chartData[0].date);
+                const firstX = 8 + ((firstDate - startOfYear) / totalMs) * 90;
+                const lastDate = new Date(chartData[chartData.length - 1].date);
+                const lastX = 8 + ((lastDate - startOfYear) / totalMs) * 90;
+                areaPoints = `${firstX},80 ${points} ${lastX},80`;
+            }
+
+            // X-axis ticks representing key periods of the year (quarters)
+            xTicks = [
+                { label: 'Jan', x: 8 },
+                { label: 'Apr', x: 30.5 },
+                { label: 'Jul', x: 53 },
+                { label: 'Oct', x: 75.5 },
+                { label: 'Dec', x: 98 }
+            ];
+        }
+
+        const yRange = maxW - minW || 1;
+        const targetY = 10 + (1 - (this.state.targetWeight - minW) / yRange) * 70;
+        const clampedTargetY = Math.min(Math.max(targetY, 10), 80);
+
+        // SVG lines (grid)
+        const gridLines = `
+            <!-- Horizontal Grid Lines -->
+            <line x1="8" y1="10" x2="98" y2="10" stroke="#1e293b" stroke-width="0.75" stroke-dasharray="2 2" />
+            <line x1="8" y1="45" x2="98" y2="45" stroke="#1e293b" stroke-width="0.75" stroke-dasharray="2 2" />
+            <line x1="8" y1="80" x2="98" y2="80" stroke="#1e293b" stroke-width="0.75" stroke-dasharray="2 2" />
+            
+            <!-- Vertical Grid Lines -->
+            ${xTicks.map(t => `<line x1="${t.x}" y1="10" x2="${t.x}" y2="80" stroke="#1e293b" stroke-width="0.5" stroke-opacity="0.3" />`).join('')}
+        `;
+
+        // Render HTML dot nodes
+        dots = chartData.map((d, index) => {
+            let x;
+            if (this.chartRange === '30d') {
+                x = 8 + (index / (chartData.length - 1 || 1)) * 90;
+            } else {
+                const dateVal = new Date(d.date);
+                const startOfYear = new Date(viewYear, 0, 1);
+                const endOfYear = new Date(viewYear, 11, 31);
+                const totalMs = endOfYear - startOfYear || 1;
+                x = 8 + ((dateVal - startOfYear) / totalMs) * 90;
+            }
+            const y = 10 + (1 - (d.weight - minW) / yRange) * 70;
+            const isSelected = d.date === this.dom.dateInput.value;
+            const tooltipClass = y < 35 ? 'top-6' : 'bottom-6';
+
+            const dateLabel = new Date(d.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: '2-digit' });
+
             return `
-                <div class="absolute w-3 h-3 rounded-full border border-white ${isSelected ? 'w-4 h-4 z-10 ring-2 ring-cyan-500' : ''} group hover:scale-150 transition-transform cursor-pointer"
+                <div class="absolute w-3 h-3 rounded-full border-2 border-slate-950 shadow-md group hover:scale-150 transition-all duration-300 cursor-pointer flex items-center justify-center animate-fade-in"
                      style="left: ${x}%; top: ${y}%; transform: translate(-50%, -50%); background-color: #06b6d4;"
-                     title="วันที่ ${day}: ${d.weight}kg">
+                     onclick="document.getElementById('bodyDateInput').value = '${d.date}'; document.getElementById('bodyDateInput').dispatchEvent(new Event('change'));"
+                     title="Date ${dateLabel}: ${d.weight} kg">
+                     ${isSelected ? '<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>' : ''}
+                     <div class="absolute ${tooltipClass} left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 bg-slate-950/95 border border-slate-800 text-[10px] font-mono font-bold text-slate-200 px-2 py-1 rounded shadow-xl pointer-events-none whitespace-nowrap z-50">
+                         ${d.weight} kg (${dateLabel})
+                     </div>
                 </div>
             `;
         }).join('');
 
+        // Y-Axis Labels
+        const yLabels = `
+            <div class="absolute left-0 text-[8px] font-mono text-slate-500 -translate-y-1/2" style="top: 10%;">${maxW.toFixed(1)}</div>
+            <div class="absolute left-0 text-[8px] font-mono text-slate-500 -translate-y-1/2" style="top: 45%;">${((minW + maxW) / 2).toFixed(1)}</div>
+            <div class="absolute left-0 text-[8px] font-mono text-slate-500 -translate-y-1/2" style="top: 80%;">${minW.toFixed(1)}</div>
+        `;
+
+        // X-Axis Labels
+        xLabels = xTicks.map(t => `
+            <div class="absolute text-[8px] font-mono text-slate-500 -translate-x-1/2 mt-1" style="left: ${t.x}%; top: 82%;">
+                ${t.label}
+            </div>
+        `).join('');
+
         this.dom.weightChartContainer.innerHTML = `
-            <div class="relative h-full w-full">
-                <div class="absolute w-full border-t-2 border-dashed border-green-500/50 z-0" style="top: ${clampedTargetY}%;">
-                    <span class="absolute right-0 -top-5 text-xs text-green-400 font-bold bg-slate-950/80 px-2 py-0.5 rounded">เป้า ${this.state.targetWeight}</span>
+            <div class="relative h-full w-full animate-fade-in">
+                <!-- Target Line -->
+                <div class="absolute w-full z-0" style="top: ${clampedTargetY}%;">
+                    <div class="border-t-2 border-dashed border-green-500/50 w-[98%] ml-[2%]"></div>
+                    <span class="absolute right-[2%] -top-4.5 text-[8px] text-green-400 font-bold bg-slate-950/90 border border-green-500/20 px-1.5 py-0.5 rounded shadow-sm font-mono">Target ${this.state.targetWeight}</span>
                 </div>
                 
+                <!-- Y-Axis Unit -->
+                <div class="absolute left-0 -top-3 text-[8px] font-mono text-slate-600">kg</div>
+
                 <svg class="absolute inset-0 w-full h-full z-0 overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <polyline points="${points}" fill="none" style="stroke: #06b6d4;" stroke-width="3" vector-effect="non-scaling-stroke" />
+                    <defs>
+                        <linearGradient id="weightAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.25"/>
+                            <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.0"/>
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- Grid -->
+                    ${gridLines}
+
+                    <!-- Area under curve -->
+                    ${areaPoints ? `<polygon points="${areaPoints}" fill="url(#weightAreaGrad)" />` : ''}
+
+                    <!-- Line -->
+                    ${points ? `<polyline points="${points}" fill="none" style="stroke: #06b6d4;" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />` : ''}
                 </svg>
 
-                ${dots}
+                <!-- Axis Labels -->
+                ${yLabels}
+                ${xLabels}
 
-                <div class="absolute -bottom-6 w-full flex justify-between text-xs text-slate-500 font-medium">
-                    <span>${minDay}</span>
-                    <span>${monthlyData.length > 0 ? 'ช่วงข้อมูล' : 'ไม่มีข้อมูล'}</span>
-                    <span>${maxDay}</span>
-                </div>
+                <!-- Data Dots -->
+                ${dots}
             </div>
         `;
         

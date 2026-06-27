@@ -120,13 +120,13 @@ export default class SleepManager {
         if (entry) {
             this.dom.bedTimeInput.value = entry.bedTime;
             this.dom.wakeTimeInput.value = entry.wakeTime;
-            this.dom.btnRecord.innerText = "อัปเดตข้อมูล";
+            this.dom.btnRecord.innerText = "Update Sleep Log";
             this.dom.btnDelete.classList.remove('hidden');
             this.updateVisuals(entry.duration, entry.bedTime, entry.wakeTime);
         } else {
             this.dom.bedTimeInput.value = this.targets.bedTime.ideal;
             this.dom.wakeTimeInput.value = this.targets.wakeTime.ideal;
-            this.dom.btnRecord.innerText = "บันทึกข้อมูล";
+            this.dom.btnRecord.innerText = "Save Sleep Log";
             this.dom.btnDelete.classList.add('hidden');
             this.updateVisuals(0, this.targets.bedTime.ideal, this.targets.wakeTime.ideal);
         }
@@ -160,10 +160,10 @@ export default class SleepManager {
         this.loadDate(dateStr); 
         
         const originalText = this.dom.btnRecord.innerText;
-        this.dom.btnRecord.innerText = "เรียบร้อย!";
+        this.dom.btnRecord.innerText = "Success!";
         this.dom.btnRecord.classList.add('bg-green-600', 'text-white');
         setTimeout(() => {
-            this.dom.btnRecord.innerText = "อัปเดตข้อมูล";
+            this.dom.btnRecord.innerText = "Update Sleep Log";
             this.dom.btnRecord.classList.remove('bg-green-600', 'text-white');
         }, 1000);
     }
@@ -254,11 +254,11 @@ export default class SleepManager {
         if(this.dom.deviations) {
             this.dom.deviations.innerHTML = `
                 <h4 class="text-sm uppercase tracking-wider text-slate-300 font-bold mb-5 flex items-center gap-2">
-                    <i data-lucide="percent" class="w-5 h-5 text-cyan-400"></i>ความเบี่ยงเบนของการนอน
+                    <i data-lucide="percent" class="w-5 h-5 text-cyan-400"></i>Sleep Deviation
                 </h4>
-                ${renderBar("ระยะเวลานอน", durStats)}
-                ${renderBar("เวลาเข้านอน", bedStats)}
-                ${renderBar("เวลาตื่นนอน", wakeStats)}
+                ${renderBar("Sleep Duration", durStats)}
+                ${renderBar("Bedtime", bedStats)}
+                ${renderBar("Wake-up Time", wakeStats)}
             `;
             if (window.lucide) window.lucide.createIcons();
         }
@@ -319,14 +319,14 @@ export default class SleepManager {
         const formatDate = (dStr) => {
             if (!dStr) return "-";
             const [_y, m, d] = dStr.split('-');
-            const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             return `${parseInt(d)} ${months[parseInt(m)-1]}`;
         };
 
         const hasData = rawPageData.length > 0;
         const startLabel = hasData ? formatDate(rawPageData[0].date) : "-";
         const endLabel = hasData ? formatDate(rawPageData[rawPageData.length-1].date) : "-";
-        const rangeLabel = hasData ? `${startLabel} - ${endLabel}` : "ยังไม่มีข้อมูล";
+        const rangeLabel = hasData ? `${startLabel} - ${endLabel}` : "No Data";
 
         const barsHTML = rawPageData.map(d => {
             const dayNum = parseInt(d.date.split('-')[2]);
@@ -345,7 +345,7 @@ export default class SleepManager {
                     <div class="relative w-full h-full group hover:bg-slate-800/50 transition-colors rounded-xl">
                         <div class="absolute w-6 sm:w-8 rounded-full left-1/2 -translate-x-1/2 transition-all hover:w-8 hover:sm:w-10 hover:z-10 ${bgClass}"
                                 style="${style}"
-                                title="${displayDate}: ${d.bedTime} - ${d.wakeTime} (${d.duration?.toFixed(2) || 0} ชม.)">
+                                title="${displayDate}: ${d.bedTime} - ${d.wakeTime} (${d.duration?.toFixed(2) || 0} hrs)">
                         </div>
                     </div>
                     <div class="h-8 flex items-center justify-center mt-2">
@@ -360,7 +360,7 @@ export default class SleepManager {
         this.dom.patternChart.innerHTML = `
             <div class="flex justify-between items-center mb-6">
                 <h4 class="text-sm uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-                    <i data-lucide="history" class="w-5 h-5 text-cyan-400"></i> บันทึกการนอน (${rawPageData.length}/${totalRecords})
+                    <i data-lucide="history" class="w-5 h-5 text-cyan-400"></i> Sleep History (${rawPageData.length}/${totalRecords})
                 </h4>
                 <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl p-1">
                     <button id="btnPrevPage" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-all ${this.viewOffset >= totalPages - 1 ? 'text-slate-700 cursor-not-allowed' : ''}" ${this.viewOffset >= totalPages - 1 ? 'disabled' : ''}>

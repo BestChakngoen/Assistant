@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tailwindcss -i ./style.css -o ./dist/style.css",
     "watch": "tailwindcss -i ./style.css -o ./dist/style.css --watch",
-    "dev": "npm run watch & npx http-server -p 8888"
+    "dev": "npm run watch & node server.js"
   },
   "dependencies": {},
   "devDependencies": {

@@ -2,8 +2,7 @@
 // Force rebuild cache invalidation 2026-06-12
 export default {
   content: [
-    "./TrackerView.html",
-    "./index.html",
+    "./*.html",
     "./js/**/*.js",
   ],
   theme: {

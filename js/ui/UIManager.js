@@ -1,5 +1,6 @@
 // --- FILE 4: UI MANAGER ---
 import { DiagramManager } from './DiagramManager.js';
+import { ShareManager } from './ShareManager.js';
 
 export class UIManager {
     constructor() {
@@ -68,6 +69,10 @@ export class UIManager {
         this.initHistoryTabs();
         this.initStrategyLab();
         this.setTheme('cyberpunk');
+
+        // Initialize Share Files Center
+        this.share = new ShareManager();
+        this.share.init();
     }
 
     initChart() {
@@ -665,6 +670,7 @@ export class UIManager {
             pulls: document.getElementById('health-menu-container'),
             actions: document.getElementById('market-panel'),
             wiki: document.getElementById('news-panel'),
+            share: document.getElementById('share-panel'),
             settings: document.getElementById('settings-panel')
         };
         
@@ -674,6 +680,7 @@ export class UIManager {
             pulls: document.getElementById('tab-pulls'),
             actions: document.getElementById('tab-actions'),
             wiki: document.getElementById('tab-wiki'),
+            share: document.getElementById('tab-share'),
             settings: document.getElementById('tab-settings')
         };
 
@@ -684,7 +691,7 @@ export class UIManager {
 
             if (key === tabName) {
                 panel.classList.remove('hidden');
-                if (key === 'code' || key === 'wiki' || key === 'settings') {
+                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share') {
                     panel.classList.add('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     // health-menu-container and strategy-menu-container use flex-col
