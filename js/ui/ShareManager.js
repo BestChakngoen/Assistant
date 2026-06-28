@@ -786,13 +786,15 @@ export class ShareManager {
                 const fileIcon = document.createElement('div');
                 fileIcon.className = 'w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-cyan-400 border border-slate-800';
                 
-                // Mime-type based icons
+                // Mime-type based icons with safety checks
                 let lucideIcon = 'file';
-                if (item.mimetype.startsWith('image/')) lucideIcon = 'image';
-                else if (item.mimetype.startsWith('video/')) lucideIcon = 'video';
-                else if (item.mimetype.startsWith('audio/')) lucideIcon = 'music';
-                else if (item.mimetype === 'application/pdf') lucideIcon = 'file-text';
-                else if (item.mimetype.includes('zip') || item.mimetype.includes('tar') || item.mimetype.includes('rar')) lucideIcon = 'folder-archive';
+                const mime = (item.mimetype || '').toLowerCase();
+                const name = (item.filename || '').toLowerCase();
+                if (mime.startsWith('image/')) lucideIcon = 'image';
+                else if (mime.startsWith('video/')) lucideIcon = 'video';
+                else if (mime.startsWith('audio/')) lucideIcon = 'music';
+                else if (mime === 'application/pdf' || name.endsWith('.pdf')) lucideIcon = 'file-text';
+                else if (mime.includes('zip') || mime.includes('tar') || mime.includes('rar') || name.endsWith('.zip') || name.endsWith('.rar')) lucideIcon = 'folder-archive';
                 
                 fileIcon.innerHTML = `<i data-lucide="${lucideIcon}" class="w-5 h-5"></i>`;
                 fileMeta.appendChild(fileIcon);
@@ -816,8 +818,9 @@ export class ShareManager {
                 // Inline Player Rendering
                 const fileUrl = (this.mode === 'online' && item.url) ? item.url : (item.blob ? URL.createObjectURL(item.blob) : '');
                 
-                if (fileUrl) {
-                    if (item.mimetype.startsWith('image/')) {
+                if (fileUrl && item.mimetype) {
+                    const mimeLower = item.mimetype.toLowerCase();
+                    if (mimeLower.startsWith('image/')) {
                         // Image preview
                         const img = document.createElement('img');
                         img.src = fileUrl;
@@ -825,7 +828,7 @@ export class ShareManager {
                         img.className = 'max-h-[250px] max-w-full rounded-lg bg-slate-950/40 border border-slate-900 object-contain hover:scale-[1.01] transition-transform cursor-zoom-in';
                         img.onclick = () => window.open(fileUrl, '_blank');
                         fileContainer.appendChild(img);
-                    } else if (item.mimetype.startsWith('video/')) {
+                    } else if (mimeLower.startsWith('video/')) {
                         // Video Player
                         const video = document.createElement('video');
                         video.src = fileUrl;
@@ -833,7 +836,7 @@ export class ShareManager {
                         video.preload = 'metadata';
                         video.className = 'max-h-[300px] w-full rounded-lg bg-black/60 border border-slate-900';
                         fileContainer.appendChild(video);
-                    } else if (item.mimetype.startsWith('audio/')) {
+                    } else if (mimeLower.startsWith('audio/')) {
                         // Audio Player
                         const audio = document.createElement('audio');
                         audio.src = fileUrl;
