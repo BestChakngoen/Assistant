@@ -4,9 +4,9 @@ const path = require('path');
 console.log("=== TradeTracker Responsive & Theme Layout Verification ===");
 
 // 1. Load files
-const trackerHtmlPath = path.join(__dirname, 'TrackerView.html');
-const styleCssPath = path.join(__dirname, 'style.css');
-const uiManagerJsPath = path.join(__dirname, 'js/ui/UIManager.js');
+const trackerHtmlPath = path.join(__dirname, '..', 'TrackerView.html');
+const styleCssPath = path.join(__dirname, '..', 'style.css');
+const uiManagerJsPath = path.join(__dirname, '..', 'js/ui/UIManager.js');
 
 if (!fs.existsSync(trackerHtmlPath)) {
     console.error(`❌ TrackerView.html not found at ${trackerHtmlPath}`);

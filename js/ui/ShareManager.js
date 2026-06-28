@@ -1,14 +1,17 @@
 export class ShareManager {
     constructor() {
-        this.mode = 'standalone'; // 'standalone' (IndexedDB) or 'online' (Server Sync)
-        this.hostUrl = (typeof window !== 'undefined' && window.location) ? window.location.origin : 'http://localhost:8888';
+        this.supabaseUrl = 'https://ujjwaxdwemrdszyatgxw.supabase.co';
+        this.supabaseKey = 'sb_publishable_Zov-pzfGxNS9yUAGwfhMEg_9PxBeYG3';
+        this.supabase = null;
+        this.mode = 'standalone'; // 'standalone' (IndexedDB) or 'online' (Cloud Sync)
+        this.hostUrl = (typeof window !== 'undefined' && window.location) ? window.location.href : 'http://localhost:8888';
         this.items = [];
         this.db = null;
-        this.eventSource = null;
+        this.channel = null;
     }
 
     async init() {
-        console.log('Initializing ShareManager...');
+        console.log('Initializing ShareManager with Supabase...');
         
         // 1. Setup DOM Elements
         this.dom = {
@@ -29,7 +32,10 @@ export class ShareManager {
             feed: document.getElementById('share-feed'),
             storageIndicator: document.getElementById('local-storage-indicator'),
             storageUsageText: document.getElementById('storage-usage-text'),
-            storageUsageBar: document.getElementById('storage-usage-bar')
+            storageUsageBar: document.getElementById('storage-usage-bar'),
+            cloudIndicator: document.getElementById('cloud-storage-indicator'),
+            cloudUsageText: document.getElementById('cloud-usage-text'),
+            cloudUsageBar: document.getElementById('cloud-usage-bar')
         };
 
         if (!this.dom.panel) {
@@ -37,10 +43,21 @@ export class ShareManager {
             return;
         }
 
-        // 2. Initialize database for standalone mode
+        // Initialize Supabase Client if available
+        if (typeof window !== 'undefined' && window.supabase) {
+            try {
+                this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+            } catch (err) {
+                console.error('Failed to initialize Supabase client:', err);
+            }
+        } else {
+            console.warn('Supabase JS library not loaded. Falling back to local offline storage.');
+        }
+
+        // 2. Initialize database for standalone mode fallback
         await this.initIndexedDB();
 
-        // 3. Detect mode (Online Server vs. Standalone)
+        // 3. Detect mode (Online Cloud vs. Standalone)
         await this.detectMode();
 
         // 4. Bind Events
@@ -115,32 +132,22 @@ export class ShareManager {
     }
 
     async detectMode() {
-        try {
-            // Check if server endpoints are active
-            const res = await fetch('/api/info');
-            if (res.ok) {
-                const info = await res.json();
-                this.mode = 'online';
-                this.hostUrl = info.hostUrl;
-                
-                // Set sync status text & design
-                this.dom.syncStatusText.innerText = 'LOCAL NETWORK SYNC ACTIVE';
-                this.dom.syncStatus.className = 'px-3.5 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400';
-                this.dom.syncStatus.querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse';
+        if (this.supabase) {
+            this.mode = 'online';
+            this.dom.syncStatusText.innerText = 'CLOUD SYNC ACTIVE';
+            this.dom.syncStatus.className = 'px-3.5 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400';
+            this.dom.syncStatus.querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse';
 
-                // Display local IP
-                this.dom.hostUrlDisplay.innerText = this.hostUrl;
+            // Display cloud URL
+            this.dom.hostUrlDisplay.innerText = this.hostUrl;
 
-                // Setup Server-Sent Events listener
-                this.setupSSE();
-            } else {
-                this.setStandaloneMode();
-            }
-        } catch (e) {
+            // Setup Supabase Realtime Channel
+            this.setupRealtime();
+        } else {
             this.setStandaloneMode();
         }
 
-        // Generate QR code for sharing
+        // Generate QR code for sharing current page
         this.generateQRCode(this.hostUrl);
     }
 
@@ -155,31 +162,37 @@ export class ShareManager {
         this.dom.hostUrlDisplay.innerText = 'STANDALONE - ONLY PERSISTS LOCALLY';
     }
 
-    setupSSE() {
-        if (this.eventSource) this.eventSource.close();
+    setupRealtime() {
+        if (this.channel) this.supabase.removeChannel(this.channel);
 
-        this.eventSource = new EventSource('/api/events');
-        
-        this.eventSource.onmessage = (event) => {
-            try {
-                const message = JSON.parse(event.data);
-                if (message.type === 'add') {
-                    // Prepend new item
-                    this.items.unshift(message.payload);
-                    this.renderFeed();
-                } else if (message.type === 'clear') {
-                    this.items = [];
-                    this.renderFeed();
+        this.channel = this.supabase
+            .channel('schema-db-changes')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'shared_items' },
+                (payload) => {
+                    console.log('Realtime change received:', payload);
+                    if (payload.eventType === 'INSERT') {
+                        if (!this.items.some(item => item.id === payload.new.id)) {
+                            this.items.unshift(payload.new);
+                            this.renderFeed();
+                        }
+                    } else if (payload.eventType === 'DELETE') {
+                        // Keep items that weren't deleted
+                        this.items = this.items.filter(item => item.id !== payload.old.id);
+                        this.renderFeed();
+                    } else if (payload.eventType === 'UPDATE') {
+                        const idx = this.items.findIndex(item => item.id === payload.new.id);
+                        if (idx !== -1) {
+                            this.items[idx] = payload.new;
+                            this.renderFeed();
+                        }
+                    }
                 }
-            } catch (e) {
-                console.error('SSE Message parsing error:', e);
-            }
-        };
-
-        this.eventSource.onerror = () => {
-            console.warn('SSE disconnected. Attempting standalone fallback...');
-            this.setStandaloneMode();
-        };
+            )
+            .subscribe((status) => {
+                console.log('Realtime subscription status:', status);
+            });
     }
 
     generateQRCode(text) {
@@ -266,13 +279,15 @@ export class ShareManager {
     async loadItems() {
         if (this.mode === 'online') {
             try {
-                const res = await fetch('/api/items');
-                if (res.ok) {
-                    const data = await res.json();
-                    this.items = data.reverse(); // Show latest first
-                }
+                const { data, error } = await this.supabase
+                    .from('shared_items')
+                    .select('*')
+                    .order('timestamp', { ascending: false });
+                
+                if (error) throw error;
+                this.items = data || [];
             } catch (e) {
-                console.error('Failed to load server items, using IndexedDB:', e);
+                console.error('Failed to load Supabase items, using IndexedDB:', e);
                 await this.loadItemsFromIndexedDB();
             }
         } else {
@@ -305,18 +320,15 @@ export class ShareManager {
 
         if (this.mode === 'online') {
             try {
-                const res = await fetch('/api/message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text })
-                });
+                const { error } = await this.supabase
+                    .from('shared_items')
+                    .insert([newItem]);
                 
-                if (res.ok) {
-                    this.dom.textInput.value = '';
-                    // SSE will broadcast and update
-                } else {
-                    throw new Error('Failed to send text to server');
+                if (error) {
+                    alert(`Supabase Error: ${error.message || error.details || JSON.stringify(error)}`);
+                    throw error;
                 }
+                this.dom.textInput.value = '';
             } catch (e) {
                 console.error('Failed online send, saving to local database:', e);
                 await this.saveLocalItem(newItem);
@@ -340,20 +352,65 @@ export class ShareManager {
 
     async uploadFiles(files) {
         for (const file of files) {
+            // Check for file size limit (50 MB)
+            const maxSizeBytes = 50 * 1024 * 1024;
+            if (file.size > maxSizeBytes) {
+                this.showToast(
+                    'Upload Limit Exceeded',
+                    `"${file.name}" is ${this.formatSize(file.size)}. The maximum upload size limit is 50 MB per file.`,
+                    'error'
+                );
+                continue;
+            }
+
             if (this.mode === 'online') {
                 try {
-                    // Streaming binary upload
-                    const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-                        method: 'POST',
-                        body: file
-                    });
+                    // Safe alphanumeric filename
+                    const safeFilename = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+                    const uniqueFilename = `${Date.now()}_${safeFilename}`;
+
+                    // 1. Upload file binary directly to Supabase storage bucket 'shared-files'
+                    const { data: uploadData, error: uploadError } = await this.supabase
+                        .storage
+                        .from('shared-files')
+                        .upload(uniqueFilename, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
                     
-                    if (!res.ok) {
-                        throw new Error(`Upload failed for ${file.name}`);
-                    }
-                    console.log('Uploaded successfully:', file.name);
+                    if (uploadError) throw uploadError;
+
+                    // 2. Obtain its public URL
+                    const { data: urlData } = this.supabase
+                        .storage
+                        .from('shared-files')
+                        .getPublicUrl(uniqueFilename);
+
+                    const publicUrl = urlData?.publicUrl || '';
+
+                    // 3. Insert record metadata into shared_items table
+                    const newItem = {
+                        id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                        type: 'file',
+                        filename: file.name,
+                        uniqueFilename: uniqueFilename,
+                        size: file.size,
+                        mimetype: file.type,
+                        url: publicUrl,
+                        timestamp: Date.now()
+                    };
+
+                    const { error: insertError } = await this.supabase
+                        .from('shared_items')
+                        .insert([newItem]);
+
+                    if (insertError) throw insertError;
+                    console.log('Uploaded successfully to Supabase:', file.name);
+                    
+                    // Update capacity display after successful upload
+                    await this.updateStorageEstimate();
                 } catch (e) {
-                    console.error('Server upload failed, saving to local browser storage:', e);
+                    console.error('Supabase upload failed, saving to local browser storage:', e);
                     await this.uploadLocalFile(file);
                 }
             } else {
@@ -386,14 +443,32 @@ export class ShareManager {
 
         if (this.mode === 'online') {
             try {
-                const res = await fetch('/api/clear', { method: 'POST' });
-                if (res.ok) {
-                    // SSE will broadcast clear and update
-                } else {
-                    throw new Error('Failed to clear server data');
+                // Delete all database entries
+                const { error: deleteError } = await this.supabase
+                    .from('shared_items')
+                    .delete()
+                    .gt('timestamp', 0);
+                
+                if (deleteError) throw deleteError;
+
+                // Empty storage bucket files
+                const { data: fileList, error: listError } = await this.supabase
+                    .storage
+                    .from('shared-files')
+                    .list();
+                
+                if (!listError && fileList && fileList.length > 0) {
+                    const pathsToDelete = fileList.map(f => f.name);
+                    await this.supabase
+                        .storage
+                        .from('shared-files')
+                        .remove(pathsToDelete);
                 }
+
+                this.items = [];
+                this.renderFeed();
             } catch (e) {
-                console.error('Server clear failed, clearing local IndexedDB:', e);
+                console.error('Supabase clear failed, clearing local IndexedDB:', e);
                 await this.clearLocalHistory();
             }
         } else {
@@ -425,44 +500,134 @@ export class ShareManager {
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' | ' + date.toLocaleDateString('en-US');
     }
 
+    showToast(title, message, type = 'error') {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'fixed bottom-6 left-6 z-50 flex flex-col gap-3 max-w-sm w-full';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        const isError = type === 'error';
+        
+        toast.className = `glass-panel p-4 rounded-xl border ${
+            isError ? 'border-red-500/30 bg-red-950/20' : 'border-green-500/30 bg-green-950/20'
+        } bg-slate-950/80 shadow-2xl flex gap-3 items-start transition-all duration-300 transform translate-y-2 opacity-0`;
+
+        const icon = isError ? 'alert-triangle' : 'check-circle';
+        const iconColor = isError ? 'text-red-400' : 'text-green-400';
+
+        toast.innerHTML = `
+            <div class="p-1.5 rounded-lg bg-slate-900/60 ${iconColor} shrink-0">
+                <i data-lucide="${icon}" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <h4 class="text-xs font-mono font-bold text-white uppercase tracking-wider">${title}</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">${message}</p>
+            </div>
+            <button class="text-slate-500 hover:text-slate-350 transition-colors shrink-0" onclick="this.parentElement.remove()">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+        `;
+
+        container.appendChild(toast);
+        if (window.lucide) window.lucide.createIcons();
+
+        // Trigger animation
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        // Auto remove after 6 seconds
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-y-2');
+            setTimeout(() => toast.remove(), 300);
+        }, 6000);
+    }
+
     async updateStorageEstimate() {
-        if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.estimate) {
+        if (this.mode === 'online' && this.supabase) {
+            // Hide local storage, show cloud storage
+            if (this.dom.storageIndicator) this.dom.storageIndicator.classList.add('hidden');
+            if (this.dom.cloudIndicator) this.dom.cloudIndicator.classList.remove('hidden');
+
             try {
-                const estimate = await navigator.storage.estimate();
-                const usage = estimate.usage || 0;
-                const quota = estimate.quota || 0;
-                
-                const percentage = quota > 0 ? parseFloat(((usage / quota) * 100).toFixed(2)) : 0;
-                
-                if (this.dom.storageUsageText) {
-                    this.dom.storageUsageText.innerText = `${this.formatSize(usage)} / ${this.formatSize(quota)} (${percentage}%)`;
+                // Fetch list of files in the bucket
+                const { data: fileList, error } = await this.supabase
+                    .storage
+                    .from('shared-files')
+                    .list();
+
+                if (error) throw error;
+
+                const totalBytes = (fileList || []).reduce((acc, file) => acc + (file.metadata?.size || 0), 0);
+                const cloudQuotaBytes = 1024 * 1024 * 1024; // 1 GB free tier
+                const percentage = parseFloat(((totalBytes / cloudQuotaBytes) * 100).toFixed(2));
+
+                if (this.dom.cloudUsageText) {
+                    this.dom.cloudUsageText.innerText = `${this.formatSize(totalBytes)} / ${this.formatSize(cloudQuotaBytes)} (${percentage}%)`;
                 }
-                
-                if (this.dom.storageUsageBar) {
-                    this.dom.storageUsageBar.style.width = `${percentage}%`;
-                    
-                    // Dynamic coloring based on usage percentage
+
+                if (this.dom.cloudUsageBar) {
+                    this.dom.cloudUsageBar.style.width = `${percentage}%`;
                     if (percentage > 90) {
-                        this.dom.storageUsageBar.className = 'bg-gradient-to-r from-red-500 to-rose-600 h-1.5 rounded-full transition-all duration-500';
+                        this.dom.cloudUsageBar.className = 'bg-gradient-to-r from-red-500 to-rose-600 h-1.5 rounded-full transition-all duration-500';
                     } else if (percentage > 70) {
-                        this.dom.storageUsageBar.className = 'bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full transition-all duration-500';
+                        this.dom.cloudUsageBar.className = 'bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full transition-all duration-500';
                     } else {
-                        this.dom.storageUsageBar.className = 'bg-gradient-to-r from-cyan-500 to-blue-500 h-1.5 rounded-full transition-all duration-500';
+                        this.dom.cloudUsageBar.className = 'bg-gradient-to-r from-emerald-500 to-teal-500 h-1.5 rounded-full transition-all duration-500';
                     }
                 }
-                
-                if (this.dom.storageIndicator) {
-                    this.dom.storageIndicator.classList.remove('hidden');
-                }
-            } catch (e) {
-                console.warn('Storage estimate API failed:', e);
-                if (this.dom.storageIndicator) {
-                    this.dom.storageIndicator.classList.add('hidden');
+            } catch (err) {
+                console.warn('Failed to calculate Supabase storage size:', err);
+                if (this.dom.cloudUsageText) {
+                    this.dom.cloudUsageText.innerText = 'Unable to fetch cloud usage';
                 }
             }
         } else {
-            if (this.dom.storageIndicator) {
-                this.dom.storageIndicator.classList.add('hidden');
+            // Hide cloud storage, show local storage
+            if (this.dom.cloudIndicator) this.dom.cloudIndicator.classList.add('hidden');
+
+            if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.estimate) {
+                try {
+                    const estimate = await navigator.storage.estimate();
+                    const usage = estimate.usage || 0;
+                    const quota = estimate.quota || 0;
+                    
+                    const percentage = quota > 0 ? parseFloat(((usage / quota) * 100).toFixed(2)) : 0;
+                    
+                    if (this.dom.storageUsageText) {
+                        this.dom.storageUsageText.innerText = `${this.formatSize(usage)} / ${this.formatSize(quota)} (${percentage}%)`;
+                    }
+                    
+                    if (this.dom.storageUsageBar) {
+                        this.dom.storageUsageBar.style.width = `${percentage}%`;
+                        
+                        // Dynamic coloring based on usage percentage
+                        if (percentage > 90) {
+                            this.dom.storageUsageBar.className = 'bg-gradient-to-r from-red-500 to-rose-600 h-1.5 rounded-full transition-all duration-500';
+                        } else if (percentage > 70) {
+                            this.dom.storageUsageBar.className = 'bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full transition-all duration-500';
+                        } else {
+                            this.dom.storageUsageBar.className = 'bg-gradient-to-r from-cyan-500 to-blue-500 h-1.5 rounded-full transition-all duration-500';
+                        }
+                    }
+                    
+                    if (this.dom.storageIndicator) {
+                        this.dom.storageIndicator.classList.remove('hidden');
+                    }
+                } catch (e) {
+                    console.warn('Storage estimate API failed:', e);
+                    if (this.dom.storageIndicator) {
+                        this.dom.storageIndicator.classList.add('hidden');
+                    }
+                }
+            } else {
+                if (this.dom.storageIndicator) {
+                    this.dom.storageIndicator.classList.add('hidden');
+                }
             }
         }
     }
@@ -494,8 +659,24 @@ export class ShareManager {
             if (item.type === 'text') {
                 const isLink = /^(https?:\/\/[^\s]+)$/i.test(item.text.trim());
                 if (isLink) shareType = 'link';
-            } else if (item.type === 'file' && item.mimetype && item.mimetype.startsWith('image/')) {
-                shareType = 'image';
+            } else if (item.type === 'file' && item.mimetype) {
+                const mime = item.mimetype.toLowerCase();
+                const name = (item.filename || '').toLowerCase();
+                if (mime.startsWith('image/')) {
+                    shareType = 'image';
+                } else if (mime.startsWith('video/')) {
+                    shareType = 'video';
+                } else if (mime.startsWith('audio/')) {
+                    shareType = 'audio';
+                } else if (mime === 'application/pdf' || name.endsWith('.pdf')) {
+                    shareType = 'pdf';
+                } else if (mime.includes('word') || mime.includes('document') || name.endsWith('.docx') || name.endsWith('.doc')) {
+                    shareType = 'docx';
+                } else {
+                    shareType = 'file'; // Fallback to other files
+                }
+            } else if (item.type === 'file') {
+                shareType = 'file'; // Fallback if no mimetype exists
             }
             card.dataset.shareType = shareType;
             

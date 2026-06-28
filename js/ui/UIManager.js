@@ -767,15 +767,15 @@ export class UIManager {
         if (!urlInput || !saveBtn || !iframe || !placeholder) return;
 
         const setIframeSource = (url) => {
-            if (url && !url.includes('#') && (url.toLowerCase().endsWith('.pdf') || url === 'financial_bible.pdf')) {
+            if (url && !url.includes('#') && (url.toLowerCase().endsWith('.pdf') || url.endsWith('financial_bible.pdf'))) {
                 iframe.src = `${url}#zoom=page-width`;
             } else {
                 iframe.src = url;
             }
         };
 
-        // Load saved PDF URL from localStorage, defaulting to 'financial_bible.pdf' if not set
-        const savedUrl = localStorage.getItem('firebase_strategy_pdf_url') || 'financial_bible.pdf';
+        // Load saved PDF URL from localStorage, defaulting to 'assets/financial_bible.pdf' if not set
+        const savedUrl = localStorage.getItem('firebase_strategy_pdf_url') || 'assets/financial_bible.pdf';
         if (savedUrl) {
             urlInput.value = savedUrl;
             setIframeSource(savedUrl);

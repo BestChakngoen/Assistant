@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 // --- MOCK BROWSER ENVIRONMENT ---
 const mockClassList = {
@@ -63,7 +64,7 @@ global.ResizeObserver = class {
 };
 
 // Import UIManager dynamically after environment mock
-const { UIManager } = await import('./js/ui/UIManager.js');
+const { UIManager } = await import('../js/ui/UIManager.js');
 
 console.log('--- RUNNING THEME SWITCHING ENGINE VERIFICATION ---');
 
@@ -115,7 +116,7 @@ try {
 
 // 3. Verify Compiled CSS Variables and Transitions in dist/style.css
 try {
-    const cssPath = path.resolve('dist/style.css');
+    const cssPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist/style.css');
     if (!fs.existsSync(cssPath)) {
         throw new Error(`dist/style.css not found at ${cssPath}`);
     }

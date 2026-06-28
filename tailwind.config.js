@@ -3,6 +3,7 @@
 export default {
   content: [
     "./*.html",
+    "./learning-others/*.html",
     "./js/**/*.js",
   ],
   theme: {
