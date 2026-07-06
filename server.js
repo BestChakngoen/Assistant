@@ -242,6 +242,53 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // 7. Delete specific shared item
+    if (pathname === '/api/delete' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => { body += chunk; });
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                if (!data.id) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Item ID is required' }));
+                    return;
+                }
+
+                const items = readDb();
+                const itemIndex = items.findIndex(item => item.id === data.id);
+
+                if (itemIndex === -1) {
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Item not found' }));
+                    return;
+                }
+
+                const item = items[itemIndex];
+
+                // If it is a file, delete the physical file
+                if (item.type === 'file' && item.uniqueFilename) {
+                    const filePath = path.join(STORAGE_DIR, item.uniqueFilename);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+
+                // Remove item from DB
+                items.splice(itemIndex, 1);
+                writeDb(items);
+                broadcast('delete', { id: data.id });
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            } catch (e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Failed to delete item' }));
+            }
+        });
+        return;
+    }
+
     // --- STATIC FILES SERVING ---
     let reqPath = pathname;
     if (reqPath === '/' || reqPath === '') {

@@ -157,7 +157,7 @@
                 <div id="learning-submenu" class="hidden pl-8 pr-2 py-1.5 space-y-1 bg-[#090d16]/30 border-l border-slate-800/60 ml-5 mt-1 rounded-l-md">
                     <a href="learning-others/website-app.html" class="block py-2 px-3 text-xs text-slate-400 hover:text-cyan-400 hover:bg-slate-800/20 rounded-lg transition-all flex items-center gap-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
-                        <span>Website & Application</span>
+                        <span>Software</span>
                     </a>
                     <a href="learning-others/electronics.html" class="block py-2 px-3 text-xs text-slate-400 hover:text-cyan-400 hover:bg-slate-800/20 rounded-lg transition-all flex items-center gap-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
@@ -165,7 +165,7 @@
                     </a>
                     <a href="learning-others/agriculture.html" class="block py-2 px-3 text-xs text-slate-400 hover:text-cyan-400 hover:bg-slate-800/20 rounded-lg transition-all flex items-center gap-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        <span>Argiculture</span>
+                        <span>Agriculture</span>
                     </a>
                 </div>
             </nav>
@@ -486,18 +486,28 @@
                         <h3 class="font-mono font-bold text-lg text-yellow-400">ECONOMIC CALENDAR (USD)</h3>
                     </div>
                     <!-- TradingView Widget BEGIN -->
-                    <div class="tradingview-widget-container">
+                    <div class="tradingview-widget-container" id="economic-calendar-container">
                         <div class="tradingview-widget-container__widget"></div>
-                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-                        {
-                        "width": "100%",
-                        "height": "100%",
-                        "colorTheme": "dark",
-                        "isTransparent": true,
-                        "locale": "th_TH",
-                        "importanceFilter": "-1,0,1",
-                        "currencyFilter": "USD"
-                        }
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function() {
+                                const container = document.getElementById("economic-calendar-container");
+                                if (container) {
+                                    const script = document.createElement("script");
+                                    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
+                                    script.async = true;
+                                    script.type = "text/javascript";
+                                    script.text = JSON.stringify({
+                                        "width": "100%",
+                                        "height": "100%",
+                                        "colorTheme": "dark",
+                                        "isTransparent": true,
+                                        "locale": "th_TH",
+                                        "importanceFilter": "-1,0,1",
+                                        "currencyFilter": "USD"
+                                    });
+                                    container.appendChild(script);
+                                }
+                            });
                         </script>
                     </div>
                     <!-- TradingView Widget END -->

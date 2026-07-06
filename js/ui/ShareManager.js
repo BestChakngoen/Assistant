@@ -112,6 +112,15 @@ export class ShareManager {
                     request.onerror = () => reject(request.error);
                 });
             },
+            delete(id) {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction('items', 'readwrite');
+                    const store = tx.objectStore('items');
+                    const request = store.delete(id);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            },
             clear() {
                 return new Promise((resolve, reject) => {
                     const tx = this.db.transaction('items', 'readwrite');
@@ -487,6 +496,63 @@ export class ShareManager {
         }
     }
 
+    async deleteItem(item) {
+        if (!confirm(`Are you sure you want to delete this ${item.type === 'file' ? 'file' : 'message'}?`)) return;
+
+        if (this.mode === 'online') {
+            try {
+                // Delete from Supabase Database
+                const { error: dbError } = await this.supabase
+                    .from('shared_items')
+                    .delete()
+                    .eq('id', item.id);
+                
+                if (dbError) throw dbError;
+
+                // If it is a file, delete from Supabase Storage
+                if (item.type === 'file' && item.uniqueFilename) {
+                    const { error: storageError } = await this.supabase
+                        .storage
+                        .from('shared-files')
+                        .remove([item.uniqueFilename]);
+                    
+                    if (storageError) console.warn('Supabase storage delete warning:', storageError);
+                }
+
+                // Also call the self-hosted delete endpoint in case we are running via server.js
+                try {
+                    await fetch('/api/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: item.id })
+                    });
+                } catch (err) {
+                    // Ignore if server is not running or endpoint fails
+                }
+
+                this.items = this.items.filter(i => i.id !== item.id);
+                this.renderFeed();
+                await this.updateStorageEstimate();
+            } catch (e) {
+                console.error('Supabase delete failed, trying local delete:', e);
+                await this.deleteLocalItem(item);
+            }
+        } else {
+            await this.deleteLocalItem(item);
+        }
+    }
+
+    async deleteLocalItem(item) {
+        try {
+            await this.dbStore.delete(item.id);
+            this.items = this.items.filter(i => i.id !== item.id);
+            this.renderFeed();
+            await this.updateStorageEstimate();
+        } catch (e) {
+            console.error('Failed to delete from local database:', e);
+        }
+    }
+
     formatSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -747,6 +813,14 @@ export class ShareManager {
                 
                 actionDiv.appendChild(btnDownload);
             }
+
+            // Delete quick action
+            const btnDelete = document.createElement('button');
+            btnDelete.className = 'p-1 hover:bg-slate-800/50 hover:text-red-400 rounded transition text-slate-500';
+            btnDelete.title = 'Delete item';
+            btnDelete.innerHTML = '<i data-lucide="trash-2" class="w-3.5 h-3.5"></i>';
+            btnDelete.onclick = () => this.deleteItem(item);
+            actionDiv.appendChild(btnDelete);
 
             header.appendChild(actionDiv);
             card.appendChild(header);
