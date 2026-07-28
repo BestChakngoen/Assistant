@@ -1,0 +1,29 @@
+/* Smart Agriculture Module Custom Styles */
+body {
+    font-family: 'Kanit', sans-serif;
+    background-color: #05070c;
+    background-image: radial-gradient(#1e293b 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.rajdhani {
+    font-family: 'Rajdhani', sans-serif;
+}
+
+/* Webkit scrollbar styles */
+.sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.15);
+    border-radius: 99px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.3);
+}

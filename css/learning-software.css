@@ -1,0 +1,59 @@
+/* Software Engineering Module Custom Styles */
+body {
+    font-family: 'Kanit', sans-serif;
+    background-color: #05070c;
+    background-image: radial-gradient(#1e293b 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.rajdhani {
+    font-family: 'Rajdhani', sans-serif;
+}
+
+/* Custom anims for spaceship */
+@keyframes launch {
+    0% { transform: translateY(0) scale(1); opacity: 1; filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.5)); }
+    30% { transform: translateY(-10px) rotate(1deg); filter: drop-shadow(0 0 25px rgba(236, 72, 153, 0.8)); }
+    100% { transform: translateY(-500px) scale(0.2); opacity: 0; }
+}
+
+@keyframes hover-ship {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(-0.5deg); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    20%, 60% { transform: translate(-4px, 2px) rotate(-1deg); }
+    40%, 80% { transform: translate(4px, -2px) rotate(1deg); }
+}
+
+.animate-launch {
+    animation: launch 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-hover-ship {
+    animation: hover-ship 3s ease-in-out infinite;
+}
+
+.animate-shake {
+    animation: shake 0.4s ease-in-out infinite;
+}
+
+/* Independent scrolling for left menu */
+.sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.15);
+    border-radius: 99px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.3);
+}

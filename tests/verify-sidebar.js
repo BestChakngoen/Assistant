@@ -21,7 +21,11 @@ if (!fs.existsSync(uiManagerJsPath)) {
     process.exit(1);
 }
 
-const html = fs.readFileSync(trackerHtmlPath, 'utf8');
+const sidebarViewPath = path.join(__dirname, '..', 'js', 'views', 'sidebarView.js');
+let html = fs.readFileSync(trackerHtmlPath, 'utf8');
+if (fs.existsSync(sidebarViewPath)) {
+    html += '\n' + fs.readFileSync(sidebarViewPath, 'utf8');
+}
 const css = fs.readFileSync(styleCssPath, 'utf8');
 const js = fs.readFileSync(uiManagerJsPath, 'utf8');
 
