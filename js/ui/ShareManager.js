@@ -8,6 +8,8 @@ export class ShareManager {
         this.items = [];
         this.db = null;
         this.channel = null;
+        this.starredIds = new Set();
+        this.selectedIds = new Set();
     }
 
     async init() {
@@ -19,8 +21,10 @@ export class ShareManager {
             syncStatus: document.getElementById('sync-status'),
             syncStatusText: document.getElementById('sync-status-text'),
             textInput: document.getElementById('share-text-input'),
+            textTitleInput: document.getElementById('share-text-title'),
             btnShareText: document.getElementById('btn-share-text'),
             fileInput: document.getElementById('share-file-input'),
+            fileTitleInput: document.getElementById('share-file-title'),
             fileDropzone: document.getElementById('file-dropzone'),
             qrCard: document.getElementById('qr-sharing-card'),
             qrContainer: document.getElementById('qrcode'),
@@ -35,7 +39,10 @@ export class ShareManager {
             storageUsageBar: document.getElementById('storage-usage-bar'),
             cloudIndicator: document.getElementById('cloud-storage-indicator'),
             cloudUsageText: document.getElementById('cloud-usage-text'),
-            cloudUsageBar: document.getElementById('cloud-usage-bar')
+            cloudUsageBar: document.getElementById('cloud-usage-bar'),
+            selectAllCheckbox: document.getElementById('share-select-all'),
+            selectedCountText: document.getElementById('share-selected-count'),
+            btnDeleteSelected: document.getElementById('btn-delete-selected')
         };
 
         if (!this.dom.panel) {
@@ -63,7 +70,8 @@ export class ShareManager {
         // 4. Bind Events
         this.bindEvents();
 
-        // 5. Load Items
+        // 5. Load Starred and Items
+        this.loadStarred();
         await this.loadItems();
 
         // 6. Update Lucide Icons for dynamic content
@@ -283,6 +291,22 @@ export class ShareManager {
                 this.dom.importBackupFile.value = ''; // Reset
             }
         };
+
+        // Selection Actions
+        if (this.dom.selectAllCheckbox) {
+            this.dom.selectAllCheckbox.onchange = (e) => this.toggleSelectAll(e.target.checked);
+        }
+        if (this.dom.btnDeleteSelected) {
+            this.dom.btnDeleteSelected.onclick = () => this.deleteSelectedItems();
+        }
+
+        // Attach mouse-click sound listener to primary action buttons
+        if (this.dom.panel) {
+            this.dom.panel.addEventListener('click', (e) => {
+                const clickable = e.target.closest('#btn-share-text, #btn-export-backup, #btn-import-backup-trigger, #btn-clear-share, #btn-delete-selected, #file-dropzone');
+                if (clickable) this.playSound('mouse-click');
+            });
+        }
     }
 
     async loadItems() {
@@ -319,25 +343,33 @@ export class ShareManager {
     async shareText() {
         const text = this.dom.textInput.value.trim();
         if (!text) return;
+        const title = this.dom.textTitleInput ? this.dom.textTitleInput.value.trim() : '';
 
         const newItem = {
             id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             type: 'text',
             text: text,
+            title: title,
             timestamp: Date.now()
         };
 
         if (this.mode === 'online') {
             try {
-                const { error } = await this.supabase
+                let payload = { ...newItem };
+                let { error } = await this.supabase
                     .from('shared_items')
-                    .insert([newItem]);
+                    .insert([payload]);
                 
-                if (error) {
-                    alert(`Supabase Error: ${error.message || error.details || JSON.stringify(error)}`);
-                    throw error;
+                if (error && error.message && error.message.includes('title')) {
+                    delete payload.title;
+                    const res = await this.supabase.from('shared_items').insert([payload]);
+                    error = res.error;
                 }
+
+                if (error) throw error;
                 this.dom.textInput.value = '';
+                if (this.dom.textTitleInput) this.dom.textTitleInput.value = '';
+                this.playSound('success');
             } catch (e) {
                 console.error('Failed online send, saving to local database:', e);
                 await this.saveLocalItem(newItem);
@@ -352,103 +384,141 @@ export class ShareManager {
             await this.dbStore.add(item);
             this.items.unshift(item);
             this.dom.textInput.value = '';
+            if (this.dom.textTitleInput) this.dom.textTitleInput.value = '';
             this.renderFeed();
             await this.updateStorageEstimate();
+            this.playSound('success');
         } catch (e) {
             console.error('Failed to write to local database:', e);
         }
     }
 
     async uploadFiles(files) {
-        for (const file of files) {
-            // Check for file size limit (50 MB)
-            const maxSizeBytes = 50 * 1024 * 1024;
-            if (file.size > maxSizeBytes) {
-                this.showToast(
-                    'Upload Limit Exceeded',
-                    `"${file.name}" is ${this.formatSize(file.size)}. The maximum upload size limit is 50 MB per file.`,
-                    'error'
-                );
-                continue;
-            }
+        if (!files || files.length === 0) return;
+        const customTitle = this.dom.fileTitleInput ? this.dom.fileTitleInput.value.trim() : '';
+        let uploadedCount = 0;
+        let failedCount = 0;
 
-            if (this.mode === 'online') {
-                try {
-                    // Safe alphanumeric filename
-                    const safeFilename = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-                    const uniqueFilename = `${Date.now()}_${safeFilename}`;
+        const loadingTitle = files.length > 1 ? `Uploading ${files.length} Files` : 'Uploading File';
+        this.showLoadingModal(loadingTitle, 'Please wait while your files are being uploaded...');
 
-                    // 1. Upload file binary directly to Supabase storage bucket 'shared-files'
-                    const { data: uploadData, error: uploadError } = await this.supabase
-                        .storage
-                        .from('shared-files')
-                        .upload(uniqueFilename, file, {
-                            cacheControl: '3600',
-                            upsert: false
-                        });
-                    
-                    if (uploadError) throw uploadError;
-
-                    // 2. Obtain its public URL
-                    const { data: urlData } = this.supabase
-                        .storage
-                        .from('shared-files')
-                        .getPublicUrl(uniqueFilename);
-
-                    const publicUrl = urlData?.publicUrl || '';
-
-                    // 3. Insert record metadata into shared_items table
-                    const newItem = {
-                        id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                        type: 'file',
-                        filename: file.name,
-                        uniqueFilename: uniqueFilename,
-                        size: file.size,
-                        mimetype: file.type,
-                        url: publicUrl,
-                        timestamp: Date.now()
-                    };
-
-                    const { error: insertError } = await this.supabase
-                        .from('shared_items')
-                        .insert([newItem]);
-
-                    if (insertError) throw insertError;
-                    console.log('Uploaded successfully to Supabase:', file.name);
-                    
-                    // Update capacity display after successful upload
-                    await this.updateStorageEstimate();
-                } catch (e) {
-                    console.error('Supabase upload failed, saving to local browser storage:', e);
-                    await this.uploadLocalFile(file);
+        try {
+            for (const file of files) {
+                const maxSizeBytes = 50 * 1024 * 1024;
+                if (file.size > maxSizeBytes) {
+                    this.showToast(
+                        'Upload Limit Exceeded',
+                        `"${file.name}" is ${this.formatSize(file.size)}. The maximum upload size limit is 50 MB per file.`,
+                        'error'
+                    );
+                    failedCount++;
+                    continue;
                 }
-            } else {
-                await this.uploadLocalFile(file);
+
+                let success = false;
+                if (this.mode === 'online') {
+                    try {
+                        const safeFilename = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+                        const uniqueFilename = `${Date.now()}_${safeFilename}`;
+
+                        const { error: uploadError } = await this.supabase
+                            .storage
+                            .from('shared-files')
+                            .upload(uniqueFilename, file, { cacheControl: '3600', upsert: false });
+                        
+                        if (uploadError) throw uploadError;
+
+                        const { data: urlData } = this.supabase
+                            .storage
+                            .from('shared-files')
+                            .getPublicUrl(uniqueFilename);
+
+                        const publicUrl = urlData?.publicUrl || '';
+                        const newItem = {
+                            id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                            type: 'file',
+                            title: customTitle,
+                            filename: file.name,
+                            uniqueFilename: uniqueFilename,
+                            size: file.size,
+                            mimetype: file.type,
+                            url: publicUrl,
+                            timestamp: Date.now()
+                        };
+
+                        let payload = { ...newItem };
+                        let { error: insertError } = await this.supabase
+                            .from('shared_items')
+                            .insert([payload]);
+
+                        if (insertError && insertError.message && insertError.message.includes('title')) {
+                            delete payload.title;
+                            const res = await this.supabase.from('shared_items').insert([payload]);
+                            insertError = res.error;
+                        }
+
+                        if (insertError) throw insertError;
+                        await this.updateStorageEstimate();
+                        success = true;
+                    } catch (e) {
+                        console.error('Supabase upload failed, saving to local browser storage:', e);
+                        success = await this.uploadLocalFile(file, customTitle);
+                    }
+                } else {
+                    success = await this.uploadLocalFile(file, customTitle);
+                }
+
+                if (success) uploadedCount++; else failedCount++;
             }
+        } finally {
+            await this.hideLoadingModal();
         }
         
-        // Reset file input
         this.dom.fileInput.value = '';
+        if (this.dom.fileTitleInput) this.dom.fileTitleInput.value = '';
+
+        if (failedCount > 0 && uploadedCount === 0) {
+            this.playSound('fail');
+        } else if (uploadedCount > 0) {
+            this.playSound('success');
+            if (failedCount > 0) setTimeout(() => this.playSound('fail'), 400);
+            this.loadItems();
+        }
     }
 
-    async uploadLocalFile(file) {
+    async uploadLocalFile(file, customTitle = '') {
         const newItem = {
             id: 'local_file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             type: 'file',
+            title: customTitle,
             filename: file.name,
             size: file.size,
             mimetype: file.type,
             blob: file, // Native File/Blob object
             timestamp: Date.now()
         };
-        await this.dbStore.add(newItem);
-        this.items.unshift(newItem);
-        this.renderFeed();
-        await this.updateStorageEstimate();
+        try {
+            await this.dbStore.add(newItem);
+            this.items.unshift(newItem);
+            this.renderFeed();
+            await this.updateStorageEstimate();
+            return true;
+        } catch (e) {
+            console.error('Upload local file failed:', e);
+            return false;
+        }
     }
 
     async clearHistory() {
-        if (!confirm('Are you sure you want to clear all shared history?')) return;
+        const confirmed = await this.showConfirmModal({
+            icon: 'trash-2',
+            iconColor: 'text-red-400',
+            title: 'Clear All History',
+            message: 'This will permanently delete every shared item and file. Action cannot be undone.',
+            confirmLabel: 'Clear All',
+            confirmClass: 'bg-red-500 hover:bg-red-400 text-white'
+        });
+        if (!confirmed) return;
 
         if (this.mode === 'online') {
             try {
@@ -497,7 +567,15 @@ export class ShareManager {
     }
 
     async deleteItem(item) {
-        if (!confirm(`Are you sure you want to delete this ${item.type === 'file' ? 'file' : 'message'}?`)) return;
+        const confirmed = await this.showConfirmModal({
+            icon: item.type === 'file' ? 'file-x' : 'message-square-x',
+            iconColor: 'text-red-400',
+            title: item.type === 'file' ? 'Delete File' : 'Delete Message',
+            message: 'Are you sure you want to delete this item permanently?',
+            confirmLabel: 'Delete',
+            confirmClass: 'bg-red-500 hover:bg-red-400 text-white'
+        });
+        if (!confirmed) return;
 
         if (this.mode === 'online') {
             try {
@@ -510,11 +588,12 @@ export class ShareManager {
                 if (dbError) throw dbError;
 
                 // If it is a file, delete from Supabase Storage
-                if (item.type === 'file' && item.uniqueFilename) {
+                const storagePath = item.uniqueFilename || (item.url ? item.url.split('/').pop() : item.filename);
+                if (item.type === 'file' && storagePath) {
                     const { error: storageError } = await this.supabase
                         .storage
                         .from('shared-files')
-                        .remove([item.uniqueFilename]);
+                        .remove([storagePath]);
                     
                     if (storageError) console.warn('Supabase storage delete warning:', storageError);
                 }
@@ -548,8 +627,204 @@ export class ShareManager {
             this.items = this.items.filter(i => i.id !== item.id);
             this.renderFeed();
             await this.updateStorageEstimate();
+            this.playSound('remove');
         } catch (e) {
             console.error('Failed to delete from local database:', e);
+        }
+    }
+
+    playSound(name) {
+        try {
+            const sounds = {
+                success: 'assets/Sounds/success.mp3',
+                remove: 'assets/Sounds/remove.mp3',
+                fail: 'assets/Sounds/fail.mp3',
+                'mouse-click': 'assets/Sounds/mouse-click.mp3'
+            };
+            if (sounds[name]) {
+                const audio = new Audio(sounds[name]);
+                audio.play().catch(() => {});
+            }
+        } catch (e) {}
+    }
+
+    loadStarred() {
+        try {
+            const raw = localStorage.getItem('shareStarredIds');
+            if (raw) this.starredIds = new Set(JSON.parse(raw));
+        } catch (e) {
+            this.starredIds = new Set();
+        }
+    }
+
+    saveStarred() {
+        try {
+            localStorage.setItem('shareStarredIds', JSON.stringify([...this.starredIds]));
+        } catch (e) {}
+    }
+
+    toggleStar(itemId) {
+        if (this.starredIds.has(itemId)) this.starredIds.delete(itemId);
+        else this.starredIds.add(itemId);
+        this.saveStarred();
+        this.renderFeed();
+    }
+
+    toggleSelectAll(checked) {
+        if (!this.dom.feed) return;
+        const visibleCards = Array.from(this.dom.feed.querySelectorAll('[data-share-type]')).filter(el => el.style.display !== 'none');
+        visibleCards.forEach(card => {
+            const id = card.dataset.itemId;
+            if (id) {
+                if (checked) this.selectedIds.add(id);
+                else this.selectedIds.delete(id);
+            }
+        });
+        this.updateSelectedUI();
+    }
+
+    updateSelectedUI() {
+        const count = this.selectedIds.size;
+        if (this.dom.selectedCountText) this.dom.selectedCountText.textContent = count;
+        if (this.dom.btnDeleteSelected) {
+            if (count > 0) this.dom.btnDeleteSelected.classList.remove('hidden');
+            else this.dom.btnDeleteSelected.classList.add('hidden');
+        }
+
+        if (this.dom.feed) {
+            const cards = this.dom.feed.querySelectorAll('[data-item-id]');
+            cards.forEach(card => {
+                const itemId = card.dataset.itemId;
+                const isSelected = this.selectedIds.has(itemId);
+                const isStarred = card.dataset.starred === 'true';
+                const chk = card.querySelector('.share-item-checkbox');
+                if (chk) chk.checked = isSelected;
+
+                if (isSelected) {
+                    card.classList.add('share-card-selected', 'border-cyan-500/50', 'bg-cyan-950/20');
+                } else {
+                    card.classList.remove('share-card-selected', 'border-cyan-500/50', 'bg-cyan-950/20');
+                }
+            });
+        }
+    }
+
+    async deleteSelectedItems() {
+        const selectedList = Array.from(this.selectedIds);
+        if (selectedList.length === 0) return;
+        const count = selectedList.length;
+
+        const confirmed = await this.showConfirmModal({
+            icon: 'trash-2',
+            iconColor: 'text-red-400',
+            title: `Delete ${count} Selected Item${count > 1 ? 's' : ''}`,
+            message: `Permanently delete ${count} selected item${count > 1 ? 's' : ''}?`,
+            confirmLabel: `Delete (${count})`,
+            confirmClass: 'bg-red-500 hover:bg-red-400 text-white'
+        });
+        if (!confirmed) return;
+
+        if (this.mode === 'online') {
+            try {
+                const itemsToDelete = this.items.filter(i => this.selectedIds.has(i.id));
+                const storagePaths = itemsToDelete
+                    .filter(i => i.type === 'file')
+                    .map(i => i.uniqueFilename || (i.url ? i.url.split('/').pop() : i.filename))
+                    .filter(Boolean);
+
+                if (storagePaths.length > 0) {
+                    await this.supabase.storage.from('shared-files').remove(storagePaths);
+                }
+
+                await this.supabase.from('shared_items').delete().in('id', selectedList);
+                this.items = this.items.filter(i => !this.selectedIds.has(i.id));
+                this.selectedIds.clear();
+                this.renderFeed();
+                await this.updateStorageEstimate();
+                this.playSound('remove');
+            } catch (e) {
+                await this.deleteLocalSelectedItems(selectedList);
+            }
+        } else {
+            await this.deleteLocalSelectedItems(selectedList);
+        }
+    }
+
+    async deleteLocalSelectedItems(selectedList) {
+        for (const id of selectedList) {
+            await this.dbStore.delete(id);
+        }
+        this.items = this.items.filter(i => !this.selectedIds.has(i.id));
+        this.selectedIds.clear();
+        this.renderFeed();
+        await this.updateStorageEstimate();
+        this.playSound('remove');
+    }
+
+    enterEditMode(item, card, bodyEl) {
+        const originalHTML = bodyEl.innerHTML;
+        bodyEl.innerHTML = `
+            <div class="flex flex-col gap-2 p-2 bg-slate-900/90 rounded-lg border border-cyan-500/40">
+                ${item.type === 'file' ? `
+                    <label class="text-[10px] text-cyan-400 font-mono">EDIT TITLE:</label>
+                    <input type="text" class="edit-title-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded px-2.5 py-1 text-xs focus:border-cyan-500 focus:outline-none" value="${item.title || ''}" placeholder="Title...">
+                    <label class="text-[10px] text-cyan-400 font-mono mt-1">EDIT FILENAME:</label>
+                    <input type="text" class="edit-text-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded px-2.5 py-1 text-xs focus:border-cyan-500 focus:outline-none" value="${item.filename || ''}">
+                ` : `
+                    <label class="text-[10px] text-cyan-400 font-mono">EDIT TITLE:</label>
+                    <input type="text" class="edit-title-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded px-2.5 py-1 text-xs focus:border-cyan-500 focus:outline-none" value="${item.title || ''}" placeholder="Title...">
+                    <label class="text-[10px] text-cyan-400 font-mono mt-1">EDIT CONTENT:</label>
+                    <textarea class="edit-text-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded p-2 text-xs font-mono focus:border-cyan-500 focus:outline-none resize-none" rows="3">${item.text || ''}</textarea>
+                `}
+                <div class="flex justify-end gap-2 mt-1">
+                    <button class="btn-cancel-edit px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition">Cancel</button>
+                    <button class="btn-save-edit px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition">Save</button>
+                </div>
+            </div>
+        `;
+
+        const btnCancel = bodyEl.querySelector('.btn-cancel-edit');
+        const btnSave = bodyEl.querySelector('.btn-save-edit');
+        const inputContent = bodyEl.querySelector('.edit-text-input');
+        const inputTitle = bodyEl.querySelector('.edit-title-input');
+
+        btnCancel.onclick = () => {
+            this.playSound('mouse-click');
+            bodyEl.innerHTML = originalHTML;
+            if (window.lucide) window.lucide.createIcons();
+        };
+        btnSave.onclick = async () => {
+            this.playSound('mouse-click');
+            const newContent = inputContent.value.trim();
+            const newTitle = inputTitle ? inputTitle.value.trim() : '';
+            if (!newContent) return;
+            if (item.type === 'text') await this.updateItem(item, { text: newContent, title: newTitle });
+            else await this.updateItem(item, { filename: newContent, title: newTitle });
+            this.renderFeed();
+        };
+    }
+
+    async updateItem(item, newData) {
+        Object.assign(item, newData);
+        if (this.mode === 'online') {
+            try {
+                const payload = {};
+                if (item.type === 'text') payload.text = item.text;
+                if (item.type === 'file') payload.filename = item.filename;
+                if (item.title !== undefined) payload.title = item.title;
+
+                let { error } = await this.supabase.from('shared_items').update(payload).eq('id', item.id);
+                if (error && error.message && error.message.includes('title')) {
+                    delete payload.title;
+                    const res = await this.supabase.from('shared_items').update(payload).eq('id', item.id);
+                    error = res.error;
+                }
+                if (error) throw error;
+            } catch (e) {
+                await this.dbStore.add(item);
+            }
+        } else {
+            await this.dbStore.add(item);
         }
     }
 
@@ -621,12 +896,31 @@ export class ShareManager {
 
             try {
                 // Fetch list of files in the bucket
-                const { data: fileList, error } = await this.supabase
+                let { data: fileList, error } = await this.supabase
                     .storage
                     .from('shared-files')
                     .list();
 
                 if (error) throw error;
+
+                // Auto-cleanup orphan files in storage bucket that no longer exist in DB items feed
+                const activeFileNames = new Set(
+                    this.items
+                        .filter(i => i.type === 'file')
+                        .map(i => i.uniqueFilename || (i.url ? i.url.split('/').pop() : i.filename))
+                        .filter(Boolean)
+                );
+
+                const orphanFiles = (fileList || [])
+                    .map(f => f.name)
+                    .filter(name => name && !activeFileNames.has(name));
+
+                if (orphanFiles.length > 0) {
+                    console.log('Cleaning up orphan Cloud Storage files:', orphanFiles);
+                    await this.supabase.storage.from('shared-files').remove(orphanFiles);
+                    const { data: cleanList } = await this.supabase.storage.from('shared-files').list();
+                    if (cleanList) fileList = cleanList;
+                }
 
                 const totalBytes = (fileList || []).reduce((acc, file) => acc + (file.metadata?.size || 0), 0);
                 const cloudQuotaBytes = 1024 * 1024 * 1024; // 1 GB free tier
@@ -717,8 +1011,16 @@ export class ShareManager {
         }
 
         this.items.forEach(item => {
+            const isStarred = this.starredIds.has(item.id);
+            const isSelected = this.selectedIds.has(item.id);
+
             const card = document.createElement('div');
-            card.className = 'glass-panel p-4 rounded-xl border border-slate-800/80 bg-slate-950/20 hover:border-slate-800 flex flex-col gap-3 relative group transition-all';
+            card.dataset.itemId = item.id;
+            if (isStarred) card.dataset.starred = 'true';
+
+            card.className = `glass-panel p-4 rounded-xl border flex flex-col gap-3 relative group transition-all ${
+                isSelected ? 'share-card-selected border-cyan-500/50 bg-cyan-950/20' : 'border-slate-800/80 bg-slate-950/20 hover:border-slate-800'
+            }`;
 
             // Determine the share type for filtering
             let shareType = item.type; // 'text' or 'file'
@@ -753,6 +1055,19 @@ export class ShareManager {
             const infoDiv = document.createElement('div');
             infoDiv.className = 'flex items-center gap-2 text-[10px] font-mono text-slate-500';
             
+            // Checkbox for bulk selection
+            const chkSelect = document.createElement('input');
+            chkSelect.type = 'checkbox';
+            chkSelect.className = 'share-item-checkbox w-3.5 h-3.5 rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-500 shrink-0 mr-0.5';
+            chkSelect.checked = isSelected;
+            chkSelect.onclick = (e) => {
+                e.stopPropagation();
+                if (chkSelect.checked) this.selectedIds.add(item.id);
+                else this.selectedIds.delete(item.id);
+                this.updateSelectedUI();
+            };
+            infoDiv.appendChild(chkSelect);
+            
             // Icon representing type
             const typeIcon = document.createElement('i');
             typeIcon.className = 'w-3.5 h-3.5';
@@ -761,15 +1076,42 @@ export class ShareManager {
                 typeIcon.setAttribute('data-lucide', 'message-square');
                 infoDiv.appendChild(typeIcon);
                 
-                // Detect link
                 const isLink = /^(https?:\/\/[^\s]+)$/i.test(item.text.trim());
-                infoDiv.appendChild(document.createTextNode(isLink ? 'LINK SHARE' : 'TEXT NOTE'));
+                const typeText = isLink ? 'LINK SHARE' : 'TEXT NOTE';
+
+                if (item.title) {
+                    const labelSpan = document.createElement('span');
+                    labelSpan.innerText = typeText;
+                    infoDiv.appendChild(labelSpan);
+
+                    const titleBadge = document.createElement('span');
+                    titleBadge.className = 'font-bold text-cyan-300 truncate max-w-[140px] sm:max-w-[220px] bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20';
+                    titleBadge.title = item.title;
+                    titleBadge.innerText = item.title;
+                    infoDiv.appendChild(titleBadge);
+                } else {
+                    infoDiv.appendChild(document.createTextNode(typeText));
+                }
             } else {
                 typeIcon.setAttribute('data-lucide', 'file');
                 infoDiv.appendChild(typeIcon);
                 
                 const ext = item.filename.split('.').pop().toUpperCase();
-                infoDiv.appendChild(document.createTextNode(`FILE SHARE (${ext})`));
+                const typeText = `FILE SHARE (${ext})`;
+
+                if (item.title) {
+                    const labelSpan = document.createElement('span');
+                    labelSpan.innerText = typeText;
+                    infoDiv.appendChild(labelSpan);
+
+                    const titleBadge = document.createElement('span');
+                    titleBadge.className = 'font-bold text-cyan-300 truncate max-w-[140px] sm:max-w-[220px] bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20';
+                    titleBadge.title = item.title;
+                    titleBadge.innerText = item.title;
+                    infoDiv.appendChild(titleBadge);
+                } else {
+                    infoDiv.appendChild(document.createTextNode(typeText));
+                }
             }
 
             const timeSpan = document.createElement('span');
@@ -813,6 +1155,29 @@ export class ShareManager {
                 
                 actionDiv.appendChild(btnDownload);
             }
+
+            // Edit quick action
+            const btnEdit = document.createElement('button');
+            btnEdit.className = 'p-1 hover:bg-slate-800/50 hover:text-emerald-400 rounded transition text-slate-500';
+            btnEdit.title = 'Edit item';
+            btnEdit.innerHTML = '<i data-lucide="pencil" class="w-3.5 h-3.5"></i>';
+            btnEdit.onclick = () => {
+                this.playSound('mouse-click');
+                this.enterEditMode(item, card, body);
+            };
+            actionDiv.appendChild(btnEdit);
+
+            // Star quick action
+            const btnStar = document.createElement('button');
+            btnStar.className = `p-1 rounded transition ${isStarred ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800/50'}`;
+            btnStar.title = isStarred ? 'Unstar item' : 'Star item';
+            if (isStarred) {
+                btnStar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+            } else {
+                btnStar.innerHTML = `<i data-lucide="star" class="w-3.5 h-3.5"></i>`;
+            }
+            btnStar.onclick = () => this.toggleStar(item.id);
+            actionDiv.appendChild(btnStar);
 
             // Delete quick action
             const btnDelete = document.createElement('button');
@@ -1017,9 +1382,15 @@ export class ShareManager {
     async importBackup(file) {
         if (!file) return;
 
-        if (!confirm('The backup data will be added to your list. Are you sure you want to import it?')) {
-            return;
-        }
+        const confirmed = await this.showConfirmModal({
+            icon: 'download-cloud',
+            iconColor: 'text-blue-400',
+            title: 'Import Backup',
+            message: 'Items from the backup file will be added to your current list. Duplicates may appear if items already exist.',
+            confirmLabel: 'Import',
+            confirmClass: 'bg-blue-500 hover:bg-blue-400 text-white'
+        });
+        if (!confirmed) return;
 
         const originalText = this.dom.btnImportBackupTrigger.innerHTML;
         this.dom.btnImportBackupTrigger.disabled = true;
@@ -1081,5 +1452,91 @@ export class ShareManager {
             if (window.lucide) window.lucide.createIcons();
         };
         reader.readAsText(file);
+    }
+
+    showConfirmModal(options) {
+        return new Promise((resolve) => {
+            const existing = document.getElementById('share-confirm-modal');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'share-confirm-modal';
+            overlay.className = 'share-overlay';
+            overlay.innerHTML = `
+                <div class="share-modal-card">
+                    <div class="share-modal-body">
+                        <div class="share-modal-icon-badge ${options.iconColor || 'text-red-400'}">
+                            <i data-lucide="${options.icon || 'alert-triangle'}" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="share-modal-title">${options.title || 'Confirm Action'}</h3>
+                        <p class="share-modal-message">${options.message || 'Are you sure?'}</p>
+                        <div class="share-modal-divider"></div>
+                        <div class="share-modal-actions">
+                            <button id="btn-confirm-cancel" class="share-modal-btn share-modal-btn-cancel">
+                                Cancel
+                            </button>
+                            <button id="btn-confirm-ok" class="share-modal-btn share-modal-btn-confirm ${options.confirmClass || 'bg-red-500 hover:bg-red-400 text-white'} shadow-lg shadow-red-500/20">
+                                ${options.confirmLabel || 'Confirm'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            if (window.lucide) window.lucide.createIcons();
+
+            requestAnimationFrame(() => {
+                overlay.classList.add('share-overlay-visible');
+                const card = overlay.querySelector('.share-modal-card');
+                if (card) card.classList.add('share-modal-card-visible');
+            });
+
+            const close = (result) => {
+                this.playSound('mouse-click');
+                overlay.classList.remove('share-overlay-visible');
+                const card = overlay.querySelector('.share-modal-card');
+                if (card) card.classList.remove('share-modal-card-visible');
+                setTimeout(() => { overlay.remove(); resolve(result); }, 200);
+            };
+
+            const btnCancel = overlay.querySelector('#btn-confirm-cancel');
+            const btnOk = overlay.querySelector('#btn-confirm-ok');
+            btnCancel.onclick = () => close(false);
+            btnOk.onclick = () => close(true);
+        });
+    }
+
+    showLoadingModal(title, message) {
+        this.hideLoadingModal();
+        const overlay = document.createElement('div');
+        overlay.id = 'share-loading-overlay';
+        overlay.className = 'share-overlay share-overlay-visible';
+        overlay.innerHTML = `
+            <div class="share-modal-card share-modal-card-visible">
+                <div class="share-modal-body">
+                    <div class="share-spinner-badge">
+                        <div class="w-10 h-10 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin"></div>
+                    </div>
+                    <h3 class="share-modal-title">${title}</h3>
+                    <p class="share-modal-message">${message}</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        this._loadingModalStartTime = Date.now();
+    }
+
+    async hideLoadingModal() {
+        const overlay = document.getElementById('share-loading-overlay');
+        if (overlay) {
+            const elapsed = Date.now() - (this._loadingModalStartTime || 0);
+            if (elapsed < 500) {
+                await new Promise(r => setTimeout(r, 500 - elapsed));
+            }
+            overlay.classList.remove('share-overlay-visible');
+            const card = overlay.querySelector('.share-modal-card');
+            if (card) card.classList.remove('share-modal-card-visible');
+            setTimeout(() => overlay.remove(), 200);
+        }
     }
 }

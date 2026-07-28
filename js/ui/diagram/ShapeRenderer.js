@@ -89,7 +89,7 @@ export class ShapeRenderer {
             }
         }
 
-        if ((shape.type === 'rect' || shape.type === 'circle' || shape.type === 'line' || shape.type === 'arrow' || shape.type === 'connector') && shape.text) {
+        if ((shape.type === 'rect' || shape.type === 'circle' || shape.type === 'diamond' || shape.type === 'parallelogram' || shape.type === 'line' || shape.type === 'arrow' || shape.type === 'connector') && shape.text) {
             let center;
             if (shape.type === 'connector') {
                 center = Geometry.getConnectorCenter(shape, shapes);
@@ -102,9 +102,61 @@ export class ShapeRenderer {
         ctx.restore();
     }
 
+    static getAutoFitFontSize(ctx, text, shape) {
+        if (!text || !shape) return shape.fontSize || 14;
+        
+        let containerW = 0;
+        let containerH = 0;
+        
+        if (shape.type === 'rect') {
+            containerW = (shape.w || 0) * 0.85;
+            containerH = (shape.h || 0) * 0.75;
+        } else if (shape.type === 'circle') {
+            const side = (shape.radius || 0) * 1.35;
+            containerW = side;
+            containerH = side;
+        } else if (shape.type === 'diamond') {
+            containerW = (shape.w || 0) * 0.52;
+            containerH = (shape.h || 0) * 0.52;
+        } else if (shape.type === 'parallelogram') {
+            const skew = Math.min(24, (shape.w || 0) * 0.2);
+            containerW = ((shape.w || 0) - skew) * 0.78;
+            containerH = (shape.h || 0) * 0.75;
+        } else {
+            return shape.fontSize || 14;
+        }
+
+        if (containerW <= 0 || containerH <= 0) return shape.fontSize || 14;
+
+        const lines = text.split('\n');
+        const minFontSize = 9;
+        const maxFontSize = Math.min(48, Math.max(14, containerH * 0.75));
+
+        let optimalFontSize = minFontSize;
+
+        for (let fs = maxFontSize; fs >= minFontSize; fs -= 0.5) {
+            ctx.font = `bold ${fs}px Rajdhani, Kanit, sans-serif`;
+            const lineHeight = fs * 1.25;
+            const totalH = lines.length * lineHeight;
+
+            let maxW = 0;
+            for (const line of lines) {
+                const w = ctx.measureText(line).width;
+                if (w > maxW) maxW = w;
+            }
+
+            if (maxW <= containerW && totalH <= containerH) {
+                optimalFontSize = fs;
+                break;
+            }
+            optimalFontSize = fs;
+        }
+        return Math.max(minFontSize, optimalFontSize);
+    }
+
     static drawShapeText(ctx, shape, x, y) {
         if (!shape.text) return;
-        const fontSize = shape.fontSize || 14;
+        const fontSize = this.getAutoFitFontSize(ctx, shape.text, shape);
         ctx.font = `${fontSize}px Rajdhani, Kanit, sans-serif`;
         
         const lines = shape.text.split('\n');

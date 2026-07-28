@@ -486,6 +486,22 @@ export class DiagramManager {
             return;
         }
 
+        if (activeTool === 'text') {
+            const hit = Geometry.findShapeAt(this.shapes, coords.localX, coords.localY, this.zoom);
+            if (hit) {
+                let center;
+                if (hit.type === 'connector') {
+                    center = Geometry.getConnectorCenter(hit, this.shapes);
+                } else {
+                    center = Geometry.getShapeCenter(hit);
+                }
+                this.createTextEditor(center.x, center.y, hit);
+            } else {
+                this.createTextEditor(coords.localX, coords.localY);
+            }
+            return;
+        }
+
         if (activeTool === 'select') {
             // Check if we clicked a connection port handle on ANY shape
             let clickedPort = null;
@@ -514,19 +530,24 @@ export class DiagramManager {
                 return;
             }
 
-            // Check resize handles of group selection (multi-select)
-            if (this.selectedShapes.length > 1 && this.currentTool === 'select') {
+            // Check resize handles of selection bounding box (single or multi-select)
+            if (this.selectedShapes.length > 0 && this.currentTool === 'select') {
                 const bbox = this.getSelectedShapesBoundingBox();
                 if (bbox) {
-                    const size = Math.max(12, 12 / this.zoom);
-                    const groupHandles = [
+                    const pad = 6;
+                    const size = Math.max(16, 16 / this.zoom);
+                    const handles = [
+                        { name: 'group-tl', x: bbox.x - pad, y: bbox.y - pad },
+                        { name: 'group-tr', x: bbox.x + bbox.w + pad, y: bbox.y - pad },
+                        { name: 'group-bl', x: bbox.x - pad, y: bbox.y + bbox.h + pad },
+                        { name: 'group-br', x: bbox.x + bbox.w + pad, y: bbox.y + bbox.h + pad },
                         { name: 'group-tl', x: bbox.x, y: bbox.y },
                         { name: 'group-tr', x: bbox.x + bbox.w, y: bbox.y },
                         { name: 'group-bl', x: bbox.x, y: bbox.y + bbox.h },
                         { name: 'group-br', x: bbox.x + bbox.w, y: bbox.y + bbox.h }
                     ];
                     let hitHandle = null;
-                    for (const h of groupHandles) {
+                    for (const h of handles) {
                         if (Math.abs(coords.localX - h.x) < size && Math.abs(coords.localY - h.y) < size) {
                             hitHandle = h.name;
                             break;
@@ -557,50 +578,9 @@ export class DiagramManager {
                             if (s.points !== undefined) item.points = s.points.map(p => ({ x: p.x, y: p.y }));
                             return item;
                         });
+                        this.draw();
                         return;
                     }
-                }
-            }
-
-            // Check resize handles of selected shape
-            if (this.selectedShape) {
-                const handle = Geometry.checkResizeHandleHit(this.selectedShape, coords, this.zoom);
-                if (handle) {
-                    this.isResizing = true;
-                    this.activeHandle = handle;
-                    
-                    if (this.selectedShape.type === 'rect' || this.selectedShape.type === 'diamond' || this.selectedShape.type === 'parallelogram') {
-                        this.resizeStartData = { 
-                             x: this.selectedShape.x, 
-                             y: this.selectedShape.y, 
-                             w: this.selectedShape.w, 
-                             h: this.selectedShape.h 
-                        };
-                    } else if (this.selectedShape.type === 'circle') {
-                        this.resizeStartData = { 
-                             x: this.selectedShape.x, 
-                             y: this.selectedShape.y, 
-                             radius: this.selectedShape.radius 
-                        };
-                    } else if (this.selectedShape.type === 'text') {
-                        const fontSize = this.selectedShape.fontSize || 14;
-                        const bbox = Geometry.getTextBoundingBox(this.selectedShape);
-                        this.resizeStartData = { 
-                             x: this.selectedShape.x, 
-                             y: this.selectedShape.y, 
-                             fontSize: fontSize, 
-                             width: bbox.w, 
-                             height: bbox.h 
-                        };
-                    } else if (this.selectedShape.type === 'pencil') {
-                        const bbox = Geometry.getPencilBoundingBox(this.selectedShape);
-                        this.resizeStartData = {
-                            minX: bbox.x, minY: bbox.y, 
-                            w: bbox.w, h: bbox.h,
-                            points: this.selectedShape.points.map(p => ({ x: p.x, y: p.y }))
-                        };
-                    }
-                    return;
                 }
             }
 
@@ -1259,6 +1239,9 @@ export class DiagramManager {
 
         document.body.appendChild(input);
         input.focus();
+        if (existingShape && existingShape.text) {
+            input.select();
+        }
         this.activeTextInput = input;
 
         // Auto-resize height
@@ -1868,119 +1851,33 @@ export class DiagramManager {
             }
         }
 
-        // Draw Selection Outline for Selected Shapes
+        // Draw Selection Bounding Box & Resizing Handles for Selected Shapes
         if (this.currentTool === 'select' && this.selectedShapes.length > 0) {
-            if (this.selectedShapes.length === 1) {
-                this.selectedShapes.forEach(shape => {
-                    this.ctx.save();
-                    this.ctx.strokeStyle = '#06b6d4'; // Cyan outline
-                    this.ctx.lineWidth = 1.5;
-                    this.ctx.setLineDash([6, 4]);
-
-                    const pad = 6;
-                    const handleSize = 6;
-                    let corners = [];
-
-                    if (shape.type === 'rect' || shape.type === 'diamond' || shape.type === 'parallelogram') {
-                        this.ctx.strokeRect(shape.x - pad, shape.y - pad, shape.w + pad * 2, shape.h + pad * 2);
-                        this.ctx.setLineDash([]);
-                        corners = [
-                            { x: shape.x, y: shape.y },
-                            { x: shape.x + shape.w, y: shape.y },
-                            { x: shape.x, y: shape.y + shape.h },
-                            { x: shape.x + shape.w, y: shape.y + shape.h }
-                        ];
-                    } else if (shape.type === 'circle') {
-                        this.ctx.beginPath();
-                        this.ctx.arc(shape.x, shape.y, shape.radius + pad, 0, 2 * Math.PI);
-                        this.ctx.stroke();
-                        this.ctx.setLineDash([]);
-                        corners = [
-                            { x: shape.x + shape.radius, y: shape.y },
-                            { x: shape.x - shape.radius, y: shape.y },
-                            { x: shape.x, y: shape.y + shape.radius },
-                            { x: shape.x, y: shape.y - shape.radius }
-                        ];
-                    } else if (shape.type === 'text') {
-                        const bbox = Geometry.getTextBoundingBox(shape);
-                        this.ctx.strokeRect(bbox.x - pad, bbox.y - pad, bbox.w + pad * 2, bbox.h + pad * 2);
-                        this.ctx.setLineDash([]);
-                        corners = [
-                            { x: bbox.x, y: bbox.y },
-                            { x: bbox.x + bbox.w, y: bbox.y },
-                            { x: bbox.x, y: bbox.y + bbox.h },
-                            { x: bbox.x + bbox.w, y: bbox.y + bbox.h }
-                        ];
-                    } else if (shape.type === 'line' || shape.type === 'arrow') {
-                        const minX = Math.min(shape.x, shape.x2);
-                        const maxX = Math.max(shape.x, shape.x2);
-                        const minY = Math.min(shape.y, shape.y2);
-                        const maxY = Math.max(shape.y, shape.y2);
-                        const w = maxX - minX;
-                        const h = maxY - minY;
-                        this.ctx.strokeRect(minX - pad, minY - pad, w + pad * 2, h + pad * 2);
-                        this.ctx.setLineDash([]);
-                        corners = [
-                            { x: shape.x, y: shape.y },
-                            { x: shape.x2, y: shape.y2 }
-                        ];
-                    } else if (shape.type === 'pencil') {
-                        const bbox = Geometry.getPencilBoundingBox(shape);
-                        this.ctx.strokeRect(bbox.x - pad, bbox.y - pad, bbox.w + pad * 2, bbox.h + pad * 2);
-                        this.ctx.setLineDash([]);
-                        corners = [
-                            { x: bbox.x, y: bbox.y },
-                            { x: bbox.x + bbox.w, y: bbox.y },
-                            { x: bbox.x, y: bbox.y + bbox.h },
-                            { x: bbox.x + bbox.w, y: bbox.y + bbox.h }
-                        ];
-                    } else if (shape.type === 'connector') {
-                        const bbox = Geometry.getConnectorBoundingBox(shape, this.shapes);
-                        this.ctx.strokeRect(bbox.x - pad, bbox.y - pad, bbox.w + pad * 2, bbox.h + pad * 2);
-                        this.ctx.setLineDash([]);
-                        const f = this.shapes.find(s => s.id === shape.fromId);
-                        const t = this.shapes.find(s => s.id === shape.toId);
-                        if (f && t) {
-                            const startPt = Geometry.getShapePortCoords(f, shape.fromPort);
-                            const endPt = Geometry.getShapePortCoords(t, shape.toPort);
-                            corners = [startPt, endPt];
-                        }
-                    }
-
-                    // Draw resizing handles only if single shape is selected
-                    if (this.selectedShapes.length === 1) {
-                        this.ctx.fillStyle = '#06b6d4';
-                        corners.forEach(c => {
-                            this.ctx.fillRect(c.x - handleSize/2, c.y - handleSize/2, handleSize, handleSize);
-                        });
-                    }
-
-                    this.ctx.restore();
+            const bbox = this.getSelectedShapesBoundingBox();
+            if (bbox) {
+                this.ctx.save();
+                this.ctx.strokeStyle = '#06b6d4'; // Cyan outline
+                this.ctx.lineWidth = 1.5;
+                this.ctx.setLineDash([6, 4]);
+                const pad = 6;
+                const hSize = Math.max(10, 10 / this.zoom);
+                this.ctx.strokeRect(bbox.x - pad, bbox.y - pad, bbox.w + pad * 2, bbox.h + pad * 2);
+                
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.strokeStyle = '#06b6d4';
+                this.ctx.lineWidth = 1.5;
+                this.ctx.setLineDash([]);
+                const corners = [
+                    { x: bbox.x - pad, y: bbox.y - pad },
+                    { x: bbox.x + bbox.w + pad, y: bbox.y - pad },
+                    { x: bbox.x - pad, y: bbox.y + bbox.h + pad },
+                    { x: bbox.x + bbox.w + pad, y: bbox.y + bbox.h + pad }
+                ];
+                corners.forEach(c => {
+                    this.ctx.fillRect(c.x - hSize / 2, c.y - hSize / 2, hSize, hSize);
+                    this.ctx.strokeRect(c.x - hSize / 2, c.y - hSize / 2, hSize, hSize);
                 });
-            } else {
-                const bbox = this.getSelectedShapesBoundingBox();
-                if (bbox) {
-                    this.ctx.save();
-                    this.ctx.strokeStyle = '#06b6d4'; // Cyan outline
-                    this.ctx.lineWidth = 1.5;
-                    this.ctx.setLineDash([6, 4]);
-                    const pad = 6;
-                    const handleSize = 6;
-                    this.ctx.strokeRect(bbox.x - pad, bbox.y - pad, bbox.w + pad * 2, bbox.h + pad * 2);
-                    
-                    this.ctx.fillStyle = '#06b6d4';
-                    this.ctx.setLineDash([]);
-                    const corners = [
-                        { x: bbox.x, y: bbox.y },
-                        { x: bbox.x + bbox.w, y: bbox.y },
-                        { x: bbox.x, y: bbox.y + bbox.h },
-                        { x: bbox.x + bbox.w, y: bbox.y + bbox.h }
-                    ];
-                    corners.forEach(c => {
-                        this.ctx.fillRect(c.x - handleSize/2, c.y - handleSize/2, handleSize, handleSize);
-                    });
-                    this.ctx.restore();
-                }
+                this.ctx.restore();
             }
         }
 

@@ -249,10 +249,15 @@ export class Geometry {
 
     static checkResizeHandleHit(shape, coords, zoom) {
         if (!shape) return null;
-        const size = 10 / zoom; // hit tolerance size
+        const size = Math.max(16, 16 / zoom); // hit tolerance size
+        const pad = 6;
 
-        if (shape.type === 'rect') {
+        if (shape.type === 'rect' || shape.type === 'diamond' || shape.type === 'parallelogram') {
             const corners = [
+                { name: 'rect-tl', x: shape.x - pad, y: shape.y - pad },
+                { name: 'rect-tr', x: shape.x + shape.w + pad, y: shape.y - pad },
+                { name: 'rect-bl', x: shape.x - pad, y: shape.y + shape.h + pad },
+                { name: 'rect-br', x: shape.x + shape.w + pad, y: shape.y + shape.h + pad },
                 { name: 'rect-tl', x: shape.x, y: shape.y },
                 { name: 'rect-tr', x: shape.x + shape.w, y: shape.y },
                 { name: 'rect-bl', x: shape.x, y: shape.y + shape.h },
@@ -265,6 +270,10 @@ export class Geometry {
             }
         } else if (shape.type === 'circle') {
             const corners = [
+                { name: 'circle-t', x: shape.x, y: shape.y - shape.radius - pad },
+                { name: 'circle-b', x: shape.x, y: shape.y + shape.radius + pad },
+                { name: 'circle-l', x: shape.x - shape.radius - pad, y: shape.y },
+                { name: 'circle-r', x: shape.x + shape.radius + pad, y: shape.y },
                 { name: 'circle-t', x: shape.x, y: shape.y - shape.radius },
                 { name: 'circle-b', x: shape.x, y: shape.y + shape.radius },
                 { name: 'circle-l', x: shape.x - shape.radius, y: shape.y },
@@ -288,6 +297,10 @@ export class Geometry {
         } else if (shape.type === 'text') {
             const bbox = this.getTextBoundingBox(shape);
             const corners = [
+                { name: 'text-tl', x: bbox.x - pad, y: bbox.y - pad },
+                { name: 'text-tr', x: bbox.x + bbox.w + pad, y: bbox.y - pad },
+                { name: 'text-bl', x: bbox.x - pad, y: bbox.y + bbox.h + pad },
+                { name: 'text-br', x: bbox.x + bbox.w + pad, y: bbox.y + bbox.h + pad },
                 { name: 'text-tl', x: bbox.x, y: bbox.y },
                 { name: 'text-tr', x: bbox.x + bbox.w, y: bbox.y },
                 { name: 'text-bl', x: bbox.x, y: bbox.y + bbox.h },
@@ -301,6 +314,10 @@ export class Geometry {
         } else if (shape.type === 'pencil') {
             const bbox = this.getPencilBoundingBox(shape);
             const corners = [
+                { name: 'pencil-tl', x: bbox.x - pad, y: bbox.y - pad },
+                { name: 'pencil-tr', x: bbox.x + bbox.w + pad, y: bbox.y - pad },
+                { name: 'pencil-bl', x: bbox.x - pad, y: bbox.y + bbox.h + pad },
+                { name: 'pencil-br', x: bbox.x + bbox.w + pad, y: bbox.y + bbox.h + pad },
                 { name: 'pencil-tl', x: bbox.x, y: bbox.y },
                 { name: 'pencil-tr', x: bbox.x + bbox.w, y: bbox.y },
                 { name: 'pencil-bl', x: bbox.x, y: bbox.y + bbox.h },
