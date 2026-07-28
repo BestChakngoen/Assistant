@@ -201,13 +201,32 @@ export const tradeTrackViewHtml = `
                     style="image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; width: 100%; border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; box-shadow: 0 0 30px rgba(168,85,247,0.2), 0 0 60px rgba(0,200,255,0.1);">
                 </canvas>
             </div>
-            <div class="px-4 pb-3 flex items-center justify-between">
-                <p class="text-[10px] text-slate-600 font-mono">SPACE / ↑ / TAP = JUMP &nbsp;|&nbsp; DOUBLE JUMP UNLOCKED</p>
-                <div class="flex items-center gap-2">
-                    <button id="game-mute-btn" title="Toggle Sound"
-                        onclick="window.__phonkToggleMute && window.__phonkToggleMute()"
-                        class="text-sm px-2 py-0.5 rounded border border-purple-500/40 text-purple-400 hover:bg-purple-500/10 transition font-mono">🔊</button>
-                    <div id="game-level-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-purple-500/40 text-purple-400">LVL 1</div>
+            <div class="px-4 py-3 border-t border-purple-500/20 flex flex-col gap-3">
+                <!-- Mobile 2-Handed Landscape Touch Control Buttons (Centered inside each respective half) -->
+                <div id="phonk-mobile-btn-container" class="flex items-center w-full md:hidden">
+                    <!-- LEFT HALF: Center JUMP button in the middle of Left 50% section -->
+                    <div class="flex-1 flex justify-center items-center">
+                        <button id="btn-game-jump" class="w-32 py-2.5 bg-slate-900/80 backdrop-blur-md border border-purple-500/50 rounded-full text-purple-300 font-mono font-bold text-xs tracking-widest shadow-md hover:bg-purple-950/90 hover:border-purple-400 hover:text-white hover:shadow-[0_0_18px_rgba(192,132,252,0.55)] hover:-translate-y-0.5 active:bg-purple-600 active:text-white active:scale-90 active:translate-y-0 transition-all duration-200 flex items-center justify-center select-none touch-none cursor-pointer">
+                            JUMP
+                        </button>
+                    </div>
+
+                    <!-- RIGHT HALF: Center SLIDE button in the middle of Right 50% section -->
+                    <div class="flex-1 flex justify-center items-center">
+                        <button id="btn-game-slide" class="w-32 py-2.5 bg-slate-900/80 backdrop-blur-md border border-cyan-500/50 rounded-full text-cyan-300 font-mono font-bold text-xs tracking-widest shadow-md hover:bg-cyan-950/90 hover:border-cyan-400 hover:text-white hover:shadow-[0_0_18px_rgba(0,240,255,0.55)] hover:-translate-y-0.5 active:bg-cyan-600 active:text-white active:scale-90 active:translate-y-0 transition-all duration-200 flex items-center justify-center select-none touch-none cursor-pointer">
+                            SLIDE
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-2">
+                    <p class="text-[10px] text-slate-400 font-mono">SPACE / ↑ = JUMP (LEFT TOUCH) &nbsp;|&nbsp; SHIFT / ↓ = SLIDE (RIGHT TOUCH)</p>
+                    <div class="flex items-center gap-3">
+                        <button id="game-mute-btn" title="Toggle Sound"
+                            onclick="window.__phonkToggleMute && window.__phonkToggleMute()"
+                            class="text-sm px-2 py-0.5 rounded border border-purple-500/40 text-purple-400 hover:bg-purple-500/10 transition font-mono">🔊</button>
+                        <div id="game-level-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-purple-500/40 text-purple-400">LVL 1</div>
+                    </div>
                 </div>
             </div>
         </div>

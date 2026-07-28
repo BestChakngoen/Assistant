@@ -1,6 +1,9 @@
 /**
  * PhonkAudioEngine.js - 808 Cyber Phonk Web Audio Synthesizer & BGM Sequencer
+ * Uses parameters from PhonkConfig.js.
  */
+import { PHONK_CONFIG } from './PhonkConfig.js';
+
 export class PhonkAudioEngine {
     constructor() {
         this.audioCtx = null;
@@ -10,7 +13,8 @@ export class PhonkAudioEngine {
         this.seqTimer = null;
         this.seqStep = 0;
         this.nextStepTime = 0;
-        this.BPM = 82;
+        
+        this.BPM = PHONK_CONFIG.AUDIO.BPM;
         this.STEP = 60 / this.BPM / 4;
 
         this.CHORDS = [
@@ -35,7 +39,7 @@ export class PhonkAudioEngine {
             if (AudioCtxClass) {
                 this.audioCtx = new AudioCtxClass();
                 this.masterGain = this.audioCtx.createGain();
-                this.masterGain.gain.value = this.muted ? 0 : 0.82;
+                this.masterGain.gain.value = this.muted ? 0 : PHONK_CONFIG.AUDIO.MASTER_GAIN;
                 this.masterGain.connect(this.audioCtx.destination);
             }
         }
@@ -49,7 +53,7 @@ export class PhonkAudioEngine {
         window.__phonkToggleMute = () => {
             this.muted = !this.muted;
             if (this.masterGain) {
-                this.masterGain.gain.value = this.muted ? 0 : 0.82;
+                this.masterGain.gain.value = this.muted ? 0 : PHONK_CONFIG.AUDIO.MASTER_GAIN;
             }
             const btn = document.getElementById('game-mute-btn');
             if (btn) {
@@ -68,13 +72,13 @@ export class PhonkAudioEngine {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(90, when);
         osc.frequency.exponentialRampToValueAtTime(45, when + 0.08);
-        gain.gain.setValueAtTime(1.1, when);
+        gain.gain.setValueAtTime(PHONK_CONFIG.AUDIO.KICK_VOL, when);
         gain.gain.exponentialRampToValueAtTime(0.001, when + 0.28);
         osc.start(when);
         osc.stop(when + 0.28);
     }
 
-    playHihat(when, vol = 0.28) {
+    playHihat(when, vol = PHONK_CONFIG.AUDIO.HIHAT_VOL) {
         const ctx = this.getACtx();
         if (!ctx) return;
         const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.09), ctx.sampleRate);
@@ -119,7 +123,7 @@ export class PhonkAudioEngine {
         bpf.frequency.value = 900;
         bpf.Q.value = 0.7;
         const ng = ctx.createGain();
-        ng.gain.setValueAtTime(0.32, when);
+        ng.gain.setValueAtTime(PHONK_CONFIG.AUDIO.SNARE_VOL, when);
         ng.gain.exponentialRampToValueAtTime(0.001, when + 0.2);
         src.connect(bpf);
         bpf.connect(ng);
@@ -150,7 +154,7 @@ export class PhonkAudioEngine {
 
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0, when);
-        gain.gain.linearRampToValueAtTime(0.7, when + 0.015);
+        gain.gain.linearRampToValueAtTime(PHONK_CONFIG.AUDIO.BASS_VOL, when + 0.015);
         gain.gain.setValueAtTime(0.55, when + dur * 0.6);
         gain.gain.exponentialRampToValueAtTime(0.001, when + dur);
 
@@ -203,8 +207,8 @@ export class PhonkAudioEngine {
         const s = step % 16;
         if (this.KICK[s])     this.playKick(when);
         if (this.SNAP[s])     this.playSnare(when);
-        if (this.HAT[s])      this.playHihat(when, 0.30);
-        if (this.HATG[s])     this.playHihat(when, 0.13);
+        if (this.HAT[s])      this.playHihat(when, PHONK_CONFIG.AUDIO.HIHAT_VOL);
+        if (this.HATG[s])     this.playHihat(when, PHONK_CONFIG.AUDIO.HIHAT_VOL * 0.45);
         if (this.BASS[s] > 0) this.playBass(when, this.BASS[s]);
         if (s === 0)          this.playPad(when, Math.floor(step / 16) % this.CHORDS.length);
     }
@@ -254,7 +258,7 @@ export class PhonkAudioEngine {
             osc.frequency.setValueAtTime(190, t);
             osc.frequency.exponentialRampToValueAtTime(420, t + 0.1);
         }
-        gain.gain.setValueAtTime(0.65, t);
+        gain.gain.setValueAtTime(PHONK_CONFIG.AUDIO.JUMP_SFX_VOL, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
         osc.start(t);
         osc.stop(t + 0.18);
@@ -271,9 +275,114 @@ export class PhonkAudioEngine {
         const t = ctx.currentTime;
         osc.frequency.setValueAtTime(320, t);
         osc.frequency.exponentialRampToValueAtTime(55, t + 0.45);
-        gain.gain.setValueAtTime(0.45, t);
+        gain.gain.setValueAtTime(PHONK_CONFIG.AUDIO.DEATH_SFX_VOL, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
         osc.start(t);
         osc.stop(t + 0.5);
+    }
+
+    playHitSfx() {
+        const ctx = this.getACtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.type = 'sawtooth';
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(220, t);
+        osc.frequency.exponentialRampToValueAtTime(70, t + 0.2);
+        gain.gain.setValueAtTime(0.6, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        osc.start(t);
+        osc.stop(t + 0.22);
+    }
+
+    playHealSfx() {
+        const ctx = this.getACtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.type = 'sine';
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(523.25, t);
+        osc.frequency.setValueAtTime(659.25, t + 0.08);
+        osc.frequency.setValueAtTime(783.99, t + 0.16);
+        gain.gain.setValueAtTime(0.5, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.start(t);
+        osc.stop(t + 0.35);
+    }
+
+    playBlastSfx() {
+        const ctx = this.getACtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.type = 'sawtooth';
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(300, t);
+        osc.frequency.exponentialRampToValueAtTime(1200, t + 0.35);
+        gain.gain.setValueAtTime(0.7, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+        osc.start(t);
+        osc.stop(t + 0.4);
+    }
+
+    playGiantSfx() {
+        const ctx = this.getACtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.type = 'sawtooth';
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(110, t);
+        osc.frequency.exponentialRampToValueAtTime(330, t + 0.3);
+        osc.frequency.exponentialRampToValueAtTime(85, t + 0.55);
+        gain.gain.setValueAtTime(0.8, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+        osc.start(t);
+        osc.stop(t + 0.55);
+    }
+
+    playOrbSfx() {
+        const ctx = this.getACtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.type = 'sine';
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(880, t);
+        osc.frequency.exponentialRampToValueAtTime(1320, t + 0.08);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        osc.start(t);
+        osc.stop(t + 0.1);
+    }
+
+    playMagnetSfx() {
+        const ctx = this.getACtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.type = 'triangle';
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(440, t);
+        osc.frequency.linearRampToValueAtTime(880, t + 0.18);
+        osc.frequency.linearRampToValueAtTime(1760, t + 0.35);
+        gain.gain.setValueAtTime(0.5, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+        osc.start(t);
+        osc.stop(t + 0.38);
     }
 }
