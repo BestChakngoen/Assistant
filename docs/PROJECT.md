@@ -1,7 +1,7 @@
 # Project: Assistant Refactoring & Theme Unification
 
 ## Architecture
-- **Frontend Core**: `TrackerView.html` and `style.css` handle the UI structure and styling.
+- **Frontend Core**: `TrackerView.html` and `css/style.css` handle the UI structure and styling.
 - **JavaScript Structure**:
   - `js/main.js`: Main coordinator.
   - `js/health/`: Contains sub-managers for health features (body, diet, sleep, global save, tab management, utils).
@@ -21,7 +21,7 @@
 
 ## Code Layout
 - `TrackerView.html` - Primary dashboard view.
-- `style.css` - Custom style definitions.
+- `css/` - Directory containing source CSS files (`css/style.css`, `css/style-share.css`).
 - `js/` - Source code for JavaScript application logic.
 - `verify-sidebar.js` - Test script for verifying sidebars.
 - `verify-theme.mjs` - Test script for verifying the theme.

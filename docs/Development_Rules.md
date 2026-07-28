@@ -13,29 +13,13 @@
 * **Responsive Design:** รองรับการแสดงผลทุกหน้าจอ (Mobile, Tablet, Desktop) แบบ Mobile-First
 * **No Auto-Commits:** ห้ามใช้เครื่องมือหรือรันคำสั่ง Git Commit (เช่น `git add`, `git commit`) โดยเด็ดขาด ให้ทิ้งไฟล์ที่แก้ไขไว้ในสถานะไม่คอมมิต (Uncommitted Workspace) เพื่อให้ผู้ใช้งานเป็นผู้จัดการและควบคุม Version Control ด้วยตัวเองทั้งหมด
 * **Credit Economy & Multi-Agent Restriction:** ใช้เครดิตอย่างประหยัด หากไม่จำเป็นจริงๆ ไม่ต้องใช้ Multi-agent และต้องได้รับอนุญาตจากผู้ใช้งานก่อนเสมอ จึงจะสามารถทำงานที่มีโอกาสบริโภคหรือเผาเครดิตจำนวนมากได้
-* **Unified Theme:** ใช้ธีมเดียวกันทั้งหมดในทุกหน้าจอและทุกแท็บการทำงาน โดยไม่มีการสลับธีม (No Theme Switching) ให้ใช้เพียงธีมเดียวเท่านั้นคือธีมมืดแนว Cyberpunk (Cyberpunk Dark Theme) เพื่อให้เกิดความลื่นไหลและดีไซน์ที่เป็นอันหนึ่งอันเดียวกันทั่วทั้งเว็บไซต์
-
-
----
-
-## 🛠️ 2. เทคโนโลยีที่ใช้ (Tech Stack)
-* **Frontend:** HTML5 + Vanilla JavaScript (ES Modules) + Tailwind CSS
-* **Backend & Database:** Firebase (Authentication, Firestore Database, Firestore Rules) + Client-side Storage (localStorage)
-* **Design & Aesthetics:** Cyberpunk Dark Theme (Glassmorphism, Neon Cyan #06b6d4 / Emerald #10b981 / Cyberpunk Dark #080b11)
+* **CSS & Modular Styling Standard:**
+  * **รวบรวมไฟล์ CSS:** รวบรวมไฟล์ CSS ทั้งหมดที่เป็น Source Code ไว้ในโฟลเดอร์ `css/` เดียวกัน
+  * **แยกไฟล์ Style ใหม่:** เมื่อมีการออกแบบการใช้ Style ใหม่ ให้จัดทำ Style นั้นแยกเป็นไฟล์ `.css` ให้อยู่ในโฟลเดอร์ `css/` แล้วเรียกใช้งาน (หรือ `@import`) เพื่อให้ง่ายต่อการดูแลและแก้ไขปรับปรุง
 
 ---
 
-## 📋 3. ข้อมูลของโปรเจกต์ปัจจุบัน (Project Context)
-* **เป้าหมายของเว็บ:** แอปพลิเคชันติดตามและบันทึกประวัติการเทรด (Trade Tracker Web App) พร้อมกระดานวิเคราะห์แผนกลยุทธ์ (Strategy Lab Whiteboard Diagram Canvas) สำหรับวิเคราะห์พฤติกรรมและความคิดของเทรดเดอร์
-* **ฟีเจอร์ปัจจุบัน:**
-  * หน้าบันทึกเซสชันการเทรด (Trading Sessions)
-  * กระดาน Strategy Lab ที่สามารถวาดรูปทรง, เขียนตัวอักษร, ลากเส้นเชื่อม Bezier snap ขอบ, เคลื่อนย้าย/ลบกลุ่มวัตถุ, และปรับพอร์ตเชื่อมต่อได้ทุกทิศทาง
-* **การจัดการข้อมูล:** บันทึกข้อมูลแบบออฟไลน์/แบบร่างผ่าน Client-side Storage (localStorage) และมีแผนการเชื่อมโยงระบบบันทึกคลาวด์/ผู้ใช้งานผ่าน Firebase
-* **ปัญหาที่พบปัจจุบัน:** -
-
----
-
-## 💬 4. รูปแบบการตอบกลับที่ต้องการ (Response Format)
+## 💬 2. รูปแบบการตอบกลับที่ต้องการ (Response Format)
 เมื่อฉันส่งคำสั่ง (Prompt) ให้คุณตอบกลับตามโครงสร้างนี้เพื่อความเป็นมืออาชีพ:
 
 1.  **📊 Architecture / Logic Outline:** อธิบายตรรกะภาพรวมสั้นๆ ก่อนเริ่มเขียนโค้ด
