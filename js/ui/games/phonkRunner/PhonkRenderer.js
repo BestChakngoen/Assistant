@@ -192,7 +192,7 @@ export class PhonkRenderer {
         ctx.restore();
     }
 
-    drawDeathScreen(score, deathTimer, frame) {
+    drawDeathScreen(score, deathTimer, frame, hiScore = 0, isNewRecord = false) {
         if (deathTimer <= 15) return;
         const ctx = this.ctx;
         ctx.save();
@@ -205,25 +205,39 @@ export class PhonkRenderer {
         ctx.shadowColor = PHONK_CONFIG.COLORS.DANGER_RED;
         ctx.shadowBlur = 24;
         ctx.fillStyle = PHONK_CONFIG.COLORS.DANGER_RED;
-        ctx.fillText('// UNIT-808 CAPTURED //', this.W / 2, this.H / 2 - 22);
+        ctx.fillText('// UNIT-808 CAPTURED //', this.W / 2, this.H / 2 - 32);
+
         ctx.font = 'bold 13px monospace';
         ctx.fillStyle = PHONK_CONFIG.COLORS.PURPLE_NEON;
         ctx.shadowColor = PHONK_CONFIG.COLORS.PURPLE_NEON;
         ctx.shadowBlur = 12;
-        ctx.fillText('FINAL SCORE: ' + Math.floor(score).toString().padStart(6, '0'), this.W / 2, this.H / 2 + 4);
-        
+        ctx.fillText('FINAL SCORE: ' + Math.floor(score).toString().padStart(6, '0'), this.W / 2, this.H / 2 - 10);
+
+        ctx.font = 'bold 12px monospace';
+        if (isNewRecord) {
+            ctx.fillStyle = '#fde047';
+            ctx.shadowColor = '#fde047';
+            ctx.shadowBlur = 18;
+            ctx.fillText('🏆 NEW HIGH SCORE: ' + Math.floor(hiScore).toString().padStart(6, '0') + ' 🏆', this.W / 2, this.H / 2 + 10);
+        } else {
+            ctx.fillStyle = '#fef08a';
+            ctx.shadowColor = '#eab308';
+            ctx.shadowBlur = 10;
+            ctx.fillText('HIGH SCORE: ' + Math.floor(hiScore).toString().padStart(6, '0'), this.W / 2, this.H / 2 + 10);
+        }
+
         if (Math.floor(frame / 30) % 2 === 0) {
             ctx.font = '11px monospace';
             ctx.fillStyle = '#67e8f9';
             ctx.shadowColor = PHONK_CONFIG.COLORS.CYAN_NEON;
             ctx.shadowBlur = 10;
-            ctx.fillText('[ PRESS SPACE / TAP TO ESCAPE AGAIN ]', this.W / 2, this.H / 2 + 26);
+            ctx.fillText('[ PRESS SPACE / TAP TO ESCAPE AGAIN ]', this.W / 2, this.H / 2 + 34);
         }
         ctx.textAlign = 'left';
         ctx.restore();
     }
 
-    drawIdleScreen(frame) {
+    drawIdleScreen(frame, hiScore = 0) {
         const ctx = this.ctx;
         ctx.save();
         ctx.globalAlpha = 0.6;
@@ -236,11 +250,19 @@ export class PhonkRenderer {
         ctx.fillStyle = PHONK_CONFIG.COLORS.PURPLE_NEON;
         ctx.textAlign = 'center';
         const glitch = frame % 20 < 2;
-        ctx.fillText(glitch ? '⚡ UNIT-808: LAB ESCAPE ⚡' : '⚡ UNIT-808: LAB ESCAPE ⚡', this.W / 2 + (glitch ? 3 : 0), this.H / 2 - 10);
+        ctx.fillText(glitch ? '⚡ UNIT-808: LAB ESCAPE ⚡' : '⚡ UNIT-808: LAB ESCAPE ⚡', this.W / 2 + (glitch ? 3 : 0), this.H / 2 - 20);
+
+        ctx.font = 'bold 12px monospace';
+        ctx.fillStyle = '#fde047';
+        ctx.shadowColor = '#fde047';
+        ctx.shadowBlur = 12;
+        ctx.fillText('🏆 HIGH SCORE: ' + Math.floor(hiScore).toString().padStart(6, '0'), this.W / 2, this.H / 2 + 2);
+
         ctx.font = '10px monospace';
         ctx.fillStyle = PHONK_CONFIG.COLORS.CYAN_NEON;
         ctx.shadowColor = PHONK_CONFIG.COLORS.CYAN_NEON;
-        ctx.fillText('SPACE / ⬆️ = JUMP &nbsp;|&nbsp; SHIFT / ⬇️ = SLIDE &nbsp;|&nbsp; DODGE PITS & OVERHEAD LASERS', this.W / 2, this.H / 2 + 14);
+        ctx.shadowBlur = 8;
+        ctx.fillText('SPACE / ⬆️ = JUMP  |  SHIFT / ⬇️ = SLIDE  |  DODGE PITS & OVERHEAD LASERS', this.W / 2, this.H / 2 + 24);
         ctx.textAlign = 'left';
         ctx.restore();
     }

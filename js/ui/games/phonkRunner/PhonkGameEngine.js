@@ -33,7 +33,8 @@ export class PhonkGameEngine {
         this.state = 'idle';
         this.score = 0;
         this.distance = 0;
-        this.hiScore = parseInt(localStorage.getItem('phonkRunnerHi') || '0');
+        this.hiScore = this.getStoredHiScore();
+        this.isNewRecord = false;
         this.frame = 0;
         this.speed = PHONK_CONFIG.PHYSICS.INITIAL_SPEED;
         this.spawnTimer = 0;
@@ -60,6 +61,23 @@ export class PhonkGameEngine {
 
         this.loop = this.loop.bind(this);
         this.loop();
+    }
+
+    getStoredHiScore() {
+        try {
+            const val = localStorage.getItem('phonkRunnerHi');
+            return val ? Math.max(0, parseInt(val, 10) || 0) : 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    saveHiScore(score) {
+        try {
+            localStorage.setItem('phonkRunnerHi', String(Math.floor(score)));
+        } catch (e) {
+            console.warn('Failed to save high score:', e);
+        }
     }
 
     togglePause() {
@@ -102,28 +120,12 @@ export class PhonkGameEngine {
         if (this.state === 'dead') { this.resetGame(); return; }
 
         const p = this.entities.player;
-        if (p.fallingInPit) return;
-
-        p.isSliding = true;
-        p.w = this.SLIDE_W;
-        p.h = this.SLIDE_H;
-
-        const airborne = p.y < this.GROUND - this.STAND_H - 1;
-        if (!airborne) {
-            p.y = this.GROUND - this.SLIDE_H;
-        }
+        p.startSlide();
     }
 
     releaseSlide() {
         const p = this.entities.player;
-        p.isSliding = false;
-        p.w = this.STAND_W;
-        p.h = this.STAND_H;
-
-        const airborne = p.y < this.GROUND - this.STAND_H - 1;
-        if (!airborne && !p.fallingInPit) {
-            p.y = this.GROUND - this.STAND_H;
-        }
+        p.stopSlide();
     }
 
     startGame() {
@@ -136,6 +138,8 @@ export class PhonkGameEngine {
     resetGame() {
         this.score = 0;
         this.distance = 0;
+        this.hiScore = this.getStoredHiScore();
+        this.isNewRecord = false;
         this.speed = PHONK_CONFIG.PHYSICS.INITIAL_SPEED;
         this.spawnTimer = 0;
         this.spawnInterval = PHONK_CONFIG.SPAWN.BASE_INTERVAL;
@@ -165,13 +169,23 @@ export class PhonkGameEngine {
         this.audio.playDeathSfx();
         this.entities.spawnDeathParticles();
         if (this.score > this.hiScore) {
-            this.hiScore = this.score;
-            localStorage.setItem('phonkRunnerHi', this.hiScore);
+            this.hiScore = Math.floor(this.score);
+            this.isNewRecord = true;
+            this.saveHiScore(this.hiScore);
         }
         this.updateHUD();
     }
 
+    checkAndUpdateHiScore() {
+        if (this.score > this.hiScore) {
+            this.hiScore = Math.floor(this.score);
+            this.isNewRecord = true;
+            this.saveHiScore(this.hiScore);
+        }
+    }
+
     updateHUD() {
+        this.checkAndUpdateHiScore();
         const pad = n => String(Math.floor(n)).padStart(6, '0');
         const scoreEl = document.getElementById('game-score');
         const hiScoreEl = document.getElementById('game-hi-score');
@@ -468,10 +482,10 @@ export class PhonkGameEngine {
             this.renderer.drawPauseScreen();
         }
 
-        this.renderer.drawDeathScreen(this.score, this.entities.player.deathTimer, this.frame);
+        this.renderer.drawDeathScreen(this.score, this.entities.player.deathTimer, this.frame, this.hiScore, this.isNewRecord);
 
         if (this.state === 'idle') {
-            this.renderer.drawIdleScreen(this.frame);
+            this.renderer.drawIdleScreen(this.frame, this.hiScore);
         }
     }
 

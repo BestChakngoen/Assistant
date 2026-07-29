@@ -36,6 +36,9 @@ export class PhonkPlayer {
     }
 
     updateScale(targetScale) {
+        const oldH = this.h;
+        const wasGrounded = (this.vy === 0 && !this.fallingInPit && Math.abs(this.y - (this.GROUND - oldH)) <= 6);
+
         // Smooth lerp transition towards targetScale (growth & shrink animation)
         this.currentScale += (targetScale - this.currentScale) * 0.12;
 
@@ -44,6 +47,49 @@ export class PhonkPlayer {
 
         this.w = baseW * this.currentScale;
         this.h = baseH * this.currentScale;
+
+        if (wasGrounded) {
+            this.y = (this.y + oldH) - this.h;
+        }
+    }
+
+    startSlide() {
+        if (this.fallingInPit || this.dead) return;
+        const oldH = this.h;
+        this.isSliding = true;
+
+        const baseW = PHONK_CONFIG.CHARACTER.SLIDE_W;
+        const baseH = PHONK_CONFIG.CHARACTER.SLIDE_H;
+        const newW = baseW * this.currentScale;
+        const newH = baseH * this.currentScale;
+
+        const isGrounded = this.vy >= 0 && !this.fallingInPit && Math.abs(this.y - (this.GROUND - oldH)) <= 6;
+
+        this.w = newW;
+        this.h = newH;
+
+        if (isGrounded) {
+            this.y = (this.y + oldH) - newH;
+        }
+    }
+
+    stopSlide() {
+        const oldH = this.h;
+        this.isSliding = false;
+
+        const baseW = PHONK_CONFIG.CHARACTER.STAND_W;
+        const baseH = PHONK_CONFIG.CHARACTER.STAND_H;
+        const newW = baseW * this.currentScale;
+        const newH = baseH * this.currentScale;
+
+        const isGrounded = this.vy >= 0 && !this.fallingInPit && Math.abs(this.y - (this.GROUND - oldH)) <= 6;
+
+        this.w = newW;
+        this.h = newH;
+
+        if (isGrounded) {
+            this.y = (this.y + oldH) - newH;
+        }
     }
 
     px(ctx, x, y, w, h, color) {
@@ -68,7 +114,7 @@ export class PhonkPlayer {
         const py_ = Math.round(this.y + (this.h - baseH));
         const pw = baseW;
         const ph = baseH;
-        const airborne = this.y < this.GROUND - this.h - 1;
+        const airborne = this.y < this.GROUND - this.h - 4;
 
         ctx.save();
 
@@ -155,7 +201,7 @@ export class PhonkPlayer {
         }
 
         // SLIDING
-        if (this.isSliding && !airborne) {
+        if (this.isSliding && (!airborne || this.vy === 0)) {
             ctx.shadowColor = PHONK_CONFIG.COLORS.CYAN_NEON;
             ctx.shadowBlur = 14;
 
