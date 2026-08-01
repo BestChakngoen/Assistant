@@ -137,10 +137,10 @@ export class PhonkPlayer {
         // MAGNET POWER-UP MODE EFFECTS
         if (this.magnetTimer > 0) {
             this.magnetTimer--;
-            const pulseR = 24 + Math.sin(frame * 0.2) * 6;
+            const pulseR = 22 + Math.sin(frame * 0.2) * 4;
             ctx.save();
             ctx.shadowColor = frame % 10 < 5 ? '#ff0055' : '#00f0ff';
-            ctx.shadowBlur = 18;
+            ctx.shadowBlur = 14;
             ctx.strokeStyle = frame % 10 < 5 ? 'rgba(255, 0, 85, 0.7)' : 'rgba(0, 240, 255, 0.7)';
             ctx.lineWidth = 2;
             ctx.beginPath();

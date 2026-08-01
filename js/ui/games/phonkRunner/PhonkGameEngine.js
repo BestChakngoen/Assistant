@@ -303,7 +303,7 @@ export class PhonkGameEngine {
 
             // Apply Magnetic Attraction to pull items towards player
             if (p.magnetTimer > 0) {
-                this.entities.applyMagnetPull();
+                this.entities.applyMagnetPull(this.speed);
             }
 
             if (this.entities.checkPotionCollection()) {
@@ -431,12 +431,15 @@ export class PhonkGameEngine {
     render() {
         const ctx = this.ctx;
         
-        // Screen Shake Translate
-        if (this.hitScreenShakeTimer > 0) {
+        // Screen Shake Translate (Smooth dampened shake with guaranteed canvas transform restore)
+        const isShaking = this.hitScreenShakeTimer > 0;
+        if (isShaking) {
             this.hitScreenShakeTimer--;
+            const maxDuration = PHONK_CONFIG.HP.HIT_SHAKE_DURATION || 14;
+            const intensity = (this.hitScreenShakeTimer + 1) / maxDuration;
+            const shakeX = (Math.random() - 0.5) * 7 * intensity;
+            const shakeY = (Math.random() - 0.5) * 5 * intensity;
             ctx.save();
-            const shakeX = (Math.random() - 0.5) * 6;
-            const shakeY = (Math.random() - 0.5) * 4;
             ctx.translate(shakeX, shakeY);
         }
 
@@ -472,7 +475,7 @@ export class PhonkGameEngine {
         this.renderer.drawDistanceProgressBar(this.distance, PHONK_CONFIG.HP.POTION_INTERVAL_M || 1000);
         this.renderer.drawPauseButton(this.isPaused);
 
-        if (this.hitScreenShakeTimer > 0) {
+        if (isShaking) {
             ctx.restore();
         }
 

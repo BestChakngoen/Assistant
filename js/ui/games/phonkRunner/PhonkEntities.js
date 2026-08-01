@@ -136,8 +136,8 @@ export class PhonkEntities {
         return this._items.checkOrbCollection(this._player, this._particleFX);
     }
 
-    applyMagnetPull() {
-        this._items.applyMagnetPull(this._player);
+    applyMagnetPull(currentSpeed) {
+        this._items.applyMagnetPull(this._player, currentSpeed);
     }
 
     spawnHealParticles() {

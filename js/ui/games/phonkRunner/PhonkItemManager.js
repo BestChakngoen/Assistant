@@ -245,6 +245,8 @@ export class PhonkItemManager {
     filterSafeFromObstacles(obstacles) {
         if (!obstacles || obstacles.length === 0) return;
         const isCloseToObstacle = (itemX, itemY, marginX = 45, marginY = 32) => {
+            // Only check newly spawned items near the right edge of the screen so items pulled by magnet are not destroyed
+            if (itemX < this.W - 120) return false;
             return obstacles.some(ob => {
                 const obCenterX = ob.x + ob.w / 2;
                 const obCenterY = ob.y + ob.h / 2;
@@ -511,34 +513,47 @@ export class PhonkItemManager {
         return collectedCount;
     }
 
-    applyMagnetPull(player) {
-        const targetX = player.x + player.w / 2;
-        const targetY = player.y + player.h / 2;
-        const pullRadius = PHONK_CONFIG.MAGNET.PULL_RADIUS || 550;
-        const basePullSpeed = PHONK_CONFIG.MAGNET.PULL_SPEED || 11;
+    applyMagnetPull(player, currentSpeed = 6.2) {
+        const playerCenterX = player.x + player.w / 2;
+        const playerCenterY = player.y + player.h / 2;
+        const pullRadius = PHONK_CONFIG.MAGNET.PULL_RADIUS || 950;
+        const basePullSpeed = PHONK_CONFIG.MAGNET.PULL_SPEED || 14;
+        const effectivePullSpeed = Math.max(basePullSpeed, currentSpeed + 10);
 
-        const pullItem = (item) => {
-            const dx = targetX - item.x;
-            const dy = targetY - item.y;
+        const pullItem = (item, isOrb = false) => {
+            const itemW = isOrb ? (item.r * 2) : item.w;
+            const itemH = isOrb ? (item.r * 2) : item.h;
+            const itemCenterX = isOrb ? item.x : item.x + itemW / 2;
+            const itemCenterY = isOrb ? item.y : item.y + itemH / 2;
+
+            const dx = playerCenterX - itemCenterX;
+            const dy = playerCenterY - itemCenterY;
             const dist = Math.hypot(dx, dy);
-            
-            // Allow items behind player (dx > 0 / item.x < targetX) to be pulled forward guaranteed
-            const maxRadius = item.x < targetX ? 850 : pullRadius;
 
-            if (dist < maxRadius && dist > 1) {
-                // If item is behind player, boost magnetic pull speed to easily overcome screen scrolling speed
-                const speedBoost = item.x < targetX ? 18 : 0;
-                const effectivePullSpeed = basePullSpeed + speedBoost;
+            if (dist < pullRadius) {
+                if (dist <= effectivePullSpeed || dist < 40) {
+                    // Snap item directly into player bounding box center for instant guaranteed collection
+                    if (isOrb) {
+                        item.x = playerCenterX;
+                        item.y = playerCenterY;
+                    } else {
+                        item.x = playerCenterX - itemW / 2;
+                        item.y = playerCenterY - itemH / 2;
+                    }
+                } else {
+                    const moveX = (dx / dist) * effectivePullSpeed;
+                    const moveY = (dy / dist) * effectivePullSpeed;
 
-                item.x += (dx / dist) * effectivePullSpeed;
-                item.y += (dy / dist) * effectivePullSpeed;
+                    item.x += moveX;
+                    item.y += moveY;
+                }
             }
         };
 
-        this.energyOrbs.forEach(pullItem);
-        this.hpPotions.forEach(pullItem);
-        this.blastItems.forEach(pullItem);
-        this.giantItems.forEach(pullItem);
-        this.magnetItems.forEach(pullItem);
+        this.energyOrbs.forEach(item => pullItem(item, true));
+        this.hpPotions.forEach(item => pullItem(item, false));
+        this.blastItems.forEach(item => pullItem(item, false));
+        this.giantItems.forEach(item => pullItem(item, false));
+        this.magnetItems.forEach(item => pullItem(item, false));
     }
 }
