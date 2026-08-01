@@ -68,8 +68,8 @@ export class ShareActions {
             };
         }
 
-        if (shareManager.dom.selectAllCheckbox) {
-            shareManager.dom.selectAllCheckbox.onchange = (e) => shareManager.toggleSelectAll(e.target.checked);
+        if (shareManager.dom.btnToggleSelectAll) {
+            shareManager.dom.btnToggleSelectAll.onclick = () => shareManager.toggleSelectAll();
         }
         if (shareManager.dom.btnDeleteSelected) {
             shareManager.dom.btnDeleteSelected.onclick = () => this.deleteSelectedItems(shareManager);
@@ -319,7 +319,6 @@ export class ShareActions {
 
                 shareManager.items = [];
                 shareManager.selectedIds.clear();
-                if (shareManager.dom.selectAllCheckbox) shareManager.dom.selectAllCheckbox.checked = false;
                 shareManager.updateSelectedUI();
                 shareManager.renderFeed();
             } catch (e) {
@@ -336,7 +335,6 @@ export class ShareActions {
             await shareManager.dbStore.clear();
             shareManager.items = [];
             shareManager.selectedIds.clear();
-            if (shareManager.dom.selectAllCheckbox) shareManager.dom.selectAllCheckbox.checked = false;
             shareManager.updateSelectedUI();
             shareManager.renderFeed();
             await shareManager.updateStorageEstimate();
@@ -441,7 +439,6 @@ export class ShareActions {
                 await shareManager.supabase.from('shared_items').delete().in('id', selectedList);
                 shareManager.items = shareManager.items.filter(i => !shareManager.selectedIds.has(i.id));
                 shareManager.selectedIds.clear();
-                if (shareManager.dom.selectAllCheckbox) shareManager.dom.selectAllCheckbox.checked = false;
                 shareManager.updateSelectedUI();
                 shareManager.renderFeed();
                 await shareManager.updateStorageEstimate();
@@ -460,7 +457,6 @@ export class ShareActions {
         }
         shareManager.items = shareManager.items.filter(i => !shareManager.selectedIds.has(i.id));
         shareManager.selectedIds.clear();
-        if (shareManager.dom.selectAllCheckbox) shareManager.dom.selectAllCheckbox.checked = false;
         shareManager.updateSelectedUI();
         shareManager.renderFeed();
         await shareManager.updateStorageEstimate();

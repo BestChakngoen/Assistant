@@ -23,13 +23,23 @@ export class ShareFeedRenderer {
         this.renderFeed(shareManager);
     }
 
-    static toggleSelectAll(shareManager, checked) {
+    static toggleSelectAll(shareManager, forceChecked) {
         if (!shareManager.dom.feed) return;
         const visibleCards = Array.from(shareManager.dom.feed.querySelectorAll('[data-share-type]')).filter(el => el.style.display !== 'none');
+        if (visibleCards.length === 0) return;
+
+        let shouldSelectAll;
+        if (typeof forceChecked === 'boolean') {
+            shouldSelectAll = forceChecked;
+        } else {
+            const allSelected = visibleCards.every(card => shareManager.selectedIds.has(card.dataset.itemId));
+            shouldSelectAll = !allSelected;
+        }
+
         visibleCards.forEach(card => {
             const id = card.dataset.itemId;
             if (id) {
-                if (checked) shareManager.selectedIds.add(id);
+                if (shouldSelectAll) shareManager.selectedIds.add(id);
                 else shareManager.selectedIds.delete(id);
             }
         });
@@ -49,13 +59,13 @@ export class ShareFeedRenderer {
             cards.forEach(card => {
                 const itemId = card.dataset.itemId;
                 const isSelected = shareManager.selectedIds.has(itemId);
-                const chk = card.querySelector('.share-item-checkbox');
-                if (chk) chk.checked = isSelected;
 
                 if (isSelected) {
                     card.classList.add('share-card-selected', 'border-cyan-500/50', 'bg-cyan-950/20');
+                    card.classList.remove('border-slate-800/80', 'bg-slate-950/20');
                 } else {
                     card.classList.remove('share-card-selected', 'border-cyan-500/50', 'bg-cyan-950/20');
+                    card.classList.add('border-slate-800/80', 'bg-slate-950/20');
                 }
             });
         }
@@ -155,9 +165,22 @@ export class ShareFeedRenderer {
             card.dataset.itemId = item.id;
             if (isStarred) card.dataset.starred = 'true';
 
-            card.className = `glass-panel p-4 rounded-xl border flex flex-col gap-3 relative group transition-all ${
-                isSelected ? 'share-card-selected border-cyan-500/50 bg-cyan-950/20' : 'border-slate-800/80 bg-slate-950/20 hover:border-slate-800'
+            card.className = `glass-panel p-4 rounded-xl border flex flex-col gap-3 relative group transition-all cursor-pointer select-none ${
+                isSelected ? 'share-card-selected border-cyan-500/50 bg-cyan-950/20' : 'border-slate-800/80 bg-slate-950/20 hover:border-slate-700/80 hover:bg-slate-900/30'
             }`;
+
+            card.onclick = (e) => {
+                if (e.target.closest('button, a, input, textarea, video, audio, .cursor-zoom-in, .edit-title-input, .edit-text-input')) {
+                    return;
+                }
+                ShareUI.playSound('mouse-click');
+                if (shareManager.selectedIds.has(item.id)) {
+                    shareManager.selectedIds.delete(item.id);
+                } else {
+                    shareManager.selectedIds.add(item.id);
+                }
+                this.updateSelectedUI(shareManager);
+            };
 
             let shareType = item.type;
             if (item.type === 'text') {
@@ -182,18 +205,6 @@ export class ShareFeedRenderer {
             
             const infoDiv = document.createElement('div');
             infoDiv.className = 'flex items-center gap-2 text-[10px] font-mono text-slate-500';
-            
-            const chkSelect = document.createElement('input');
-            chkSelect.type = 'checkbox';
-            chkSelect.className = 'share-item-checkbox w-3.5 h-3.5 rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-500 shrink-0 mr-0.5';
-            chkSelect.checked = isSelected;
-            chkSelect.onclick = (e) => {
-                e.stopPropagation();
-                if (chkSelect.checked) shareManager.selectedIds.add(item.id);
-                else shareManager.selectedIds.delete(item.id);
-                this.updateSelectedUI(shareManager);
-            };
-            infoDiv.appendChild(chkSelect);
             
             const typeIcon = document.createElement('i');
             typeIcon.className = 'w-3.5 h-3.5';

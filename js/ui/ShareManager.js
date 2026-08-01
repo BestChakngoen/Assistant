@@ -52,7 +52,8 @@ export class ShareManager {
             cloudIndicator: document.getElementById('cloud-storage-indicator'),
             cloudUsageText: document.getElementById('cloud-usage-text'),
             cloudUsageBar: document.getElementById('cloud-usage-bar'),
-            selectAllCheckbox: document.getElementById('share-select-all'),
+            btnToggleSelectAll: document.getElementById('btn-toggle-select-all'),
+            selectAllCheckbox: document.getElementById('btn-toggle-select-all'),
             selectedCountText: document.getElementById('share-selected-count'),
             btnDeleteSelected: document.getElementById('btn-delete-selected')
         };

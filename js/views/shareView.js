@@ -110,9 +110,10 @@ export const shareViewHtml = `
 
                     <div class="flex items-center justify-between pb-4 border-b border-slate-800/60 mb-3 shrink-0">
                         <div class="flex items-center gap-2.5 flex-wrap">
-                            <label class="flex items-center cursor-pointer text-slate-400 hover:text-slate-200 transition select-none" title="Select All Items">
-                                <input type="checkbox" id="share-select-all" class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-500">
-                            </label>
+                            <button id="btn-toggle-select-all" class="text-xs font-mono font-bold text-slate-400 hover:text-cyan-400 transition flex items-center gap-1.5 bg-slate-900/60 border border-slate-800 hover:border-cyan-500/30 px-2.5 py-1 rounded-lg select-none shrink-0" title="Toggle Select All">
+                                <i data-lucide="check-square" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                <span>Select All</span>
+                            </button>
                             <i data-lucide="list" class="w-4 h-4 text-cyan-400"></i>
                             <div class="flex items-center gap-1.5 shrink-0">
                                 <h3 class="text-sm font-mono font-bold text-white">Shared Items</h3>
