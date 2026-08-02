@@ -1,6 +1,20 @@
 import { ShareUI } from './ShareUI.js';
 import { ShareDatabase } from './ShareDatabase.js';
 
+function detectMimeType(filename, mimeType) {
+    if (mimeType && mimeType !== 'application/octet-stream') return mimeType;
+    const ext = (filename || '').split('.').pop().toLowerCase();
+    const map = {
+        jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+        webp: 'image/webp', svg: 'image/svg+xml', bmp: 'image/bmp', ico: 'image/x-icon',
+        jfif: 'image/jpeg', avif: 'image/avif', tiff: 'image/tiff', tif: 'image/tiff',
+        pdf: 'application/pdf', mp4: 'video/mp4', webm: 'video/webm',
+        mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg',
+        doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    };
+    return map[ext] || mimeType || 'application/octet-stream';
+}
+
 export class ShareActions {
     static bindEvents(shareManager) {
         if (shareManager.dom.btnShareText) {
@@ -92,7 +106,31 @@ export class ShareActions {
                     .order('timestamp', { ascending: false });
                 
                 if (error) throw error;
-                shareManager.items = data || [];
+                const items = data || [];
+
+                try {
+                    const localItems = await shareManager.dbStore.getAll();
+                    const localBlobMap = new Map();
+                    localItems.forEach(l => {
+                        if (l.blob && (l.blob instanceof Blob || l.blob instanceof File)) {
+                            if (l.id) localBlobMap.set(l.id, l.blob);
+                            if (l.filename) localBlobMap.set(l.filename, l.blob);
+                        }
+                    });
+
+                    items.forEach(item => {
+                        if (item.type === 'file' && (!item.blob || !(item.blob instanceof Blob))) {
+                            const cachedBlob = localBlobMap.get(item.id) || localBlobMap.get(item.filename);
+                            if (cachedBlob) {
+                                item.blob = cachedBlob;
+                            }
+                        }
+                    });
+                } catch (localErr) {
+                    console.warn('Could not merge local IndexedDB blobs:', localErr);
+                }
+
+                shareManager.items = items;
             } catch (e) {
                 console.error('Failed to load Supabase items, using IndexedDB:', e);
                 await this.loadItemsFromIndexedDB(shareManager);
@@ -190,6 +228,7 @@ export class ShareActions {
                     continue;
                 }
 
+                const mimeType = detectMimeType(file.name, file.type);
                 let success = false;
                 if (shareManager.mode === 'online') {
                     try {
@@ -216,10 +255,15 @@ export class ShareActions {
                             filename: file.name,
                             uniqueFilename: uniqueFilename,
                             size: file.size,
-                            mimetype: file.type,
+                            mimetype: mimeType,
                             url: publicUrl,
                             timestamp: Date.now()
                         };
+
+                        // Cache file blob locally in IndexedDB as fallback
+                        try {
+                            await shareManager.dbStore.add({ ...newItem, blob: file });
+                        } catch (cacheErr) {}
 
                         let payload = { ...newItem };
                         let { error: insertError } = await shareManager.supabase
@@ -262,13 +306,14 @@ export class ShareActions {
     }
 
     static async uploadLocalFile(shareManager, file, customTitle = '') {
+        const mimeType = detectMimeType(file.name, file.type);
         const newItem = {
             id: 'local_file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             type: 'file',
             title: customTitle,
             filename: file.name,
             size: file.size,
-            mimetype: file.type,
+            mimetype: mimeType,
             blob: file,
             timestamp: Date.now()
         };

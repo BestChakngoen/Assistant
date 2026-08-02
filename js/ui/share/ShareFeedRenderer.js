@@ -186,17 +186,18 @@ export class ShareFeedRenderer {
             if (item.type === 'text') {
                 const isLink = /^(https?:\/\/[^\s]+)$/i.test(item.text.trim());
                 if (isLink) shareType = 'link';
-            } else if (item.type === 'file' && item.mimetype) {
-                const mime = item.mimetype.toLowerCase();
+            } else if (item.type === 'file') {
+                const mime = (item.mimetype || '').toLowerCase();
                 const name = (item.filename || '').toLowerCase();
-                if (mime.startsWith('image/')) shareType = 'image';
-                else if (mime.startsWith('video/')) shareType = 'video';
-                else if (mime.startsWith('audio/')) shareType = 'audio';
+                const ext = name.split('.').pop();
+                const isImg = mime.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'jfif', 'ico', 'tiff', 'heic', 'avif'].includes(ext);
+
+                if (isImg) shareType = 'image';
+                else if (mime.startsWith('video/') || ['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext)) shareType = 'video';
+                else if (mime.startsWith('audio/') || ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext)) shareType = 'audio';
                 else if (mime === 'application/pdf' || name.endsWith('.pdf')) shareType = 'pdf';
                 else if (mime.includes('word') || mime.includes('document') || name.endsWith('.docx') || name.endsWith('.doc')) shareType = 'docx';
                 else shareType = 'file';
-            } else if (item.type === 'file') {
-                shareType = 'file';
             }
             card.dataset.shareType = shareType;
             
@@ -281,12 +282,16 @@ export class ShareFeedRenderer {
                 btnDownload.title = 'Download file';
                 btnDownload.innerHTML = '<i data-lucide="download" class="w-3.5 h-3.5"></i>';
                 
-                if (shareManager.mode === 'online' && item.url) {
-                    btnDownload.href = item.url;
-                    btnDownload.download = item.filename;
-                } else if (item.blob) {
-                    btnDownload.href = URL.createObjectURL(item.blob);
-                    btnDownload.download = item.filename;
+                let downloadUrl = '';
+                if (item.blob) {
+                    try { downloadUrl = URL.createObjectURL(item.blob); } catch(e) {}
+                }
+                if (!downloadUrl && item.url) {
+                    downloadUrl = item.url;
+                }
+                if (downloadUrl) {
+                    btnDownload.href = downloadUrl;
+                    btnDownload.download = item.filename || 'download';
                 }
                 
                 actionDiv.appendChild(btnDownload);
@@ -357,11 +362,14 @@ export class ShareFeedRenderer {
                 let lucideIcon = 'file';
                 const mime = (item.mimetype || '').toLowerCase();
                 const name = (item.filename || '').toLowerCase();
-                if (mime.startsWith('image/')) lucideIcon = 'image';
-                else if (mime.startsWith('video/')) lucideIcon = 'video';
-                else if (mime.startsWith('audio/')) lucideIcon = 'music';
+                const ext = name.split('.').pop() || '';
+                const isImg = mime.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'jfif', 'ico', 'tiff', 'heic', 'avif'].includes(ext);
+
+                if (isImg) lucideIcon = 'image';
+                else if (mime.startsWith('video/') || ['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext)) lucideIcon = 'video';
+                else if (mime.startsWith('audio/') || ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext)) lucideIcon = 'music';
                 else if (mime === 'application/pdf' || name.endsWith('.pdf')) lucideIcon = 'file-text';
-                else if (mime.includes('zip') || mime.includes('tar') || mime.includes('rar') || name.endsWith('.zip') || name.endsWith('.rar')) lucideIcon = 'folder-archive';
+                else if (mime.includes('zip') || mime.includes('tar') || mime.includes('rar') || ['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) lucideIcon = 'folder-archive';
                 
                 fileIcon.innerHTML = `<i data-lucide="${lucideIcon}" class="w-5 h-5"></i>`;
                 fileMeta.appendChild(fileIcon);
@@ -382,25 +390,78 @@ export class ShareFeedRenderer {
                 fileMeta.appendChild(fileDetails);
                 fileContainer.appendChild(fileMeta);
 
-                const fileUrl = (shareManager.mode === 'online' && item.url) ? item.url : (item.blob ? URL.createObjectURL(item.blob) : '');
+                let fileUrl = '';
+                if (item.blob) {
+                    try { fileUrl = URL.createObjectURL(item.blob); } catch (e) {}
+                }
+                if (!fileUrl && item.url) {
+                    fileUrl = item.url;
+                }
                 
-                if (fileUrl && item.mimetype) {
-                    const mimeLower = item.mimetype.toLowerCase();
-                    if (mimeLower.startsWith('image/')) {
+                if (fileUrl) {
+                    if (isImg) {
+                        const imgWrapper = document.createElement('div');
+                        imgWrapper.className = 'relative group/img overflow-hidden rounded-xl bg-slate-950/60 border border-slate-800/80 inline-block max-w-full cursor-pointer transition-all hover:border-cyan-500/50 shadow-md';
+                        
                         const img = document.createElement('img');
                         img.src = fileUrl;
-                        img.alt = item.filename;
-                        img.className = 'max-h-[250px] max-w-full rounded-lg bg-slate-950/40 border border-slate-900 object-contain hover:scale-[1.01] transition-transform cursor-zoom-in';
-                        img.onclick = () => window.open(fileUrl, '_blank');
-                        fileContainer.appendChild(img);
-                    } else if (mimeLower.startsWith('video/')) {
+                        img.alt = item.filename || 'Shared image';
+                        img.className = 'max-h-[280px] max-w-full rounded-xl object-contain transition-transform duration-300 group-hover/img:scale-[1.02]';
+                        
+                        img.onerror = () => {
+                            if (item.blob && (item.blob instanceof Blob || item.blob instanceof File)) {
+                                try {
+                                    const fallbackBlobUrl = URL.createObjectURL(item.blob);
+                                    if (img.src !== fallbackBlobUrl) {
+                                        img.src = fallbackBlobUrl;
+                                        imgWrapper.onclick = (e) => {
+                                            e.stopPropagation();
+                                            ShareUI.playSound('mouse-click');
+                                            ShareUI.showImageModal(fallbackBlobUrl, item.filename || 'Shared Image');
+                                        };
+                                        return;
+                                    }
+                                } catch (e) {}
+                            }
+
+                            imgWrapper.className = 'p-3.5 bg-slate-950/80 border border-amber-500/30 rounded-xl flex items-center gap-3 text-amber-300 text-xs font-mono max-w-full';
+                            imgWrapper.onclick = null;
+                            imgWrapper.innerHTML = `
+                                <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400 shrink-0"></i>
+                                <div class="min-w-0">
+                                    <p class="font-bold text-slate-200 truncate">${item.filename || 'Image'}</p>
+                                    <p class="text-[10px] text-amber-400/90 mt-0.5 leading-tight">Blocked by AdBlocker / Network (net::ERR_BLOCKED_BY_CLIENT). Disable extension or use Local Storage.</p>
+                                </div>
+                            `;
+                            if (window.lucide) window.lucide.createIcons();
+                        };
+
+                        const zoomOverlay = document.createElement('div');
+                        zoomOverlay.className = 'absolute inset-0 bg-slate-950/50 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none rounded-xl';
+                        zoomOverlay.innerHTML = `
+                            <div class="px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold flex items-center gap-2 shadow-xl">
+                                <i data-lucide="zoom-in" class="w-4 h-4 text-cyan-400"></i>
+                                <span>Click to View Image</span>
+                            </div>
+                        `;
+
+                        imgWrapper.onclick = (e) => {
+                            e.stopPropagation();
+                            ShareUI.playSound('mouse-click');
+                            ShareUI.showImageModal(img.src || fileUrl, item.filename || 'Shared Image');
+                        };
+
+                        imgWrapper.appendChild(img);
+                        imgWrapper.appendChild(zoomOverlay);
+                        fileContainer.appendChild(imgWrapper);
+                    } else if (mime.startsWith('video/') || ['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext)) {
                         const video = document.createElement('video');
                         video.src = fileUrl;
                         video.controls = true;
                         video.preload = 'metadata';
                         video.className = 'max-h-[300px] w-full rounded-lg bg-black/60 border border-slate-900';
                         fileContainer.appendChild(video);
-                    } else if (mimeLower.startsWith('audio/')) {
+                    } else if (mime.startsWith('audio/') || ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext)) {
                         const audio = document.createElement('audio');
                         audio.src = fileUrl;
                         audio.controls = true;

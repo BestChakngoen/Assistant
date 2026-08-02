@@ -180,4 +180,87 @@ export class ShareUI {
             setTimeout(() => overlay.remove(), 200);
         }
     }
+
+    static showImageModal(imageUrl, filename = 'Image') {
+        const existing = document.getElementById('share-image-modal');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'share-image-modal';
+        overlay.className = 'share-lightbox-overlay';
+        overlay.innerHTML = `
+            <div class="share-lightbox-container">
+                <div class="share-lightbox-header">
+                    <div class="flex items-center gap-2 text-slate-200 text-xs font-mono font-bold truncate max-w-[60vw]">
+                        <i data-lucide="image" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+                        <span class="truncate">${filename}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="${imageUrl}" download="${filename}" class="p-2 rounded-xl bg-slate-800/80 hover:bg-cyan-600 text-slate-200 hover:text-white transition-all border border-slate-700/60 flex items-center gap-1.5 text-xs font-mono" title="Download Image">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Download</span>
+                        </a>
+                        <button id="btn-close-lightbox" class="p-2 rounded-xl bg-slate-800/80 hover:bg-red-500/80 text-slate-300 hover:text-white transition-all border border-slate-700/60" title="Close (Esc)">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="share-lightbox-body">
+                    <img src="${imageUrl}" alt="${filename}" class="share-lightbox-img" />
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        if (window.lucide) window.lucide.createIcons();
+
+        const modalImg = overlay.querySelector('.share-lightbox-img');
+        if (modalImg) {
+            modalImg.onerror = () => {
+                modalImg.style.display = 'none';
+                const body = overlay.querySelector('.share-lightbox-body');
+                if (body) {
+                    body.innerHTML = `
+                        <div class="p-6 bg-slate-900/90 border border-amber-500/30 rounded-2xl flex flex-col items-center text-center gap-3 max-w-md">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                            </div>
+                            <h4 class="text-sm font-mono font-bold text-white uppercase">Cloud Image Blocked / Failed</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                The browser or an extension (e.g., AdBlocker, uBlock, Brave Shield) blocked loading the cloud image URL (net::ERR_BLOCKED_BY_CLIENT / net::ERR_FAILED).
+                            </p>
+                            <a href="${imageUrl}" download="${filename}" class="mt-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono font-bold transition flex items-center gap-2">
+                                <i data-lucide="download" class="w-4 h-4"></i> Download File Directly
+                            </a>
+                        </div>
+                    `;
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            };
+        }
+
+        requestAnimationFrame(() => {
+            overlay.classList.add('share-lightbox-visible');
+        });
+
+        const close = () => {
+            this.playSound('mouse-click');
+            overlay.classList.remove('share-lightbox-visible');
+            document.removeEventListener('keydown', onKeyDown);
+            setTimeout(() => overlay.remove(), 200);
+        };
+
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') close();
+        };
+
+        document.addEventListener('keydown', onKeyDown);
+        overlay.querySelector('#btn-close-lightbox').onclick = close;
+        overlay.onclick = (e) => {
+            if (e.target === overlay || e.target.classList.contains('share-lightbox-body')) {
+                close();
+            }
+        };
+        this.playSound('mouse-click');
+    }
 }
