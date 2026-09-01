@@ -43,6 +43,11 @@ export const sidebarViewHtml = `
                 <i data-lucide="heart" class="w-4 h-4"></i>
                 <span>Health Track</span>
             </button>
+            <!-- Net Worth -->
+            <button id="tab-networth" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                <i data-lucide="wallet" class="w-4 h-4"></i>
+                <span>Net Worth</span>
+            </button>
             <!-- Share Files -->
             <button id="tab-share" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                 <i data-lucide="share-2" class="w-4 h-4"></i>
@@ -70,6 +75,11 @@ export const sidebarViewHtml = `
                     <span>Agriculture</span>
                 </a>
             </div>
+            <!-- Game -->
+            <button id="tab-game" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                <i data-lucide="gamepad-2" class="w-4 h-4"></i>
+                <span>Game</span>
+            </button>
             <!-- Settings -->
             <button id="tab-settings" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                 <i data-lucide="settings" class="w-4 h-4"></i>

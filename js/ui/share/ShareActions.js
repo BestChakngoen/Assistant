@@ -1,5 +1,6 @@
 import { ShareUI } from './ShareUI.js';
 import { ShareDatabase } from './ShareDatabase.js';
+import { ShareFeedRenderer } from './ShareFeedRenderer.js';
 
 function detectMimeType(filename, mimeType) {
     if (mimeType && mimeType !== 'application/octet-stream') return mimeType;
@@ -95,18 +96,38 @@ export class ShareActions {
                 if (clickable) ShareUI.playSound('mouse-click');
             });
         }
+
+        // Global click listener to auto-exit edit mode when clicking outside active edit box or on filter buttons
+        document.addEventListener('click', (e) => {
+            if (shareManager.editingState) {
+                const isInsideEditBox = e.target.closest('.edit-container-box') || e.target.closest('.btn-edit-item-trigger');
+                if (!isInsideEditBox) {
+                    ShareFeedRenderer.exitEditMode(shareManager);
+                }
+            }
+        }, true);
     }
 
     static async loadItems(shareManager) {
+        const uid = shareManager.currentUserId;
         if (shareManager.mode === 'online') {
             try {
-                const { data, error } = await shareManager.supabase
+                // 1. Try to query with user_id filtering
+                let { data, error } = await shareManager.supabase
                     .from('shared_items')
                     .select('*')
                     .order('timestamp', { ascending: false });
                 
                 if (error) throw error;
-                const items = data || [];
+                let items = data || [];
+
+                // Filter by user_id if present in DB schema, otherwise show items gracefully
+                if (uid && uid !== 'guest') {
+                    const hasUserIdCol = items.length > 0 && ('user_id' in items[0]);
+                    if (hasUserIdCol) {
+                        items = items.filter(item => !item.user_id || item.user_id === uid);
+                    }
+                }
 
                 try {
                     const localItems = await shareManager.dbStore.getAll();
@@ -143,9 +164,20 @@ export class ShareActions {
     }
 
     static async loadItemsFromIndexedDB(shareManager) {
+        const uid = shareManager.currentUserId;
         try {
             const localItems = await shareManager.dbStore.getAll();
-            shareManager.items = localItems.reverse();
+            // Migrate local items without user_id
+            if (uid && uid !== 'guest') {
+                localItems.forEach(item => {
+                    if (!item.user_id) {
+                        item.user_id = uid;
+                        shareManager.dbStore.add(item);
+                    }
+                });
+            }
+            const userItems = localItems.filter(item => !item.user_id || item.user_id === uid);
+            shareManager.items = userItems.reverse();
         } catch (e) {
             console.error('Failed to load items from IndexedDB:', e);
             shareManager.items = [];
@@ -163,6 +195,7 @@ export class ShareActions {
             type: 'text',
             text: text,
             title: title,
+            user_id: shareManager.currentUserId,
             timestamp: Date.now()
         };
 
@@ -173,8 +206,9 @@ export class ShareActions {
                     .from('shared_items')
                     .insert([payload]);
                 
-                if (error && error.message && error.message.includes('title')) {
-                    delete payload.title;
+                if (error && error.message && (error.message.includes('user_id') || error.message.includes('title'))) {
+                    if (error.message.includes('user_id')) delete payload.user_id;
+                    if (error.message.includes('title')) delete payload.title;
                     const res = await shareManager.supabase.from('shared_items').insert([payload]);
                     error = res.error;
                 }
@@ -183,8 +217,9 @@ export class ShareActions {
                 shareManager.dom.textInput.value = '';
                 if (shareManager.dom.textTitleInput) shareManager.dom.textTitleInput.value = '';
                 ShareUI.playSound('success');
+                await this.loadItems(shareManager);
             } catch (e) {
-                console.error('Failed online send, saving to local database:', e);
+                console.error('Failed Supabase send, saving to local database:', e);
                 await this.saveLocalItem(shareManager, newItem);
             }
         } else {
@@ -212,11 +247,21 @@ export class ShareActions {
         let uploadedCount = 0;
         let failedCount = 0;
 
+        let isCancelled = false;
+        shareManager.activeUploadController = new AbortController();
+
         const loadingTitle = files.length > 1 ? `Uploading ${files.length} Files` : 'Uploading File';
-        ShareUI.showLoadingModal(shareManager, loadingTitle, 'Please wait while your files are being uploaded...');
+        ShareUI.showLoadingModal(shareManager, loadingTitle, 'Please wait while your files are being uploaded...', () => {
+            isCancelled = true;
+            if (shareManager.activeUploadController) {
+                try { shareManager.activeUploadController.abort(); } catch (err) {}
+            }
+            ShareUI.showToast('Upload Cancelled', 'File upload was cancelled by user.', 'error');
+        });
 
         try {
             for (const file of files) {
+                if (isCancelled) break;
                 const maxSizeBytes = 50 * 1024 * 1024;
                 if (file.size > maxSizeBytes) {
                     ShareUI.showToast(
@@ -232,15 +277,26 @@ export class ShareActions {
                 let success = false;
                 if (shareManager.mode === 'online') {
                     try {
+                        if (isCancelled) break;
                         const safeFilename = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
                         const uniqueFilename = `${Date.now()}_${safeFilename}`;
+
+                        const uploadOptions = { cacheControl: '3600', upsert: false };
+                        if (shareManager.activeUploadController) {
+                            uploadOptions.signal = shareManager.activeUploadController.signal;
+                        }
 
                         const { error: uploadError } = await shareManager.supabase
                             .storage
                             .from('shared-files')
-                            .upload(uniqueFilename, file, { cacheControl: '3600', upsert: false });
+                            .upload(uniqueFilename, file, uploadOptions);
                         
                         if (uploadError) throw uploadError;
+                        if (isCancelled) {
+                            // Cleanup uploaded file from storage if user cancelled during upload
+                            shareManager.supabase.storage.from('shared-files').remove([uniqueFilename]);
+                            break;
+                        }
 
                         const { data: urlData } = shareManager.supabase
                             .storage
@@ -257,8 +313,14 @@ export class ShareActions {
                             size: file.size,
                             mimetype: mimeType,
                             url: publicUrl,
+                            user_id: shareManager.currentUserId,
                             timestamp: Date.now()
                         };
+
+                        if (isCancelled) {
+                            shareManager.supabase.storage.from('shared-files').remove([uniqueFilename]);
+                            break;
+                        }
 
                         // Cache file blob locally in IndexedDB as fallback
                         try {
@@ -270,8 +332,9 @@ export class ShareActions {
                             .from('shared_items')
                             .insert([payload]);
 
-                        if (insertError && insertError.message && insertError.message.includes('title')) {
-                            delete payload.title;
+                        if (insertError && insertError.message && (insertError.message.includes('user_id') || insertError.message.includes('title'))) {
+                            if (insertError.message.includes('user_id')) delete payload.user_id;
+                            if (insertError.message.includes('title')) delete payload.title;
                             const res = await shareManager.supabase.from('shared_items').insert([payload]);
                             insertError = res.error;
                         }
@@ -280,16 +343,22 @@ export class ShareActions {
                         await shareManager.updateStorageEstimate();
                         success = true;
                     } catch (e) {
+                        if (isCancelled || e.name === 'AbortError') {
+                            console.log('Upload aborted by user');
+                            break;
+                        }
                         console.error('Supabase upload failed, saving to local browser storage:', e);
                         success = await this.uploadLocalFile(shareManager, file, customTitle);
                     }
                 } else {
+                    if (isCancelled) break;
                     success = await this.uploadLocalFile(shareManager, file, customTitle);
                 }
 
                 if (success) uploadedCount++; else failedCount++;
             }
         } finally {
+            shareManager.activeUploadController = null;
             await ShareUI.hideLoadingModal(shareManager);
         }
         
@@ -315,6 +384,7 @@ export class ShareActions {
             size: file.size,
             mimetype: mimeType,
             blob: file,
+            user_id: shareManager.currentUserId,
             timestamp: Date.now()
         };
         try {
@@ -418,18 +488,11 @@ export class ShareActions {
                     if (storageError) console.warn('Supabase storage delete warning:', storageError);
                 }
 
-                try {
-                    await fetch('/api/delete', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: item.id })
-                    });
-                } catch (err) {}
-
                 shareManager.items = shareManager.items.filter(i => i.id !== item.id);
                 shareManager.selectedIds.delete(item.id);
                 shareManager.updateSelectedUI();
                 shareManager.renderFeed();
+                ShareUI.playSound('remove');
                 await shareManager.updateStorageEstimate();
             } catch (e) {
                 console.error('Supabase delete failed, trying local delete:', e);

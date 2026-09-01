@@ -17,6 +17,7 @@ export class ShareFeedRenderer {
     }
 
     static toggleStar(shareManager, itemId) {
+        this.exitEditMode(shareManager);
         if (shareManager.starredIds.has(itemId)) shareManager.starredIds.delete(itemId);
         else shareManager.starredIds.add(itemId);
         this.saveStarred(shareManager);
@@ -71,10 +72,28 @@ export class ShareFeedRenderer {
         }
     }
 
+    static exitEditMode(shareManager) {
+        if (shareManager.editingState) {
+            try {
+                const { bodyEl, originalHTML } = shareManager.editingState;
+                if (bodyEl && document.body.contains(bodyEl)) {
+                    bodyEl.innerHTML = originalHTML;
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            } catch (e) {}
+            shareManager.editingState = null;
+        }
+    }
+
     static enterEditMode(shareManager, item, card, bodyEl) {
+        // Exit any active edit mode first
+        this.exitEditMode(shareManager);
+
         const originalHTML = bodyEl.innerHTML;
+        shareManager.editingState = { item, card, bodyEl, originalHTML };
+
         bodyEl.innerHTML = `
-            <div class="flex flex-col gap-2 p-2 bg-slate-900/90 rounded-lg border border-cyan-500/40">
+            <div class="flex flex-col gap-2 p-2 bg-slate-900/90 rounded-lg border border-cyan-500/40 edit-container-box">
                 ${item.type === 'file' ? `
                     <label class="text-[10px] text-cyan-400 font-mono">EDIT TITLE:</label>
                     <input type="text" class="edit-title-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded px-2.5 py-1 text-xs focus:border-cyan-500 focus:outline-none" value="${item.title || ''}" placeholder="Title...">
@@ -98,17 +117,19 @@ export class ShareFeedRenderer {
         const inputContent = bodyEl.querySelector('.edit-text-input');
         const inputTitle = bodyEl.querySelector('.edit-title-input');
 
-        btnCancel.onclick = () => {
+        btnCancel.onclick = (e) => {
+            if (e) e.stopPropagation();
             ShareUI.playSound('mouse-click');
-            bodyEl.innerHTML = originalHTML;
-            if (window.lucide) window.lucide.createIcons();
+            this.exitEditMode(shareManager);
         };
-        btnSave.onclick = async () => {
+        btnSave.onclick = async (e) => {
+            if (e) e.stopPropagation();
             ShareUI.playSound('mouse-click');
             const newContent = inputContent.value.trim();
             const newTitle = inputTitle ? inputTitle.value.trim() : '';
             if (!newContent) return;
 
+            shareManager.editingState = null;
             if (item.type === 'text') await shareManager.updateItem(item, { text: newContent, title: newTitle });
             else await shareManager.updateItem(item, { filename: newContent, title: newTitle });
             this.renderFeed(shareManager);
@@ -202,64 +223,58 @@ export class ShareFeedRenderer {
             card.dataset.shareType = shareType;
             
             const header = document.createElement('div');
-            header.className = 'flex items-center justify-between border-b border-slate-900/60 pb-2';
+            header.className = 'flex items-start sm:items-center justify-between gap-2 border-b border-slate-900/60 pb-2';
             
             const infoDiv = document.createElement('div');
-            infoDiv.className = 'flex items-center gap-2 text-[10px] font-mono text-slate-500';
-            
+            infoDiv.className = 'flex items-center gap-2 text-[10px] font-mono text-slate-500 flex-wrap flex-1 min-w-0';
+
+            const typeGroup = document.createElement('div');
+            typeGroup.className = 'flex items-center gap-1.5 shrink-0';
+
+            const titleTimeGroup = document.createElement('div');
+            titleTimeGroup.className = 'flex items-center gap-2 min-w-0 max-w-full';
+
             const typeIcon = document.createElement('i');
-            typeIcon.className = 'w-3.5 h-3.5';
-            
+            typeIcon.className = 'w-3.5 h-3.5 shrink-0';
+
+            let typeText = '';
             if (item.type === 'text') {
                 typeIcon.setAttribute('data-lucide', 'message-square');
-                infoDiv.appendChild(typeIcon);
-                
                 const isLink = /^(https?:\/\/[^\s]+)$/i.test(item.text.trim());
-                const typeText = isLink ? 'LINK SHARE' : 'TEXT NOTE';
-
-                if (item.title) {
-                    const labelSpan = document.createElement('span');
-                    labelSpan.innerText = typeText;
-                    infoDiv.appendChild(labelSpan);
-
-                    const titleBadge = document.createElement('span');
-                    titleBadge.className = 'font-bold text-cyan-300 truncate max-w-[140px] sm:max-w-[220px] bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20';
-                    titleBadge.title = item.title;
-                    titleBadge.innerText = item.title;
-                    infoDiv.appendChild(titleBadge);
-                } else {
-                    infoDiv.appendChild(document.createTextNode(typeText));
-                }
+                typeText = isLink ? 'LINK SHARE' : 'TEXT NOTE';
             } else {
                 typeIcon.setAttribute('data-lucide', 'file');
-                infoDiv.appendChild(typeIcon);
-                
                 const ext = item.filename.split('.').pop().toUpperCase();
-                const typeText = `FILE SHARE (${ext})`;
+                typeText = `FILE SHARE (${ext})`;
+            }
 
-                if (item.title) {
-                    const labelSpan = document.createElement('span');
-                    labelSpan.innerText = typeText;
-                    infoDiv.appendChild(labelSpan);
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'shrink-0 font-bold text-slate-400';
+            labelSpan.innerText = typeText;
 
-                    const titleBadge = document.createElement('span');
-                    titleBadge.className = 'font-bold text-cyan-300 truncate max-w-[140px] sm:max-w-[220px] bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20';
-                    titleBadge.title = item.title;
-                    titleBadge.innerText = item.title;
-                    infoDiv.appendChild(titleBadge);
-                } else {
-                    infoDiv.appendChild(document.createTextNode(typeText));
-                }
+            typeGroup.appendChild(typeIcon);
+            typeGroup.appendChild(labelSpan);
+
+            if (item.title) {
+                const titleBadge = document.createElement('span');
+                titleBadge.className = 'font-bold text-cyan-300 truncate max-w-[120px] sm:max-w-[220px] bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20 shrink';
+                titleBadge.title = item.title;
+                titleBadge.innerText = item.title;
+                titleTimeGroup.appendChild(titleBadge);
             }
 
             const timeSpan = document.createElement('span');
+            timeSpan.className = 'text-slate-500/80 shrink-0';
             timeSpan.innerText = ShareUI.formatTime(item.timestamp);
-            infoDiv.appendChild(timeSpan);
+            titleTimeGroup.appendChild(timeSpan);
+
+            infoDiv.appendChild(typeGroup);
+            infoDiv.appendChild(titleTimeGroup);
             
             header.appendChild(infoDiv);
 
             const actionDiv = document.createElement('div');
-            actionDiv.className = 'flex items-center gap-1.5';
+            actionDiv.className = 'flex items-center gap-1.5 shrink-0';
 
             if (item.type === 'text') {
                 const btnCopy = document.createElement('button');
@@ -298,7 +313,7 @@ export class ShareFeedRenderer {
             }
 
             const btnEdit = document.createElement('button');
-            btnEdit.className = 'p-1 hover:bg-slate-800/50 hover:text-emerald-400 rounded transition text-slate-500';
+            btnEdit.className = 'btn-edit-item-trigger p-1 hover:bg-slate-800/50 hover:text-emerald-400 rounded transition text-slate-500';
             btnEdit.title = 'Edit item';
             btnEdit.innerHTML = '<i data-lucide="pencil" class="w-3.5 h-3.5"></i>';
             btnEdit.onclick = () => {
@@ -394,8 +409,16 @@ export class ShareFeedRenderer {
                 if (item.blob) {
                     try { fileUrl = URL.createObjectURL(item.blob); } catch (e) {}
                 }
+                if (!fileUrl && item.base64Data) {
+                    fileUrl = item.base64Data;
+                }
                 if (!fileUrl && item.url) {
-                    fileUrl = item.url;
+                    const hostUrl = shareManager.hostUrl || '';
+                    if (shareManager.mode === 'online' && hostUrl && item.url.startsWith('/')) {
+                        fileUrl = hostUrl.replace(/\/+$/, '') + item.url;
+                    } else {
+                        fileUrl = item.url;
+                    }
                 }
                 
                 if (fileUrl) {
@@ -408,7 +431,7 @@ export class ShareFeedRenderer {
                         img.alt = item.filename || 'Shared image';
                         img.className = 'max-h-[280px] max-w-full rounded-xl object-contain transition-transform duration-300 group-hover/img:scale-[1.02]';
                         
-                        img.onerror = () => {
+                        img.onerror = async () => {
                             if (item.blob && (item.blob instanceof Blob || item.blob instanceof File)) {
                                 try {
                                     const fallbackBlobUrl = URL.createObjectURL(item.blob);
@@ -422,6 +445,81 @@ export class ShareFeedRenderer {
                                         return;
                                     }
                                 } catch (e) {}
+                            }
+                            if (item.base64Data && img.src !== item.base64Data) {
+                                img.src = item.base64Data;
+                                imgWrapper.onclick = (e) => {
+                                    e.stopPropagation();
+                                    ShareUI.playSound('mouse-click');
+                                    ShareUI.showImageModal(item.base64Data, item.filename || 'Shared Image');
+                                };
+                                return;
+                            }
+
+                            // If Online mode with Supabase, attempt downloading file blob directly
+                            if (shareManager.mode === 'online' && shareManager.supabase) {
+                                try {
+                                    let path = item.uniqueFilename;
+                                    if (!path && item.url) {
+                                        try {
+                                            const urlObj = new URL(item.url);
+                                            const parts = urlObj.pathname.split('/shared-files/');
+                                            if (parts.length > 1) {
+                                                path = decodeURIComponent(parts[1]);
+                                            } else {
+                                                path = urlObj.pathname.split('/').pop();
+                                            }
+                                        } catch (e) {
+                                            path = item.url.split('/').pop();
+                                        }
+                                    }
+                                    if (!path) path = item.filename;
+
+                                    if (path) {
+                                        let blobData = null;
+                                        let dlErr = null;
+                                        
+                                        // Try direct download first
+                                        const res = await shareManager.supabase
+                                            .storage
+                                            .from('shared-files')
+                                            .download(path);
+                                        blobData = res.data;
+                                        dlErr = res.error;
+
+                                        // Fallback: try createSignedUrl if download failed
+                                        if (dlErr || !blobData) {
+                                            const { data: signedData } = await shareManager.supabase
+                                                .storage
+                                                .from('shared-files')
+                                                .createSignedUrl(path, 3600);
+                                            
+                                            if (signedData?.signedUrl && img.src !== signedData.signedUrl) {
+                                                img.src = signedData.signedUrl;
+                                                imgWrapper.onclick = (e) => {
+                                                    e.stopPropagation();
+                                                    ShareUI.playSound('mouse-click');
+                                                    ShareUI.showImageModal(signedData.signedUrl, item.filename || 'Shared Image');
+                                                };
+                                                return;
+                                            }
+                                        }
+                                        
+                                        if (!dlErr && blobData) {
+                                            item.blob = blobData;
+                                            const downloadedBlobUrl = URL.createObjectURL(blobData);
+                                            img.src = downloadedBlobUrl;
+                                            imgWrapper.onclick = (e) => {
+                                                e.stopPropagation();
+                                                ShareUI.playSound('mouse-click');
+                                                ShareUI.showImageModal(downloadedBlobUrl, item.filename || 'Shared Image');
+                                            };
+                                            return;
+                                        }
+                                    }
+                                } catch (storageErr) {
+                                    console.warn('Supabase blob download fallback failed:', storageErr);
+                                }
                             }
 
                             imgWrapper.className = 'p-3.5 bg-slate-950/80 border border-amber-500/30 rounded-xl flex items-center gap-3 text-amber-300 text-xs font-mono max-w-full';

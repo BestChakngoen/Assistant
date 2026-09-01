@@ -24,6 +24,13 @@ export class ShareManager {
         this.dbStore = ShareDatabase.createDBStore();
     }
 
+    get currentUserId() {
+        if (typeof window !== 'undefined' && window.app && window.app.auth && window.app.auth.currentUser) {
+            return window.app.auth.currentUser.uid || 'guest';
+        }
+        return 'guest';
+    }
+
     async init() {
         console.log('Initializing ShareManager with Supabase...');
         

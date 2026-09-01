@@ -8,6 +8,7 @@ export function syncTradeColHeight() {
     const csvCard = document.querySelector('#trade-right-col .glass-panel:last-of-type');
     if (!leftCol || !commitsPanel) return;
 
+    commitsPanel.style.transition = 'none';
     const leftH = leftCol.offsetHeight;
     const csvH = csvCard ? (csvCard.offsetHeight + 24) : 0;
     const targetH = Math.max(leftH - csvH, 200);

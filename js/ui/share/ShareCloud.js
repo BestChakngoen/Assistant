@@ -49,6 +49,12 @@ export class ShareCloud {
                 { event: '*', schema: 'public', table: 'shared_items' },
                 (payload) => {
                     console.log('Realtime change received:', payload);
+                    const uid = shareManager.currentUserId;
+                    const itemUserId = (payload.new && payload.new.user_id) || (payload.old && payload.old.user_id);
+                    if (uid && uid !== 'guest' && itemUserId && itemUserId !== uid) {
+                        return; // Ignore events from other users
+                    }
+
                     if (payload.eventType === 'INSERT') {
                         if (!shareManager.items.some(item => item.id === payload.new.id)) {
                             shareManager.items.unshift(payload.new);

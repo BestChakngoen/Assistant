@@ -56,6 +56,11 @@ export class DataService {
         return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'diagram');
     }
 
+    getNetWorthDoc(uid) {
+        if (this.useCustomConfig) return doc(this.db, 'users', uid, 'data', 'netWorth');
+        return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'netWorth');
+    }
+
     // --- NEW: HEALTH TRACK PATH ---
     getHealthDoc(uid, collectionName) {
         if (this.useCustomConfig) return doc(this.db, 'users', uid, 'health', collectionName);
@@ -160,6 +165,7 @@ export class DataService {
         const docRef = this.getDiagramDoc(uid);
         await setDoc(docRef, { shapes, lastUpdated: new Date().toISOString() }, { merge: true });
     }
+    // NetWorth removed from Firestore - migrated to Supabase
 
     // --- NEW: HEALTH TRACK METHODS ---
     subscribeHealth(uid, collectionName, callback) {

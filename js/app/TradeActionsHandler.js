@@ -1,6 +1,5 @@
-/**
- * TradeActionsHandler - Manages trade operations, database wipes, and CSV import/export.
- */
+import { ShareUI } from '../ui/share/ShareUI.js';
+
 export class TradeActionsHandler {
     constructor(app) {
         this.app = app;
@@ -34,14 +33,30 @@ export class TradeActionsHandler {
     }
 
     async handleDelete(id) {
-        if (confirm('Delete record?')) {
+        const confirmed = await ShareUI.showConfirmModal({
+            icon: 'trash-2',
+            iconColor: 'text-red-400',
+            title: 'Delete Record',
+            message: 'Are you sure you want to delete this trade record permanently?',
+            confirmLabel: 'Delete',
+            confirmClass: 'bg-red-600 hover:bg-red-500 text-white'
+        });
+        if (confirmed) {
             const trade = this.app.trades.find(t => t.firestoreId === id);
             await this.app.data.deleteTrade(this.app.auth.currentUser.uid, id, trade);
         }
     }
 
     async handleReset() {
-        if (confirm('Wipe ALL data?')) {
+        const confirmed = await ShareUI.showConfirmModal({
+            icon: 'alert-triangle',
+            iconColor: 'text-red-400',
+            title: 'Wipe All Data',
+            message: 'Are you sure you want to wipe ALL trade history permanently? This action cannot be undone.',
+            confirmLabel: 'Wipe All Data',
+            confirmClass: 'bg-red-600 hover:bg-red-500 text-white'
+        });
+        if (confirmed) {
             await this.app.data.resetAll(this.app.auth.currentUser.uid, this.app.trades);
         }
     }

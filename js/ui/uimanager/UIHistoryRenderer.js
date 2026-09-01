@@ -68,7 +68,7 @@ export class UIHistoryRenderer {
             else if (type === 'WITHDRAW') { borderClass = 'border-orange-500'; textClass = 'text-orange-400'; label = 'WITHDRAW'; }
 
             const div = document.createElement('div');
-            div.className = `bg-slate-800/50 p-3 rounded-lg border-l-4 flex justify-between items-center group hover:bg-slate-800 transition ${borderClass}`;
+            div.className = `bg-slate-800/50 p-3 rounded-lg border-l-4 flex justify-between items-center group hover:bg-slate-800 ${borderClass}`;
             div.innerHTML = `
                 <div>
                     <div class="flex items-center gap-2">

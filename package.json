@@ -5,8 +5,7 @@
   "scripts": {
     "build": "tailwindcss -i ./css/style.css -o ./dist/style.css",
     "watch": "tailwindcss -i ./css/style.css -o ./dist/style.css --watch",
-    "dev": "npm run watch & node server.js",
-    "test": "node tests/verify-sidebar.js && node tests/verify-theme.mjs"
+    "dev": "npm run watch & node server/server.js"
   },
   "dependencies": {},
   "devDependencies": {

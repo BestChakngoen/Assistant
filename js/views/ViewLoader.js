@@ -6,7 +6,9 @@ import { marketViewHtml } from './marketView.js';
 import { calendarViewHtml } from './calendarView.js';
 import { strategyViewHtml } from './strategyView.js';
 import { healthViewHtml } from './healthView.js';
+import { netWorthViewHtml } from './netWorthView.js';
 import { shareViewHtml } from './shareView.js';
+import { gameViewHtml } from './gameView.js';
 import { settingsViewHtml } from './settingsView.js';
 
 /**
@@ -30,7 +32,9 @@ export function initViewComponents() {
             calendarViewHtml,
             strategyViewHtml,
             healthViewHtml,
+            netWorthViewHtml,
             shareViewHtml,
+            gameViewHtml,
             settingsViewHtml
         ].join('\n');
     }

@@ -6,6 +6,8 @@ import { RiskCalculator } from './app/RiskCalculator.js';
 import { NoteHandler } from './app/NoteHandler.js';
 import { TradeActionsHandler } from './app/TradeActionsHandler.js';
 import { MarketWidgetManager } from './app/MarketWidgetManager.js';
+import { NetWorthManager } from './app/NetWorthManager.js';
+import { SystemSettingsManager } from './app/SystemSettingsManager.js';
 
 /**
  * TradeApp - Main Application Facade Coordinator
@@ -25,6 +27,8 @@ export class TradeApp {
         this._noteHandler = new NoteHandler(this);
         this._tradeActions = new TradeActionsHandler(this);
         this._marketWidgets = new MarketWidgetManager(this);
+        this._netWorth = new NetWorthManager();
+        this._settingsManager = new SystemSettingsManager();
 
         this.initListeners();
     }
@@ -53,6 +57,16 @@ export class TradeApp {
                 
                 const topUserDisplay = document.getElementById('top-user-display');
                 if (topUserDisplay) topUserDisplay.innerText = displayName;
+
+                // Refresh ShareManager feed for current user
+                if (this.ui && this.ui.share) {
+                    this.ui.share.loadItems();
+                }
+
+                // Trigger NetWorth Supabase Sync
+                if (this._netWorth) {
+                    this._netWorth.initSupabaseSync();
+                }
                 
                 // Subscribe to Trades
                 this.data.subscribeTrades(user.uid, (data, meta) => {
@@ -158,7 +172,24 @@ export class TradeApp {
         }
 
         bindTab('tab-share', 'share');
-        bindTab('tab-settings', 'settings');
+        
+        const tabNetWorth = document.getElementById('tab-networth');
+        if (tabNetWorth) {
+            tabNetWorth.onclick = () => {
+                this.ui.switchTab('networth');
+                if (this._netWorth) this._netWorth.render();
+            };
+        }
+
+        bindTab('tab-game', 'game');
+        
+        const tabSettings = document.getElementById('tab-settings');
+        if (tabSettings) {
+            tabSettings.onclick = () => {
+                this.ui.switchTab('settings');
+                if (this._settingsManager) this._settingsManager.updateQuotaStats();
+            };
+        }
 
         const tabActions = document.getElementById('tab-actions');
         if (tabActions) {

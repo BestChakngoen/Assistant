@@ -47,6 +47,7 @@ export class UIChartEngine {
                     ]
                 },
                 options: {
+                    animation: false,
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
@@ -208,7 +209,7 @@ export class UIChartEngine {
         uiManager.chart.data.datasets[0].data = slicedPnl;
         uiManager.chart.data.datasets[0].customPercentages = slicedPercentages;
         uiManager.chart.data.datasets[1].data = slicedTrades;
-        uiManager.chart.update();
+        uiManager.chart.update('none');
 
         const isLatestPage = (uiManager.chartState.pageIndex <= 0);
         const isOldestPage = (uiManager.chartState.pageIndex >= totalPages - 1);

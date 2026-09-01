@@ -76,6 +76,7 @@
         const appId = (typeof __app_id !== 'undefined') ? __app_id : 'default-app-id';
 
         const app = new TradeApp(userFirebaseConfig, appId);
+        window.app = app;
 
         // 3. Layout Sync & Games Initialization
         initLayoutSync();

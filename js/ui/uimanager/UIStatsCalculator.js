@@ -162,7 +162,6 @@ export class UIStatsCalculator {
     }
 
     static updateCloudStats(meta) {
-        console.log('updateCloudStats called with meta:', meta);
         if (!meta) return;
         const totalEl = document.getElementById('summary-totaltrades');
         if (!totalEl) return;

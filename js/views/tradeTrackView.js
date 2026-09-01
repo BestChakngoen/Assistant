@@ -2,7 +2,7 @@
  * tradeTrackView.js - Trade Track & Journal Component Template
  */
 export const tradeTrackViewHtml = `
-    <div id="journal-panel" class="animate-fade-in flex flex-col gap-6">
+    <div id="journal-panel" class="flex flex-col gap-6">
         <!-- Stats -->
         <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div class="glass-panel p-4 rounded-xl border-l-4 border-blue-500 col-span-2 md:col-span-1">
@@ -71,10 +71,10 @@ export const tradeTrackViewHtml = `
                         <div class="md:col-span-3">
                             <label class="block text-xs text-slate-500 mb-1">TYPE / RESULT</label>
                             <select id="input-type" class="w-full px-3 py-2 rounded-lg font-mono">
-                                <option value="WIN" class="text-green-400">TRADE WIN (+)</option>
-                                <option value="LOSS" class="text-red-400">TRADE LOSS (-)</option>
-                                <option value="DEPOSIT" class="text-blue-400 font-bold">DEPOSIT (ฝาก)</option>
-                                <option value="WITHDRAW" class="text-orange-400 font-bold">WITHDRAW (ถอน)</option>
+                                <option value="WIN" class="text-green-400">WIN</option>
+                                <option value="LOSS" class="text-red-400">LOSS</option>
+                                <option value="DEPOSIT" class="text-blue-400 font-bold">DEPOSIT</option>
+                                <option value="WITHDRAW" class="text-orange-400 font-bold">WITHDRAW</option>
                             </select>
                         </div>
                         <div class="md:col-span-3">
@@ -104,10 +104,10 @@ export const tradeTrackViewHtml = `
                 </div>
 
                 <!-- Chart -->
-                <div class="glass-panel p-6 rounded-2xl">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-4">
-                            <h3 class="font-mono font-bold text-lg text-slate-300">DAILY PERFORMANCE</h3>
+                <div class="glass-panel p-4 sm:p-6 rounded-2xl">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
+                        <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
+                            <h3 class="font-mono font-bold text-base sm:text-lg text-slate-300">DAILY PERFORMANCE</h3>
                             <!-- CHART NAVIGATION -->
                             <div class="flex gap-1 bg-slate-800 rounded-lg p-1 border border-slate-700">
                                 <button id="chart-prev" class="p-1 px-2 hover:bg-slate-700 hover:text-cyan-400 transition text-slate-400 rounded" title="Previous Days">
@@ -118,11 +118,11 @@ export const tradeTrackViewHtml = `
                                 </button>
                             </div>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-3 text-xs">
                             <span class="flex items-center text-xs text-slate-400"><span
-                                    class="w-2 h-2 rounded-full bg-green-500 mr-1"></span> Profit</span>
+                                    class="w-2 h-2 rounded-full bg-green-500 mr-1.5 shrink-0"></span> Profit</span>
                             <span class="flex items-center text-xs text-slate-400"><span
-                                    class="w-2 h-2 rounded-full bg-red-500 mr-1"></span> Loss</span>
+                                    class="w-2 h-2 rounded-full bg-red-500 mr-1.5 shrink-0"></span> Loss</span>
                         </div>
                     </div>
                     <div class="relative w-full h-[300px]">
@@ -149,13 +149,13 @@ export const tradeTrackViewHtml = `
                         </div>
                         <!-- TABS -->
                         <div class="flex bg-[#0d1117] p-1 rounded-lg border border-[#30363d]">
-                            <button id="hist-tab-trades" class="flex-1 py-1.5 rounded-md text-[10px] md:text-xs font-mono font-bold transition-all bg-[#21262d] text-white shadow-sm border border-[#30363d]">TRADES (P&L)</button>
-                            <button id="hist-tab-transfers" class="flex-1 py-1.5 rounded-md text-[10px] md:text-xs font-mono font-bold transition-all text-[#8b949e] hover:text-white">DEPOSIT / WITHDRAW</button>
+                            <button id="hist-tab-trades" class="flex-1 py-1.5 rounded-md text-[10px] md:text-xs font-mono font-bold bg-[#21262d] text-white shadow-sm border border-[#30363d]">TRADES (P&L)</button>
+                            <button id="hist-tab-transfers" class="flex-1 py-1.5 rounded-md text-[10px] md:text-xs font-mono font-bold text-[#8b949e] hover:text-white">DEPOSIT / WITHDRAW</button>
                         </div>
                     </div>
 
                     <div id="history-list" class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
-                        <div class="text-center text-slate-500 py-10 text-sm loading-pulse">Syncing...</div>
+                        <div class="text-center text-slate-500 py-10 text-sm">Syncing...</div>
                     </div>
                 </div>
 
@@ -173,59 +173,6 @@ export const tradeTrackViewHtml = `
                             IMPORT CSV
                         </button>
                         <input type="file" id="file-import" accept=".csv" class="hidden">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CYBER PHONK RUNNER GAME -->
-        <div class="glass-panel rounded-2xl overflow-hidden border border-purple-500/30" style="background: linear-gradient(135deg, #0a0015 0%, #0d0020 50%, #080010 100%);">
-            <div class="p-4 border-b border-purple-500/20 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
-                    <h3 class="font-mono font-bold text-purple-400 tracking-widest text-sm uppercase">⚡ CYBER PHONK RUNNER — Kill Time Protocol</h3>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <p class="text-[9px] text-slate-400 font-mono font-bold uppercase tracking-widest">HIGH SCORE</p>
-                        <p id="game-hi-score" class="text-lg font-mono font-bold text-yellow-300" style="text-shadow: 0 0 10px rgba(253, 224, 71, 0.6);">000000</p>
-                    </div>
-                    <div class="text-right hidden">
-                        <p class="text-[9px] text-slate-400 font-mono font-bold uppercase tracking-widest">SCORE</p>
-                        <p id="game-score" class="text-lg font-mono font-bold text-cyan-300" style="text-shadow: 0 0 10px rgba(6, 182, 212, 0.65);">000000</p>
-                    </div>
-                </div>
-            </div>
-            <div class="relative flex justify-center" style="background: #04000a;">
-                <canvas id="phonkRunnerCanvas" width="1100" height="260"
-                    style="image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; width: 100%; border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; box-shadow: 0 0 30px rgba(168,85,247,0.2), 0 0 60px rgba(0,200,255,0.1);">
-                </canvas>
-            </div>
-            <div class="px-4 py-3 border-t border-purple-500/20 flex flex-col gap-3">
-                <!-- Mobile 2-Handed Landscape Touch Control Buttons (Centered inside each respective half) -->
-                <div id="phonk-mobile-btn-container" class="flex items-center w-full md:hidden">
-                    <!-- LEFT HALF: Center JUMP button in the middle of Left 50% section -->
-                    <div class="flex-1 flex justify-center items-center">
-                        <button id="btn-game-jump" class="w-32 py-2.5 bg-slate-900/80 backdrop-blur-md border border-purple-500/50 rounded-full text-purple-300 font-mono font-bold text-xs tracking-widest shadow-md hover:bg-purple-950/90 hover:border-purple-400 hover:text-white hover:shadow-[0_0_18px_rgba(192,132,252,0.55)] hover:-translate-y-0.5 active:bg-purple-600 active:text-white active:scale-90 active:translate-y-0 transition-all duration-200 flex items-center justify-center select-none touch-none cursor-pointer">
-                            JUMP
-                        </button>
-                    </div>
-
-                    <!-- RIGHT HALF: Center SLIDE button in the middle of Right 50% section -->
-                    <div class="flex-1 flex justify-center items-center">
-                        <button id="btn-game-slide" class="w-32 py-2.5 bg-slate-900/80 backdrop-blur-md border border-cyan-500/50 rounded-full text-cyan-300 font-mono font-bold text-xs tracking-widest shadow-md hover:bg-cyan-950/90 hover:border-cyan-400 hover:text-white hover:shadow-[0_0_18px_rgba(0,240,255,0.55)] hover:-translate-y-0.5 active:bg-cyan-600 active:text-white active:scale-90 active:translate-y-0 transition-all duration-200 flex items-center justify-center select-none touch-none cursor-pointer">
-                            SLIDE
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between gap-2">
-                    <p class="text-[10px] text-slate-400 font-mono">SPACE / ↑ = JUMP (LEFT TOUCH) &nbsp;|&nbsp; SHIFT / ↓ = SLIDE (RIGHT TOUCH)</p>
-                    <div class="flex items-center gap-3">
-                        <button id="game-mute-btn" title="Toggle Sound"
-                            onclick="window.__phonkToggleMute && window.__phonkToggleMute()"
-                            class="text-sm px-2 py-0.5 rounded border border-purple-500/40 text-purple-400 hover:bg-purple-500/10 transition font-mono">🔊</button>
-                        <div id="game-level-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-purple-500/40 text-purple-400">LVL 1</div>
                     </div>
                 </div>
             </div>

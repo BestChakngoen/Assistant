@@ -1,3 +1,5 @@
+import { ShareFeedRenderer } from '../share/ShareFeedRenderer.js';
+
 export class UINavigation {
     static showLogin(uiManager, show) {
         if (show) {
@@ -40,6 +42,10 @@ export class UINavigation {
     }
 
     static switchTab(uiManager, tabName) {
+        if (window.shareManager) {
+            ShareFeedRenderer.exitEditMode(window.shareManager);
+        }
+
         const panels = {
             code: document.getElementById('journal-panel'),
             issues: document.getElementById('strategy-menu-container'),
@@ -47,6 +53,8 @@ export class UINavigation {
             actions: document.getElementById('market-panel'),
             wiki: document.getElementById('news-panel'),
             share: document.getElementById('share-panel'),
+            networth: document.getElementById('networth-panel'),
+            game: document.getElementById('game-panel'),
             settings: document.getElementById('settings-panel')
         };
         
@@ -57,6 +65,8 @@ export class UINavigation {
             actions: document.getElementById('tab-actions'),
             wiki: document.getElementById('tab-wiki'),
             share: document.getElementById('tab-share'),
+            networth: document.getElementById('tab-networth'),
+            game: document.getElementById('tab-game'),
             settings: document.getElementById('tab-settings')
         };
 
@@ -67,7 +77,7 @@ export class UINavigation {
 
             if (key === tabName) {
                 panel.classList.remove('hidden');
-                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share') {
+                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game') {
                     panel.classList.add('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     panel.classList.add('flex', 'flex-col');
@@ -81,7 +91,7 @@ export class UINavigation {
                 }
             } else {
                 panel.classList.add('hidden');
-                if (key === 'code' || key === 'wiki' || key === 'settings') {
+                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game') {
                     panel.classList.remove('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     panel.classList.remove('flex', 'flex-col');
