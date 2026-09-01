@@ -420,6 +420,41 @@ export class ShareFeedRenderer {
                         fileUrl = item.url;
                     }
                 }
+
+                // If online mode with Supabase and we have a path/filename, automatically resolve signedUrl or blob
+                if (isImg && shareManager.mode === 'online' && shareManager.supabase && (!item.blob && !item.base64Data)) {
+                    let path = item.uniqueFilename;
+                    if (!path && item.url) {
+                        try {
+                            const urlObj = new URL(item.url);
+                            const parts = urlObj.pathname.split('/shared-files/');
+                            if (parts.length > 1) path = decodeURIComponent(parts[1]);
+                            else path = urlObj.pathname.split('/').pop();
+                        } catch (e) { path = item.url.split('/').pop(); }
+                    }
+                    if (!path) path = item.filename;
+
+                    if (path) {
+                        // Request Signed URL valid for 10 years (315,360,000 seconds)
+                        shareManager.supabase.storage.from('shared-files').createSignedUrl(path, 315360000).then(res => {
+                            if (res.data?.signedUrl) {
+                                const cardEl = document.querySelector(`[data-item-id="${item.id}"]`);
+                                if (cardEl) {
+                                    const imgEl = cardEl.querySelector('img');
+                                    const imgWrapperEl = cardEl.querySelector('.group\\/img');
+                                    if (imgEl) imgEl.src = res.data.signedUrl;
+                                    if (imgWrapperEl) {
+                                        imgWrapperEl.onclick = (e) => {
+                                            e.stopPropagation();
+                                            ShareUI.playSound('mouse-click');
+                                            ShareUI.showImageModal(res.data.signedUrl, item.filename || 'Shared Image');
+                                        };
+                                    }
+                                }
+                            }
+                        }).catch(() => {});
+                    }
+                }
                 
                 if (fileUrl) {
                     if (isImg) {
@@ -505,7 +540,7 @@ export class ShareFeedRenderer {
                                             }
                                         }
                                         
-                                        if (!dlErr && blobData) {
+                                         if (!dlErr && blobData) {
                                             item.blob = blobData;
                                             const downloadedBlobUrl = URL.createObjectURL(blobData);
                                             img.src = downloadedBlobUrl;
@@ -521,6 +556,23 @@ export class ShareFeedRenderer {
                                     console.warn('Supabase blob download fallback failed:', storageErr);
                                 }
                             }
+
+                            // Check local IndexedDB storage for offline/cached blob as final fallback
+                            try {
+                                if (shareManager.dbStore && item.id) {
+                                    const localRecord = await shareManager.dbStore.get(item.id);
+                                    if (localRecord && localRecord.blob) {
+                                        const localBlobUrl = URL.createObjectURL(localRecord.blob);
+                                        img.src = localBlobUrl;
+                                        imgWrapper.onclick = (e) => {
+                                            e.stopPropagation();
+                                            ShareUI.playSound('mouse-click');
+                                            ShareUI.showImageModal(localBlobUrl, item.filename || 'Shared Image');
+                                        };
+                                        return;
+                                    }
+                                }
+                            } catch (localErr) {}
 
                             imgWrapper.className = 'p-3.5 bg-slate-950/80 border border-amber-500/30 rounded-xl flex items-center gap-3 text-amber-300 text-xs font-mono max-w-full';
                             imgWrapper.onclick = null;
