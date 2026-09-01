@@ -5,13 +5,13 @@ export const tradeTrackViewHtml = `
     <div id="journal-panel" class="flex flex-col gap-6">
         <!-- Stats -->
         <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <div class="glass-panel p-4 rounded-xl border-l-4 border-blue-500 col-span-2 md:col-span-1">
+            <div class="glass-panel p-4 rounded-xl col-span-2 md:col-span-1">
                 <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Balance</p>
                 <h2 id="summary-balance" class="text-2xl font-mono font-bold text-blue-400">0.00</h2>
                 <span class="text-xs text-slate-500">Total Equity</span>
             </div>
             <div
-                class="glass-panel p-4 rounded-xl border-l-4 border-slate-500 col-span-2 md:col-span-1 relative group">
+                class="glass-panel p-4 rounded-xl col-span-2 md:col-span-1 relative group">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Fund</p>
@@ -27,22 +27,22 @@ export const tradeTrackViewHtml = `
                     </div>
                 </div>
             </div>
-            <div class="glass-panel p-4 rounded-xl border-l-4 border-cyan-500 col-span-2 md:col-span-1">
+            <div class="glass-panel p-4 rounded-xl col-span-2 md:col-span-1">
                 <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Net Profit</p>
                 <h2 id="summary-profit" class="text-2xl font-mono font-bold text-white">0.00</h2>
                 <span class="text-xs text-slate-500" id="summary-roi">0% ROI</span>
             </div>
-            <div class="glass-panel p-4 rounded-xl border-l-4 border-purple-500 col-span-2 md:col-span-1">
+            <div class="glass-panel p-4 rounded-xl col-span-2 md:col-span-1">
                 <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Win Rate</p>
                 <h2 id="summary-winrate" class="text-2xl font-mono font-bold text-white">0%</h2>
                 <span id="summary-wincount" class="text-xs text-slate-500">0W - 0L</span>
             </div>
-            <div class="glass-panel p-4 rounded-xl border-l-4 border-amber-400 col-span-2 md:col-span-1">
+            <div class="glass-panel p-4 rounded-xl col-span-2 md:col-span-1">
                 <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Total Trades</p>
                 <h2 id="summary-totaltrades" class="text-2xl font-mono font-bold text-white">0</h2>
                 <span class="text-xs text-slate-500">Total number of trades</span>
             </div>
-            <div class="glass-panel p-4 rounded-xl border-l-4 border-emerald-500 col-span-2 md:col-span-1">
+            <div class="glass-panel p-4 rounded-xl col-span-2 md:col-span-1">
                 <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Expected Return</p>
                 <h2 id="summary-expectancy" class="text-2xl font-mono font-bold text-white">0.00</h2>
                 <span class="text-xs text-slate-500">Expectancy per trade</span>
@@ -52,7 +52,7 @@ export const tradeTrackViewHtml = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Input Area -->
             <div id="trade-left-col" class="lg:col-span-2 flex flex-col gap-6">
-                <div class="glass-panel p-6 rounded-2xl border-t-4 border-cyan-500">
+                <div class="glass-panel p-6 rounded-2xl">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-mono font-bold text-lg text-cyan-400 flex items-center gap-2">
                             <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
@@ -160,7 +160,7 @@ export const tradeTrackViewHtml = `
                 </div>
 
                 <!-- Data Management Card -->
-                <div class="glass-panel p-6 rounded-2xl border-t-4 border-cyan-500 bg-[#0d1117]/50">
+                <div class="glass-panel p-6 rounded-2xl bg-[#0d1117]/50">
                     <div>
                         <h3 class="font-mono text-sm font-bold text-slate-300 mb-2 uppercase tracking-wider">CSV Data Operations</h3>
                         <p class="text-xs text-slate-400 mb-4">Export or import your trading journal database in CSV format.</p>

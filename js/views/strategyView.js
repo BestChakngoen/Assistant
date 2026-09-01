@@ -4,7 +4,7 @@
 export const strategyViewHtml = `
     <div id="strategy-menu-container" class="w-full hidden flex-col gap-6 animate-fade-in pb-10">
         <!-- Diagram Board Panel -->
-        <div class="glass-panel p-4 rounded-2xl border-t-4 border-cyan-500 flex flex-col h-[calc(100vh-160px)] min-h-[700px]">
+        <div class="glass-panel p-4 rounded-2xl flex flex-col h-[calc(100vh-160px)] min-h-[700px]">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-3 shrink-0">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
@@ -204,7 +204,7 @@ export const strategyViewHtml = `
             <div class="flex flex-col gap-6">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                     <!-- LEFT COLUMN: ACCOUNT SETTINGS & BIAS -->
-                    <div class="glass-panel p-6 rounded-2xl border-t-4 border-pink-500 flex flex-col justify-between">
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between">
                         <div class="flex items-center gap-2 border-b border-slate-800 pb-3 mb-4">
                             <span class="w-2.5 h-2.5 bg-pink-500 rounded-full animate-pulse"></span>
                             <h3 class="font-mono font-bold text-base text-pink-400 tracking-wider">POSITION SIZING</h3>
@@ -279,7 +279,7 @@ export const strategyViewHtml = `
                     </div>
 
                     <!-- RIGHT COLUMN: TARGET PRICE SETTINGS (ENTRY, SL, TP) -->
-                    <div class="glass-panel p-6 rounded-2xl border-t-4 border-pink-500 flex flex-col justify-between">
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between">
                         <div class="flex items-center gap-2 border-b border-slate-800 pb-3 mb-4">
                             <span class="w-2.5 h-2.5 bg-pink-500 rounded-full animate-pulse"></span>
                             <h3 class="font-mono font-bold text-base text-pink-400 tracking-wider">ENTRY & TARGETS</h3>
@@ -317,7 +317,7 @@ export const strategyViewHtml = `
 
                 <!-- BOTTOM ROW: RESULTS & METRICS -->
                 <div class="w-full">
-                    <div class="glass-panel p-6 rounded-2xl border-t-4 border-pink-500 flex flex-col justify-between relative overflow-hidden bg-slate-950/20">
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between relative overflow-hidden bg-slate-950/20">
                         <div>
                             <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
                                 <span class="text-xs text-slate-400 font-mono font-bold tracking-wider">CALCULATION RESULTS</span>
@@ -325,7 +325,7 @@ export const strategyViewHtml = `
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 py-4">
-                                <div class="glass-panel p-5 rounded-xl border-l-4 border-pink-500 bg-slate-950/40">
+                                <div class="glass-panel p-5 rounded-xl bg-slate-950/40">
                                     <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Recommended Position</p>
                                     <div class="flex items-baseline gap-2">
                                         <h2 id="res-lot" class="text-3xl font-mono font-bold text-pink-400">0.00</h2>
@@ -333,19 +333,19 @@ export const strategyViewHtml = `
                                     </div>
                                 </div>
 
-                                <div class="glass-panel p-5 rounded-xl border-l-4 border-blue-500 bg-slate-950/40">
+                                <div class="glass-panel p-5 rounded-xl bg-slate-950/40">
                                     <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Margin Required</p>
                                     <h2 id="res-margin" class="text-3xl font-mono font-bold text-blue-400">$0.00</h2>
                                     <span class="text-[10px] text-slate-500 font-mono">Capital Allocated</span>
                                 </div>
 
-                                <div class="glass-panel p-5 rounded-xl border-l-4 border-red-500 bg-slate-950/40">
+                                <div class="glass-panel p-5 rounded-xl bg-slate-950/40">
                                     <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Risk Amount</p>
                                     <h2 id="res-risk-amt" class="text-3xl font-mono font-bold text-red-400">$0.00</h2>
                                     <span class="text-[10px] text-slate-500 font-mono">Loss if SL hit</span>
                                 </div>
 
-                                <div class="glass-panel p-5 rounded-xl border-l-4 border-emerald-400 bg-slate-950/40">
+                                <div class="glass-panel p-5 rounded-xl bg-slate-950/40">
                                     <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Reward Amount</p>
                                     <h2 id="res-reward-amt" class="text-3xl font-mono font-bold text-emerald-400">$0.00</h2>
                                     <span class="text-[10px] text-slate-500 font-mono">Profit if TP hit</span>
@@ -366,7 +366,7 @@ export const strategyViewHtml = `
         </div>
 
         <!-- Trading Sessions Panel (Bottom) -->
-        <div class="glass-panel p-6 rounded-2xl border-t-4 border-amber-500">
+        <div class="glass-panel p-6 rounded-2xl">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
@@ -403,7 +403,7 @@ export const strategyViewHtml = `
         </div>
 
         <!-- PDF Viewer Panel -->
-        <div class="glass-panel p-4 rounded-2xl border-t-4 border-cyan-500 mt-6 flex flex-col">
+        <div class="glass-panel p-4 rounded-2xl mt-6 flex flex-col">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                 <div class="flex items-center gap-2">
                     <i data-lucide="file-text" class="w-5 h-5 text-cyan-400"></i>
