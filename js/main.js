@@ -8,6 +8,7 @@ import { TradeActionsHandler } from './app/TradeActionsHandler.js';
 import { MarketWidgetManager } from './app/MarketWidgetManager.js';
 import { NetWorthManager } from './app/NetWorthManager.js';
 import { SystemSettingsManager } from './app/SystemSettingsManager.js';
+import { TradeDisciplineManager } from './app/TradeDisciplineManager.js';
 
 /**
  * TradeApp - Main Application Facade Coordinator
@@ -29,6 +30,7 @@ export class TradeApp {
         this._marketWidgets = new MarketWidgetManager(this);
         this._netWorth = new NetWorthManager();
         this._settingsManager = new SystemSettingsManager();
+        this._disciplineManager = new TradeDisciplineManager(this);
 
         this.initListeners();
     }
@@ -73,6 +75,9 @@ export class TradeApp {
                     this.trades = data;
                     this.ui.renderTradeList(data, (id) => this.handleDelete(id));
                     this.ui.updateStats(data);
+                    if (this._disciplineManager) {
+                        this._disciplineManager.updateUI(data);
+                    }
                     if (meta) this.ui.updateCloudStats(meta);
                 }, (err) => console.error(err));
 
@@ -148,6 +153,7 @@ export class TradeApp {
             btnSetToday.onclick = () => {
                 if (this.ui.dom.inputs.date) {
                     this.ui.dom.inputs.date.value = this.getThaiDateString();
+                    if (this._disciplineManager) this._disciplineManager.updateUI(this.trades);
                 }
             };
         }
@@ -158,7 +164,13 @@ export class TradeApp {
             if (el) el.onclick = () => this.ui.switchTab(target);
         };
 
-        bindTab('tab-code', 'code');
+        const tabCode = document.getElementById('tab-code');
+        if (tabCode) {
+            tabCode.onclick = () => {
+                this.ui.switchTab('code');
+                if (this._disciplineManager) this._disciplineManager.updateUI(this.trades);
+            };
+        }
         bindTab('tab-issues', 'issues');
         bindTab('tab-pulls', 'pulls');
 
@@ -202,6 +214,8 @@ export class TradeApp {
                 const container = document.getElementById('tv-chart-container');
                 if (container && (!container.children.length || container.dataset.activeSymbol !== savedSymbol)) {
                     this.initTradingView(savedSymbol);
+                } else if (this._marketWidgets) {
+                    this._marketWidgets.renderAssetInfo(savedSymbol);
                 }
             };
         }
@@ -224,31 +238,48 @@ export class TradeApp {
         const marketAssets = [
             { s: 'BINANCE:BTCUSDT', n: 'BTC/USDT' },
             { s: 'OANDA:XAUUSD', n: 'GOLD (XAU)' },
+            { s: 'OANDA:XAGUSD', n: 'SILVER (XAG)' },
             { s: 'TVC:USOIL', n: 'OIL (USOIL)' },
-            { s: 'FX:EURUSD', n: 'EUR/USD' }
+            { s: 'CAPITALCOM:COPPER', n: 'COPPER' },
+            { s: 'CAPITALCOM:WHEAT', n: 'WHEAT' },
+            { s: 'CAPITALCOM:CORN', n: 'CORN' },
+            { s: 'CAPITALCOM:LIVECATTLE', n: 'LIVE CATTLE' },
+            { s: 'CAPITALCOM:LEANHOGS', n: 'LEAN HOGS' },
+            { s: 'CAPITALCOM:DXY', n: 'DXY' },
+            { s: 'CAPITALCOM:US100', n: 'NASDAQ 100' },
+            { s: 'FX:EURUSD', n: 'EUR/USD' },
+            { s: 'FX_IDC:USDTHB', n: 'USD/THB' }
         ];
         const container = document.getElementById('market-assets-container');
         if (container) {
-            container.innerHTML = '<span class="px-3 text-slate-400 font-mono text-sm hidden md:inline">ASSET:</span>';
+            container.innerHTML = '<span class="px-3 text-slate-400 font-mono text-xs uppercase tracking-wider hidden md:inline shrink-0 font-bold">ASSET:</span>';
             marketAssets.forEach(m => {
                 const isSelected = (m.s === savedSymbol);
                 const b = document.createElement('button');
-                b.className = `asset-btn btn-press px-4 py-2 rounded-lg font-mono text-sm border hover:border-cyan-500 transition-all ${
-                    isSelected ? 'border-cyan-500 text-cyan-400 font-bold' : 'border-slate-600 text-slate-500'
+                b.className = `asset-btn btn-press shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-lg font-mono text-xs border transition-all ${
+                    isSelected ? 'border-cyan-500 text-cyan-400 font-bold bg-cyan-500/10 shadow-[0_0_10px_rgba(6,182,212,0.15)]' : 'border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                 }`;
                 b.innerText = m.n;
                 b.onclick = () => {
                     document.querySelectorAll('.asset-btn').forEach(x => {
-                        x.classList.remove('border-cyan-500', 'text-cyan-400', 'font-bold');
-                        x.classList.add('border-slate-600', 'text-slate-500');
+                        x.classList.remove('border-cyan-500', 'text-cyan-400', 'font-bold', 'bg-cyan-500/10', 'shadow-[0_0_10px_rgba(6,182,212,0.15)]');
+                        x.classList.add('border-slate-800', 'text-slate-400');
                     });
-                    b.classList.remove('border-slate-600', 'text-slate-500');
-                    b.classList.add('border-cyan-500', 'text-cyan-400', 'font-bold');
+                    b.classList.remove('border-slate-800', 'text-slate-400');
+                    b.classList.add('border-cyan-500', 'text-cyan-400', 'font-bold', 'bg-cyan-500/10', 'shadow-[0_0_10px_rgba(6,182,212,0.15)]');
                     this.saveMarketSymbol(m.s);
                     this.initTradingView(m.s);
                 };
                 container.appendChild(b);
             });
+
+            // Enable smooth horizontal scrolling with mouse wheel
+            container.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    container.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
         }
 
         // Initial UI Date & Market Rates
@@ -324,8 +355,8 @@ export class TradeApp {
         return this._tradeActions.handleImport(e);
     }
 
-    calculateRisk() {
-        return this._riskCalc.calculateRisk();
+    calculateRisk(forceRecalc = false) {
+        return this._riskCalc.calculateRisk(forceRecalc);
     }
 
     updateTHB() {

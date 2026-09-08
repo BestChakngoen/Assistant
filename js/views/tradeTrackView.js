@@ -52,6 +52,68 @@ export const tradeTrackViewHtml = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Input Area -->
             <div id="trade-left-col" class="lg:col-span-2 flex flex-col gap-6">
+                <!-- Trading Discipline & Risk Guardian Widget -->
+                <div id="discipline-guardian-widget" class="glass-panel p-5 rounded-2xl border-0 bg-slate-900/50 backdrop-blur-md relative overflow-hidden flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                            <h3 class="font-mono font-bold text-sm text-cyan-400 uppercase tracking-wider">
+                                Discipline Guardian
+                            </h3>
+                            <span id="guardian-daily-status-badge" class="text-xs font-mono font-bold text-cyan-400 px-2.5 py-0.5 rounded-full bg-cyan-500/10">🟢 Safe (Active)</span>
+                        </div>
+                        <button id="btn-discipline-settings" class="px-2.5 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-1.5 transition cursor-pointer" title="Adjust Limits">
+                            <i data-lucide="sliders" class="w-3.5 h-3.5 text-cyan-400"></i>
+                            <span>LIMITS</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
+                        <!-- Monthly Trades Quota -->
+                        <div class="p-3.5 rounded-xl bg-slate-950/40 flex flex-col justify-between gap-2.5">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400 uppercase font-bold flex items-center gap-1.5">
+                                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                                    Monthly Quota (<span id="guardian-monthly-month">This Month</span>)
+                                </span>
+                                <span id="guardian-monthly-count" class="font-bold text-white">0 / 20</span>
+                            </div>
+                            <!-- Progress Bar Track -->
+                            <div class="w-full bg-slate-800/60 h-2 rounded-full overflow-hidden">
+                                <div id="guardian-monthly-bar" class="bg-cyan-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span id="guardian-monthly-remaining" class="text-slate-500">Remaining: 20 trades</span>
+                                <span class="text-slate-500">Max: 20 / month</span>
+                            </div>
+                        </div>
+
+                        <!-- Daily P&L Circuit Breaker -->
+                        <div class="p-3.5 rounded-xl bg-slate-950/40 flex flex-col justify-between gap-2.5">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400 uppercase font-bold flex items-center gap-1.5">
+                                    <i data-lucide="activity" class="w-3.5 h-3.5 text-slate-400"></i>
+                                    Daily Target & Circuit Breaker
+                                </span>
+                                <span id="guardian-daily-pnl" class="font-bold text-slate-300">$0.00 (0.0%)</span>
+                            </div>
+                            <!-- Dual Barometer (Loss Left / Profit Right) -->
+                            <div class="grid grid-cols-2 gap-1 h-2">
+                                <div class="bg-slate-800/60 rounded-l-full overflow-hidden flex justify-end">
+                                    <div id="guardian-loss-bar" class="bg-rose-500 h-full rounded-l-full transition-all duration-300" style="width: 0%;"></div>
+                                </div>
+                                <div class="bg-slate-800/60 rounded-r-full overflow-hidden flex justify-start">
+                                    <div id="guardian-profit-bar" class="bg-emerald-500 h-full rounded-r-full transition-all duration-300" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span id="guardian-daily-loss-target" class="text-rose-400/80 font-bold">Max Loss: -5%</span>
+                                <span id="guardian-daily-profit-target" class="text-emerald-400/80 font-bold">Target: +10%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="glass-panel p-6 rounded-2xl">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-mono font-bold text-lg text-cyan-400 flex items-center gap-2">

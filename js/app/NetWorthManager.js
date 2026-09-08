@@ -1,18 +1,21 @@
 import { NetWorthChartEngine } from './NetWorthChartEngine.js';
+import { NetWorthSyncService } from './networth/NetWorthSyncService.js';
+import { NetWorthCardRenderer } from './networth/NetWorthCardRenderer.js';
 
 /**
- * NetWorthManager.js - Net Worth Data & State Manager (100% English)
- * Solid OOP & Clean Architecture for Asset and Liability Tracking.
+ * NetWorthManager.js - Net Worth Data & State Coordinator
+ * Solid OOP & Clean Architecture (Refactored from God Class).
  */
 export class NetWorthManager {
     constructor() {
         this.items = [];
-        this.snapshots = {}; // Format: { "YYYY-Www": { netWorth: number, totalAssets: number, totalLiabilities: number, lastUpdated: ISOString } }
+        this.snapshots = {};
         this.filter = 'ALL';
         this.currency = localStorage.getItem('tradetracker_networth_currency') || 'THB';
-        this.exchangeRate = 35.5; // Default fallback USD to THB rate
+        this.exchangeRate = 35.5;
         this.storageKey = 'tradetracker_networth_items_v1';
         this.snapshotStorageKey = 'tradetracker_networth_snapshots_v1';
+        this.draggedIndex = null;
         this.pieChart = null;
         this.historyChart = null;
         this.init();
@@ -26,101 +29,43 @@ export class NetWorthManager {
         this.render();
     }
 
-    getISOWeekKey(dateInput = new Date()) {
-        const date = new Date(dateInput);
-        date.setHours(0, 0, 0, 0);
-        // Thursday in current week decides the year
-        date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
-        const week1 = new Date(date.getFullYear(), 0, 4);
-        // Adjust to Thursday in week 1 and count number of weeks
-        const weekNumber = 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-        const formattedWeek = weekNumber.toString().padStart(2, '0');
-        return `${date.getFullYear()}-W${formattedWeek}`;
-    }
-
     async initSupabaseSync() {
-        if (typeof window === 'undefined') return;
-
-        const getSupabase = () => {
-            if (window.shareManager?.supabase) return window.shareManager.supabase;
-            if (!window.supabaseClient && window.supabase) {
-                window.supabaseClient = window.supabase.createClient('https://ujjwaxdwemrdszyatgxw.supabase.co', 'sb_publishable_Zov-pzfGxNS9yUAGwfhMEg_9PxBeYG3');
-            }
-            return window.supabaseClient || null;
-        };
-        const supabase = getSupabase();
-
-        if (!supabase) {
-            this.updateCloudStatus(false);
-            return;
-        }
-
-        try {
-            const uid = window.app?.auth?.currentUser?.uid || 'default_user';
-            this.updateCloudStatus(true);
-
-            // Fetch initial NetWorth data from Supabase net_worth table
-            const { data, error } = await supabase
-                .from('net_worth')
-                .select('*')
-                .eq('user_id', uid)
-                .maybeSingle();
-
-            if (!error && data) {
-                if (Array.isArray(data.items)) this.items = data.items;
-                if (data.snapshots && typeof data.snapshots === 'object') this.snapshots = data.snapshots;
-                localStorage.setItem(this.storageKey, JSON.stringify(this.items));
-                localStorage.setItem(this.snapshotStorageKey, JSON.stringify(this.snapshots));
-                this.render();
-            }
-
-            // Realtime Subscription (Remove existing channel if subscribed)
-            if (this.netWorthChannel) {
-                try { supabase.removeChannel(this.netWorthChannel); } catch (e) {}
-            }
-            this.netWorthChannel = supabase
-                .channel('networth_realtime_' + Date.now())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'net_worth' }, (payload) => {
-                    if (payload.new && (payload.new.user_id === uid || !payload.new.user_id)) {
-                        if (Array.isArray(payload.new.items)) this.items = payload.new.items;
-                        if (payload.new.snapshots && typeof payload.new.snapshots === 'object') this.snapshots = payload.new.snapshots;
-                        localStorage.setItem(this.storageKey, JSON.stringify(this.items));
-                        localStorage.setItem(this.snapshotStorageKey, JSON.stringify(this.snapshots));
-                        this.render();
-                    }
-                })
-                .subscribe();
-        } catch (err) {
-            console.warn('Supabase NetWorth sync notice:', err);
-            this.updateCloudStatus(false);
-        }
-    }
-
-    updateCloudStatus(isConnected) {
-        const statusEl = document.getElementById('nw-cloud-status');
-        if (!statusEl) return;
-
-        if (isConnected) {
-            statusEl.className = 'text-xs font-mono text-cyan-400 bg-cyan-500/10 px-3 py-1.5 rounded-xl border border-cyan-500/20 font-bold flex items-center gap-1.5';
-            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span><span>SUPABASE CONNECTED</span>`;
-        } else {
-            statusEl.className = 'text-xs font-mono text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20 font-bold flex items-center gap-1.5';
-            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>SUPABASE OFFLINE</span>`;
-        }
+        return NetWorthSyncService.initSupabaseSync(this);
     }
 
     async fetchExchangeRate() {
-        try {
-            const res = await fetch('https://open.er-api.com/v6/latest/USD');
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.rates && data.rates.THB) {
-                    this.exchangeRate = data.rates.THB;
-                }
-            }
-        } catch (e) {
-            console.warn('Could not fetch live exchange rate, using fallback 35.5:', e);
-        }
+        this.exchangeRate = await NetWorthSyncService.fetchExchangeRate();
+        return this.exchangeRate;
+    }
+
+    updateCloudStatus(isConnected) {
+        return NetWorthSyncService.updateCloudStatus(isConnected);
+    }
+
+    playClickSound() {
+        NetWorthCardRenderer.playClickSound();
+    }
+
+    playRemoveSound() {
+        NetWorthCardRenderer.playRemoveSound();
+    }
+
+    showAppleAlertModal(title, message, icon) {
+        return NetWorthCardRenderer.showAppleAlertModal(title, message, icon);
+    }
+
+    showDeleteConfirmModal(item) {
+        return NetWorthCardRenderer.showDeleteConfirmModal(this, item);
+    }
+
+    getISOWeekKey(dateInput = new Date()) {
+        const date = new Date(dateInput);
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+        const week1 = new Date(date.getFullYear(), 0, 4);
+        const weekNumber = 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+        const formattedWeek = weekNumber.toString().padStart(2, '0');
+        return `${date.getFullYear()}-W${formattedWeek}`;
     }
 
     setCurrency(currency) {
@@ -162,7 +107,7 @@ export class NetWorthManager {
                 { id: '3', name: 'Credit Card Balance', type: 'LIABILITY', category: 'Credit & Debt', amount: 1200, currency: 'THB', date: new Date().toISOString() }
             ];
 
-            // Normalize any legacy USD items to THB base currency
+            // Normalize legacy USD items to THB base
             if (Array.isArray(this.items)) {
                 const rate = this.exchangeRate > 0 ? this.exchangeRate : 35.5;
                 this.items.forEach(item => {
@@ -185,30 +130,9 @@ export class NetWorthManager {
         try {
             localStorage.setItem(this.storageKey, JSON.stringify(this.items));
             localStorage.setItem(this.snapshotStorageKey, JSON.stringify(this.snapshots));
-
-            if (typeof window !== 'undefined') {
-                const getSupabase = () => {
-                    if (window.shareManager?.supabase) return window.shareManager.supabase;
-                    if (!window.supabaseClient && window.supabase) {
-                        window.supabaseClient = window.supabase.createClient('https://ujjwaxdwemrdszyatgxw.supabase.co', 'sb_publishable_Zov-pzfGxNS9yUAGwfhMEg_9PxBeYG3');
-                    }
-                    return window.supabaseClient || null;
-                };
-                const supabase = getSupabase();
-                if (supabase) {
-                    const uid = window.app?.auth?.currentUser?.uid || 'default_user';
-                    await supabase
-                        .from('net_worth')
-                        .upsert([{
-                            user_id: uid,
-                            items: this.items,
-                            snapshots: this.snapshots,
-                            updated_at: new Date().toISOString()
-                        }], { onConflict: 'user_id' });
-                }
-            }
+            await NetWorthSyncService.saveToSupabase(this);
         } catch (e) {
-            console.error('Failed to save Net Worth data to Supabase:', e);
+            console.error('Failed to save Net Worth data:', e);
         }
     }
 
@@ -216,7 +140,6 @@ export class NetWorthManager {
         const { totalAssets, totalLiabilities, netWorth } = this.calculateTotals();
         const currentWeekKey = this.getISOWeekKey(new Date());
 
-        // Always overwrite current week snapshot with latest update
         this.snapshots[currentWeekKey] = {
             netWorth,
             totalAssets,
@@ -227,10 +150,9 @@ export class NetWorthManager {
 
     addItem(name, type, category, amount) {
         if (!name || isNaN(amount) || amount <= 0) return false;
-        
+
         const rate = this.exchangeRate > 0 ? this.exchangeRate : 35.5;
         const numAmount = parseFloat(amount);
-        // Base currency is ALWAYS THB. If entered in USD view mode, convert to THB base
         const thbAmount = this.currency === 'USD' ? numAmount * rate : numAmount;
 
         const newItem = {
@@ -255,19 +177,15 @@ export class NetWorthManager {
         const rate = this.exchangeRate > 0 ? this.exchangeRate : 35.5;
         let baseThb = item.amount || 0;
 
-        // Ensure legacy items are converted to THB base
         if (item.currency === 'USD') {
             baseThb = baseThb * rate;
             item.currency = 'THB';
             item.amount = baseThb;
         }
 
-        // Return converted USD amount if view currency is USD
         if (this.currency === 'USD') {
             return baseThb / rate;
         }
-
-        // Return exact THB base amount
         return baseThb;
     }
 
@@ -279,7 +197,6 @@ export class NetWorthManager {
         if (!newName || isNaN(parsedAmount) || parsedAmount <= 0) return false;
 
         const rate = this.exchangeRate > 0 ? this.exchangeRate : 35.5;
-        // If editing in USD view mode, convert edited USD amount to THB base
         const thbAmount = this.currency === 'USD' ? parsedAmount * rate : parsedAmount;
 
         item.name = newName.trim();
@@ -302,7 +219,7 @@ export class NetWorthManager {
     }
 
     async clearAll() {
-        if (typeof window !== 'undefined' && window.app && window.app.ui && window.app.ui.share) {
+        if (typeof window !== 'undefined' && window.app?.ui?.share) {
             const confirmed = await window.app.ui.share.ShareUI.showConfirmModal({
                 title: 'Clear Net Worth Records',
                 message: 'Are you sure you want to clear all recorded financial items? This action cannot be undone.',
@@ -325,7 +242,7 @@ export class NetWorthManager {
 
     setFilter(filter) {
         this.filter = filter;
-        
+
         const btnAll = document.getElementById('nw-filter-all');
         const btnAsset = document.getElementById('nw-filter-asset');
         const btnLiability = document.getElementById('nw-filter-liability');
@@ -351,193 +268,7 @@ export class NetWorthManager {
         }
 
         this.renderList();
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
-    }
-
-    playClickSound() {
-        try {
-            const sound = new Audio('assets/Sounds/mouse-click.mp3');
-            sound.currentTime = 0;
-            sound.play().catch(() => {});
-        } catch (e) {}
-    }
-
-    playRemoveSound() {
-        try {
-            const sound = new Audio('assets/Sounds/remove.mp3');
-            sound.currentTime = 0;
-            sound.play().catch(() => {});
-        } catch (e) {}
-    }
-
-    showDeleteConfirmModal(item) {
-        const existing = document.getElementById('nw-delete-modal');
-        if (existing) existing.remove();
-
-        const overlay = document.createElement('div');
-        overlay.id = 'nw-delete-modal';
-        overlay.className = 'share-overlay';
-        overlay.innerHTML = `
-            <div class="share-modal-card">
-                <div class="share-modal-body">
-                    <div class="share-modal-icon-badge text-rose-400 bg-rose-500/10 border border-rose-500/20">
-                        <i data-lucide="trash-2" class="w-8 h-8"></i>
-                    </div>
-                    <h3 class="share-modal-title">Confirm Delete Asset</h3>
-                    <p class="share-modal-message">Are you sure you want to remove <strong class="text-white">${item.name}</strong> from your portfolio?</p>
-                    <div class="share-modal-divider"></div>
-                    <div class="share-modal-actions flex gap-3">
-                        <button id="btn-nw-delete-cancel" class="share-modal-btn share-modal-btn-cancel flex-1 py-2.5 rounded-xl font-bold font-mono text-xs cursor-pointer">
-                            Cancel
-                        </button>
-                        <button id="btn-nw-delete-confirm" class="share-modal-btn share-modal-btn-confirm bg-rose-600 hover:bg-rose-500 text-white flex-1 py-2.5 rounded-xl font-bold font-mono text-xs cursor-pointer">
-                            Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(overlay);
         if (window.lucide) window.lucide.createIcons();
-
-        requestAnimationFrame(() => {
-            overlay.classList.add('share-overlay-visible');
-            const card = overlay.querySelector('.share-modal-card');
-            if (card) card.classList.add('share-modal-card-visible');
-        });
-
-        const close = () => {
-            overlay.classList.remove('share-overlay-visible');
-            const card = overlay.querySelector('.share-modal-card');
-            if (card) card.classList.remove('share-modal-card-visible');
-            setTimeout(() => overlay.remove(), 200);
-        };
-
-        const btnCancel = overlay.querySelector('#btn-nw-delete-cancel');
-        const btnConfirm = overlay.querySelector('#btn-nw-delete-confirm');
-
-        if (btnCancel) {
-            btnCancel.onclick = () => {
-                this.playClickSound();
-                close();
-            };
-        }
-
-        if (btnConfirm) {
-            btnConfirm.onclick = () => {
-                this.playClickSound();
-                this.deleteItem(item.id);
-                close();
-                this.playRemoveSound();
-            };
-        }
-
-        overlay.onclick = (e) => {
-            if (e.target === overlay) close();
-        };
-    }
-
-    reorderFilteredItems(sourceIdx, targetIdx, filtered) {
-        if (sourceIdx < 0 || sourceIdx >= filtered.length || targetIdx < 0 || targetIdx >= filtered.length) return;
-        const [movedItem] = filtered.splice(sourceIdx, 1);
-        filtered.splice(targetIdx, 0, movedItem);
-
-        if (this.filter === 'ALL') {
-            this.items = filtered;
-        } else {
-            const filteredIds = filtered.map(item => item.id);
-            const otherItems = this.items.filter(item => !filteredIds.includes(item.id));
-            this.items = [...filtered, ...otherItems];
-        }
-
-        this.saveData();
-        this.render();
-    }
-
-    updateOtherCardsShift(sourceIdx, targetIdx, itemHeight = 60) {
-        const container = document.getElementById('nw-items-list');
-        if (!container || sourceIdx === null || sourceIdx === undefined) return;
-
-        const cards = Array.from(container.querySelectorAll('.nw-item-card'));
-
-        cards.forEach((c) => {
-            const idx = parseInt(c.dataset.index, 10);
-            if (isNaN(idx) || idx === sourceIdx) return;
-
-            if (sourceIdx < targetIdx) {
-                if (idx > sourceIdx && idx <= targetIdx) {
-                    c.style.transform = `translateY(-${itemHeight}px)`;
-                } else {
-                    c.style.transform = 'translateY(0)';
-                }
-            } else if (sourceIdx > targetIdx) {
-                if (idx >= targetIdx && idx < sourceIdx) {
-                    c.style.transform = `translateY(${itemHeight}px)`;
-                } else {
-                    c.style.transform = 'translateY(0)';
-                }
-            } else {
-                c.style.transform = 'translateY(0)';
-            }
-        });
-    }
-
-    clearDragShiftAnimation() {
-        const container = document.getElementById('nw-items-list');
-        if (!container) return;
-        container.querySelectorAll('.nw-item-card').forEach(c => {
-            c.style.transform = '';
-            c.classList.remove('is-dragging', 'is-dropping');
-        });
-    }
-
-    showAppleAlertModal(title, message, icon = 'alert-circle') {
-        const existing = document.getElementById('nw-alert-modal');
-        if (existing) existing.remove();
-
-        const overlay = document.createElement('div');
-        overlay.id = 'nw-alert-modal';
-        overlay.className = 'share-overlay';
-        overlay.innerHTML = `
-            <div class="share-modal-card">
-                <div class="share-modal-body">
-                    <div class="share-modal-icon-badge text-amber-400">
-                        <i data-lucide="${icon}" class="w-8 h-8"></i>
-                    </div>
-                    <h3 class="share-modal-title">${title}</h3>
-                    <p class="share-modal-message">${message}</p>
-                    <div class="share-modal-divider"></div>
-                    <div class="share-modal-actions">
-                        <button id="btn-nw-alert-ok" class="share-modal-btn share-modal-btn-confirm bg-cyan-600 hover:bg-cyan-500 text-white w-full py-2.5 rounded-xl font-bold font-mono text-xs cursor-pointer">
-                            OK
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-        if (window.lucide) window.lucide.createIcons();
-
-        requestAnimationFrame(() => {
-            overlay.classList.add('share-overlay-visible');
-            const card = overlay.querySelector('.share-modal-card');
-            if (card) card.classList.add('share-modal-card-visible');
-        });
-
-        const close = () => {
-            overlay.classList.remove('share-overlay-visible');
-            const card = overlay.querySelector('.share-modal-card');
-            if (card) card.classList.remove('share-modal-card-visible');
-            setTimeout(() => overlay.remove(), 200);
-        };
-
-        const btnOk = overlay.querySelector('#btn-nw-alert-ok');
-        if (btnOk) btnOk.onclick = close;
-        overlay.onclick = (e) => {
-            if (e.target === overlay) close();
-        };
     }
 
     bindEvents() {
@@ -557,11 +288,11 @@ export class NetWorthManager {
                 const amount = parseFloat(amtEl.value);
 
                 if (!name) {
-                    this.showAppleAlertModal('Incomplete Information', 'Please enter an Item Name before adding to your portfolio.');
+                    NetWorthCardRenderer.showAppleAlertModal('Incomplete Information', 'Please enter an Item Name before adding to your portfolio.');
                     return;
                 }
                 if (isNaN(amount) || amount <= 0) {
-                    this.showAppleAlertModal('Invalid Amount', 'Please enter a valid positive amount value.');
+                    NetWorthCardRenderer.showAppleAlertModal('Invalid Amount', 'Please enter a valid positive amount value.');
                     return;
                 }
 
@@ -675,246 +406,12 @@ export class NetWorthManager {
             }
         }
 
-        // Render Charts
         NetWorthChartEngine.updateCategoryPieCharts(this);
         NetWorthChartEngine.updateHistoryChart(this, this.get52WeekHistory());
     }
 
     renderList() {
-        const container = document.getElementById('nw-items-list');
-        const countEl = document.getElementById('nw-items-count');
-        if (!container) return;
-
-        // Auto-hiding scrollbar event listener
-        if (!container.dataset.hasScrollListener) {
-            container.dataset.hasScrollListener = 'true';
-            let scrollTimeout;
-            container.addEventListener('scroll', () => {
-                container.classList.add('is-scrolling');
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
-                    container.classList.remove('is-scrolling');
-                }, 1000);
-            });
-        }
-
-        const filtered = this.items.filter(item => {
-            if (this.filter === 'ALL') return true;
-            return item.type === this.filter;
-        });
-
-        if (countEl) countEl.innerText = `${filtered.length} items registered`;
-
-        if (filtered.length === 0) {
-            container.className = 'space-y-2 pr-1';
-            container.style.maxHeight = 'none';
-            container.style.overflowY = 'visible';
-            container.innerHTML = `<div class="text-center text-slate-500 py-12 text-xs font-mono">No financial items recorded in this view.</div>`;
-            return;
-        }
-
-        // Toggle scroll bar when assets count > 3
-        if (filtered.length > 3) {
-            container.className = 'space-y-2 pr-1 select-none nw-items-scroll';
-            container.style.maxHeight = '210px';
-            container.style.overflowY = 'auto';
-        } else {
-            container.className = 'space-y-2 pr-1 select-none';
-            container.classList.remove('nw-items-scroll');
-            container.style.maxHeight = 'none';
-            container.style.overflowY = 'visible';
-        }
-
-        const symbol = this.currency === 'THB' ? '฿' : '$';
-        container.innerHTML = '';
-        filtered.forEach((item, index) => {
-            const isAsset = item.type === 'ASSET';
-            const textClass = isAsset ? 'text-emerald-400' : 'text-red-400';
-            const typeLabel = isAsset ? 'ASSET' : 'LIABILITY';
-            const convertedAmt = this.getItemConvertedAmount(item);
-
-            // Check if updated > 7 days ago
-            const lastUpdated = item.updatedAt || item.date;
-            let isOutdated = false;
-            if (lastUpdated) {
-                const diffMs = Date.now() - new Date(lastUpdated).getTime();
-                const diffDays = diffMs / (1000 * 60 * 60 * 24);
-                if (diffDays > 7) {
-                    isOutdated = true;
-                }
-            }
-
-            const borderClass = isOutdated 
-                ? 'border border-amber-500/70 bg-amber-950/20 shadow-[0_0_10px_rgba(245,158,11,0.15)]' 
-                : 'border border-slate-800/60 bg-slate-900/40';
-
-            const card = document.createElement('div');
-            card.className = `p-3.5 rounded-xl ${borderClass} flex justify-between items-center group nw-item-card`;
-            card.dataset.index = index;
-
-            const renderNormalState = () => {
-                const outdatedBadge = isOutdated 
-                    ? `<span class="text-[9px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0" title="Not updated for over 7 days"><i data-lucide="clock" class="w-2.5 h-2.5"></i> >7d outdated</span>` 
-                    : '';
-
-                card.innerHTML = `
-                    <div class="flex items-center gap-2.5">
-                        <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-500 hover:text-cyan-400 cursor-grab active:cursor-grabbing nw-drag-handle shrink-0 transition" title="Press & drag 6 dots to reorder"></i>
-                        <div class="w-8 h-8 rounded-lg ${isAsset ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'} flex items-center justify-center font-mono font-bold text-xs shrink-0">
-                            ${isAsset ? '+' : '-'}
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="font-bold font-mono text-slate-200 text-xs">${item.name}</span>
-                                <span class="text-[9px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">${item.category}</span>
-                                ${outdatedBadge}
-                            </div>
-                            <span class="text-[10px] font-mono font-bold ${textClass}">${typeLabel}</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="font-mono font-bold text-sm ${textClass}">${isAsset ? '+' : '-'}${symbol}${convertedAmt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        <button class="edit-nw-btn text-slate-500 hover:text-cyan-400 transition p-1 text-xs" data-id="${item.id}" title="Edit Record">
-                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                        </button>
-                        <button class="delete-nw-btn text-slate-600 hover:text-red-400 transition p-1 text-xs" data-id="${item.id}" title="Delete Record">✕</button>
-                    </div>
-                `;
-
-                // Custom Pointer Drag Tracking for 6-dot grip handle (Mouse + Touch)
-                const onPointerStart = (e) => {
-                    if (!e.target.closest('.nw-drag-handle')) return;
-                    e.preventDefault();
-
-                    const startY = e.touches ? e.touches[0].clientY : e.clientY;
-                    this.draggedIndex = index;
-                    let currentTargetIdx = index;
-                    const itemHeight = 60; // Card height + gap
-
-                    card.classList.add('is-dragging');
-                    card.style.transform = `translateY(0px) scale(0.95)`;
-
-                    const onPointerMove = (moveEvt) => {
-                        if (this.draggedIndex === null) return;
-                        const currentY = moveEvt.touches ? moveEvt.touches[0].clientY : moveEvt.clientY;
-                        const deltaY = currentY - startY;
-
-                        // 1. Shrink card & move entire card directly with cursor/finger
-                        card.style.transform = `translateY(${deltaY}px) scale(0.95)`;
-
-                        // 2. Calculate target slot index & shift other cards
-                        const slotOffset = Math.round(deltaY / itemHeight);
-                        const newTargetIdx = Math.max(0, Math.min(filtered.length - 1, index + slotOffset));
-
-                        if (newTargetIdx !== currentTargetIdx) {
-                            currentTargetIdx = newTargetIdx;
-                        }
-                        this.updateOtherCardsShift(index, currentTargetIdx, itemHeight);
-                    };
-
-                    const onPointerEnd = () => {
-                        window.removeEventListener('mousemove', onPointerMove);
-                        window.removeEventListener('mouseup', onPointerEnd);
-                        window.removeEventListener('touchmove', onPointerMove);
-                        window.removeEventListener('touchend', onPointerEnd);
-
-                        if (this.draggedIndex === null) return;
-
-                        const sourceIdx = this.draggedIndex;
-                        const targetIdx = currentTargetIdx;
-
-                        card.classList.remove('is-dragging');
-                        card.classList.add('is-dropping');
-                        const finalDeltaY = (targetIdx - sourceIdx) * itemHeight;
-                        card.style.transform = `translateY(${finalDeltaY}px) scale(1)`;
-
-                        setTimeout(() => {
-                            this.clearDragShiftAnimation();
-                            this.draggedIndex = null;
-                            if (sourceIdx !== targetIdx) {
-                                this.reorderFilteredItems(sourceIdx, targetIdx, filtered);
-                            }
-                        }, 180);
-                    };
-
-                    window.addEventListener('mousemove', onPointerMove, { passive: false });
-                    window.addEventListener('mouseup', onPointerEnd, { passive: false });
-                    window.addEventListener('touchmove', onPointerMove, { passive: false });
-                    window.addEventListener('touchend', onPointerEnd, { passive: false });
-                };
-
-                card.addEventListener('mousedown', onPointerStart);
-                card.addEventListener('touchstart', onPointerStart, { passive: false });
-
-                const btnEdit = card.querySelector('.edit-nw-btn');
-                if (btnEdit) {
-                    btnEdit.onclick = (e) => {
-                        e.stopPropagation();
-                        this.playClickSound();
-                        renderEditState();
-                    };
-                }
-
-                const btnDelete = card.querySelector('.delete-nw-btn');
-                if (btnDelete) {
-                    btnDelete.onclick = (e) => {
-                        e.stopPropagation();
-                        this.playClickSound();
-                        this.showDeleteConfirmModal(item);
-                    };
-                }
-
-                if (window.lucide) window.lucide.createIcons();
-            };
-
-            const renderEditState = () => {
-                const categories = ['Cash & Bank', 'Investments', 'Real Estate & Vehicle', 'Valuables & Crypto', 'Credit & Debt', 'Other'];
-                const categoryOptions = categories.map(cat => `<option value="${cat}" ${item.category === cat ? 'selected' : ''}>${cat}</option>`).join('');
-                const displayAmt = convertedAmt.toFixed(2);
-
-                card.innerHTML = `
-                    <div class="w-full flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-1 font-mono">
-                        <div class="flex flex-1 gap-2">
-                            <input type="text" class="nw-edit-name bg-slate-950 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1 text-xs flex-1 focus:border-cyan-500 outline-none" value="${item.name}" placeholder="Item Name">
-                            <select class="nw-edit-cat bg-slate-950 text-slate-300 border border-slate-700 rounded-lg px-2 py-1 text-[11px] focus:border-cyan-500 outline-none">
-                                ${categoryOptions}
-                            </select>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <input type="number" step="0.01" min="0" class="nw-edit-amount w-28 bg-slate-950 text-emerald-400 font-bold border border-slate-700 rounded-lg px-2.5 py-1 text-xs focus:border-cyan-500 outline-none" value="${displayAmt}" placeholder="Amount">
-                            <button class="nw-save-btn px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition">Save</button>
-                            <button class="nw-cancel-btn px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-lg text-xs transition">Cancel</button>
-                        </div>
-                    </div>
-                `;
-
-                const btnSave = card.querySelector('.nw-save-btn');
-                const btnCancel = card.querySelector('.nw-cancel-btn');
-                const inputName = card.querySelector('.nw-edit-name');
-                const inputCat = card.querySelector('.nw-edit-cat');
-                const inputAmt = card.querySelector('.nw-edit-amount');
-
-                btnCancel.onclick = (e) => {
-                    e.stopPropagation();
-                    this.playClickSound();
-                    renderNormalState();
-                };
-
-                btnSave.onclick = (e) => {
-                    e.stopPropagation();
-                    this.playClickSound();
-                    const newName = inputName.value.trim();
-                    const newCat = inputCat.value;
-                    const newAmt = inputAmt.value;
-                    if (this.editItem(item.id, newName, newCat, newAmt)) {
-                        renderNormalState();
-                    }
-                };
-            };
-
-            renderNormalState();
-            container.appendChild(card);
-        });
+        NetWorthCardRenderer.renderList(this);
     }
 
     render() {
@@ -927,4 +424,3 @@ export class NetWorthManager {
         }
     }
 }
-

@@ -166,6 +166,41 @@ input:focus, select:focus {
     width: 100%;
 }
 
+/* Market Center Full Viewport Chart */
+#market-chart-section {
+    height: calc(100vh - 112px);
+    min-height: calc(100vh - 112px);
+    width: 100%;
+}
+
+@media (max-width: 767px) {
+    #market-chart-section {
+        height: calc(100vh - 96px);
+        min-height: calc(100vh - 96px);
+    }
+}
+
+#tv-chart-wrapper {
+    flex: 1 1 0%;
+    min-height: 0;
+    width: 100%;
+    position: relative;
+}
+
+#tv-chart-container {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+}
+
+#tv-chart-container > div,
+#tv-chart-container iframe {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    display: block;
+}
+
 .loading-pulse {
     animation: pulse-blue 2s infinite;
 }
@@ -178,4 +213,30 @@ input:focus, select:focus {
 
 .price-text {
     transition: color 0.3s ease;
+}
+
+/* Horizontal slide bar styling for asset toolbar */
+.custom-slide-bar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+.custom-slide-bar::-webkit-scrollbar {
+    height: 4px;
+}
+
+.custom-slide-bar::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 9999px;
+}
+
+.custom-slide-bar::-webkit-scrollbar-thumb {
+    background: rgba(6, 182, 212, 0.25);
+    border-radius: 9999px;
+}
+
+.custom-slide-bar::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.5);
 }

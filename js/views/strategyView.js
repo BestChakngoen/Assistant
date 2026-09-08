@@ -205,9 +205,15 @@ export const strategyViewHtml = `
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                     <!-- LEFT COLUMN: ACCOUNT SETTINGS & BIAS -->
                     <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between">
-                        <div class="flex items-center gap-2 border-b border-slate-800 pb-3 mb-4">
-                            <span class="w-2.5 h-2.5 bg-pink-500 rounded-full animate-pulse"></span>
-                            <h3 class="font-mono font-bold text-base text-pink-400 tracking-wider">POSITION SIZING</h3>
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 bg-pink-500 rounded-full animate-pulse"></span>
+                                <h3 class="font-mono font-bold text-base text-pink-400 tracking-wider">POSITION SIZING</h3>
+                            </div>
+                            <button id="btn-calc-risk" class="px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-mono font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-lg shadow-pink-500/20 border-0" title="Calculate Entry & Targets">
+                                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                                <span>Calculate</span>
+                            </button>
                         </div>
 
                         <div class="space-y-4 flex-1 flex flex-col justify-center">
@@ -286,10 +292,17 @@ export const strategyViewHtml = `
                         </div>
 
                         <div class="space-y-4 flex-1 flex flex-col justify-center">
-                            <div>
-                                <label class="block text-[9px] text-slate-500 mb-1 font-bold">ENTRY PRICE</label>
-                                <input type="text" id="risk-entry" placeholder="Entry"
-                                    class="w-full px-3 py-2.5 rounded-lg font-mono text-sm font-bold text-center text-blue-300 border border-blue-900/50 bg-slate-950 focus:border-blue-400 focus:ring-1 focus:ring-blue-400">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[9px] text-slate-500 mb-1 font-bold">ENTRY PRICE</label>
+                                    <input type="text" id="risk-entry" placeholder="Entry"
+                                        class="w-full px-3 py-2.5 rounded-lg font-mono text-sm font-bold text-center text-blue-300 border border-blue-900/50 bg-slate-950 focus:border-blue-400 focus:ring-1 focus:ring-blue-400">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] text-slate-500 mb-1 font-bold">LOT SIZE</label>
+                                    <input type="text" id="risk-lot-input" placeholder="0.000" inputmode="decimal"
+                                        class="w-full px-3 py-2.5 rounded-lg font-mono text-sm font-bold text-center text-pink-400 border border-pink-900/50 bg-slate-950 focus:border-pink-400 focus:ring-1 focus:ring-pink-400">
+                                </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
@@ -328,7 +341,7 @@ export const strategyViewHtml = `
                                 <div class="glass-panel p-5 rounded-xl bg-slate-950/40">
                                     <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1 font-bold">Recommended Position</p>
                                     <div class="flex items-baseline gap-2">
-                                        <h2 id="res-lot" class="text-3xl font-mono font-bold text-pink-400">0.00</h2>
+                                        <h2 id="res-lot" class="text-3xl font-mono font-bold text-pink-400">0.000</h2>
                                         <span class="text-xs text-slate-500 font-mono">LOTS</span>
                                     </div>
                                 </div>
@@ -353,7 +366,11 @@ export const strategyViewHtml = `
                             </div>
                         </div>
 
-                        <div class="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-500 font-mono leading-relaxed flex justify-end items-center">
+                        <div class="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-500 font-mono leading-relaxed flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-slate-500">ACTUAL RISK:</span>
+                                <span id="res-actual-risk-pct" class="font-bold text-sm text-red-400 font-mono">0.00%</span>
+                            </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] text-slate-500">ACTUAL R:R:</span>
                                 <span id="res-rr" class="font-bold text-sm text-yellow-400 font-mono">1 : 2.00</span>

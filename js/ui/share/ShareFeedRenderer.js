@@ -1,194 +1,42 @@
 import { ShareUI } from './ShareUI.js';
+import { ShareFeedState } from './ShareFeedState.js';
+import { ShareMediaResolver } from './ShareMediaResolver.js';
 
+/**
+ * ShareFeedRenderer.js - Feed DOM Card Rendering Coordinator
+ * Solid OOP: Delegates starred/edit/selection state to ShareFeedState, media resolution to ShareMediaResolver.
+ */
 export class ShareFeedRenderer {
     static loadStarred(shareManager) {
-        try {
-            const raw = localStorage.getItem('shareStarredIds');
-            if (raw) shareManager.starredIds = new Set(JSON.parse(raw));
-        } catch (e) {
-            shareManager.starredIds = new Set();
-        }
+        return ShareFeedState.loadStarred(shareManager);
     }
 
     static saveStarred(shareManager) {
-        try {
-            localStorage.setItem('shareStarredIds', JSON.stringify([...shareManager.starredIds]));
-        } catch (e) {}
+        return ShareFeedState.saveStarred(shareManager);
     }
 
     static toggleStar(shareManager, itemId) {
-        this.exitEditMode(shareManager);
-        const isStarred = !shareManager.starredIds.has(itemId);
-
-        if (isStarred) {
-            shareManager.starredIds.add(itemId);
-        } else {
-            shareManager.starredIds.delete(itemId);
-        }
-        this.saveStarred(shareManager);
-
-        // In-place update of target card without destroying the feed DOM!
-        const card = shareManager.dom.feed?.querySelector(`[data-item-id="${itemId}"]`);
-        if (card) {
-            if (isStarred) {
-                card.dataset.starred = 'true';
-            } else {
-                delete card.dataset.starred;
-            }
-
-            const btnStar = card.querySelector('[data-star-btn="true"]');
-            if (btnStar) {
-                btnStar.className = `p-1 rounded transition ${isStarred ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800/50'}`;
-                btnStar.title = isStarred ? 'Unstar item' : 'Star item';
-                if (isStarred) {
-                    btnStar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
-                } else {
-                    btnStar.innerHTML = `<i data-lucide="star" class="w-3.5 h-3.5"></i>`;
-                    if (window.lucide) window.lucide.createIcons();
-                }
-            }
-
-            // If currently filtering by starred, hide the card when unstarred
-            if (shareManager.currentFilter === 'starred' && !isStarred) {
-                card.style.display = 'none';
-            }
-        }
+        return ShareFeedState.toggleStar(shareManager, itemId);
     }
 
     static toggleSelectAll(shareManager, forceChecked) {
-        if (!shareManager.dom.feed) return;
-        const visibleCards = Array.from(shareManager.dom.feed.querySelectorAll('[data-share-type]')).filter(el => el.style.display !== 'none');
-        if (visibleCards.length === 0) return;
-
-        let shouldSelectAll;
-        if (typeof forceChecked === 'boolean') {
-            shouldSelectAll = forceChecked;
-        } else {
-            const allSelected = visibleCards.every(card => shareManager.selectedIds.has(card.dataset.itemId));
-            shouldSelectAll = !allSelected;
-        }
-
-        visibleCards.forEach(card => {
-            const id = card.dataset.itemId;
-            if (id) {
-                if (shouldSelectAll) shareManager.selectedIds.add(id);
-                else shareManager.selectedIds.delete(id);
-            }
-        });
-        this.updateSelectedUI(shareManager);
+        return ShareFeedState.toggleSelectAll(shareManager, forceChecked);
     }
 
     static updateSelectedUI(shareManager) {
-        const count = shareManager.selectedIds.size;
-        if (shareManager.dom.selectedCountText) shareManager.dom.selectedCountText.textContent = count;
-        if (shareManager.dom.btnDeleteSelected) {
-            if (count > 0) shareManager.dom.btnDeleteSelected.classList.remove('hidden');
-            else shareManager.dom.btnDeleteSelected.classList.add('hidden');
-        }
-
-        if (shareManager.dom.feed) {
-            const cards = shareManager.dom.feed.querySelectorAll('[data-item-id]');
-            cards.forEach(card => {
-                const itemId = card.dataset.itemId;
-                const isSelected = shareManager.selectedIds.has(itemId);
-
-                if (isSelected) {
-                    card.classList.add('share-card-selected', 'border-cyan-500/50', 'bg-cyan-950/20');
-                    card.classList.remove('border-slate-800/80', 'bg-slate-950/20');
-                } else {
-                    card.classList.remove('share-card-selected', 'border-cyan-500/50', 'bg-cyan-950/20');
-                    card.classList.add('border-slate-800/80', 'bg-slate-950/20');
-                }
-            });
-        }
+        return ShareFeedState.updateSelectedUI(shareManager);
     }
 
     static exitEditMode(shareManager) {
-        if (shareManager.editingState) {
-            try {
-                const { bodyEl, originalHTML } = shareManager.editingState;
-                if (bodyEl && document.body.contains(bodyEl)) {
-                    bodyEl.innerHTML = originalHTML;
-                    if (window.lucide) window.lucide.createIcons();
-                }
-            } catch (e) {}
-            shareManager.editingState = null;
-        }
+        return ShareFeedState.exitEditMode(shareManager);
     }
 
     static enterEditMode(shareManager, item, card, bodyEl) {
-        // Exit any active edit mode first
-        this.exitEditMode(shareManager);
-
-        const originalHTML = bodyEl.innerHTML;
-        shareManager.editingState = { item, card, bodyEl, originalHTML };
-
-        bodyEl.innerHTML = `
-            <div class="flex flex-col gap-2 p-2 bg-slate-900/90 rounded-lg border border-cyan-500/40 edit-container-box">
-                ${item.type === 'file' ? `
-                    <label class="text-[10px] text-cyan-400 font-mono">EDIT TITLE:</label>
-                    <input type="text" class="edit-title-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded px-2.5 py-1 text-xs focus:border-cyan-500 focus:outline-none" value="${item.title || ''}" placeholder="Title...">
-                    <label class="text-[10px] text-cyan-400 font-mono mt-1">EDIT FILENAME:</label>
-                    <input type="text" class="edit-text-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded px-2.5 py-1 text-xs focus:border-cyan-500 focus:outline-none" value="${item.filename || ''}">
-                ` : `
-                    <label class="text-[10px] text-cyan-400 font-mono">EDIT TITLE:</label>
-                    <input type="text" class="edit-title-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded px-2.5 py-1 text-xs focus:border-cyan-500 focus:outline-none" value="${item.title || ''}" placeholder="Title...">
-                    <label class="text-[10px] text-cyan-400 font-mono mt-1">EDIT CONTENT:</label>
-                    <textarea class="edit-text-input w-full bg-slate-950 text-slate-200 border border-slate-800 rounded p-2 text-xs font-mono focus:border-cyan-500 focus:outline-none resize-none" rows="3">${item.text || ''}</textarea>
-                `}
-                <div class="flex justify-end gap-2 mt-1">
-                    <button class="btn-cancel-edit px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition">Cancel</button>
-                    <button class="btn-save-edit px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition">Save</button>
-                </div>
-            </div>
-        `;
-
-        const btnCancel = bodyEl.querySelector('.btn-cancel-edit');
-        const btnSave = bodyEl.querySelector('.btn-save-edit');
-        const inputContent = bodyEl.querySelector('.edit-text-input');
-        const inputTitle = bodyEl.querySelector('.edit-title-input');
-
-        btnCancel.onclick = (e) => {
-            if (e) e.stopPropagation();
-            ShareUI.playSound('mouse-click');
-            this.exitEditMode(shareManager);
-        };
-        btnSave.onclick = async (e) => {
-            if (e) e.stopPropagation();
-            ShareUI.playSound('mouse-click');
-            const newContent = inputContent.value.trim();
-            const newTitle = inputTitle ? inputTitle.value.trim() : '';
-            if (!newContent) return;
-
-            shareManager.editingState = null;
-            if (item.type === 'text') await shareManager.updateItem(item, { text: newContent, title: newTitle });
-            else await shareManager.updateItem(item, { filename: newContent, title: newTitle });
-            this.renderFeed(shareManager);
-        };
+        return ShareFeedState.enterEditMode(shareManager, item, card, bodyEl);
     }
 
-    static async updateItem(shareManager, item, newData) {
-        Object.assign(item, newData);
-        if (shareManager.mode === 'online') {
-            try {
-                const payload = {};
-                if (item.type === 'text') payload.text = item.text;
-                if (item.type === 'file') payload.filename = item.filename;
-                if (item.title !== undefined) payload.title = item.title;
-
-                let { error } = await shareManager.supabase.from('shared_items').update(payload).eq('id', item.id);
-                if (error && error.message && error.message.includes('title')) {
-                    delete payload.title;
-                    const res = await shareManager.supabase.from('shared_items').update(payload).eq('id', item.id);
-                    error = res.error;
-                }
-                if (error) throw error;
-            } catch (e) {
-                await shareManager.dbStore.add(item);
-            }
-        } else {
-            await shareManager.dbStore.add(item);
-        }
+    static updateItem(shareManager, item, newData) {
+        return ShareFeedState.updateItem(shareManager, item, newData);
     }
 
     static renderFeed(shareManager) {
@@ -231,7 +79,7 @@ export class ShareFeedRenderer {
                 } else {
                     shareManager.selectedIds.add(item.id);
                 }
-                this.updateSelectedUI(shareManager);
+                ShareFeedState.updateSelectedUI(shareManager);
             };
 
             let shareType = item.type;
@@ -301,7 +149,6 @@ export class ShareFeedRenderer {
 
             infoDiv.appendChild(typeGroup);
             infoDiv.appendChild(titleTimeGroup);
-            
             header.appendChild(infoDiv);
 
             const actionDiv = document.createElement('div');
@@ -324,7 +171,7 @@ export class ShareFeedRenderer {
                 actionDiv.appendChild(btnCopy);
             } else {
                 const btnDownload = document.createElement('a');
-                btnDownload.className = 'p-1 hover:bg-slate-800/50 hover:text-cyan-400 rounded transition text-slate-500';
+                btnDownload.className = 'p-1 hover:bg-slate-800/50 hover:text-cyan-400 rounded transition text-slate-500 cursor-pointer';
                 btnDownload.title = 'Download file';
                 btnDownload.innerHTML = '<i data-lucide="download" class="w-3.5 h-3.5"></i>';
                 
@@ -353,7 +200,7 @@ export class ShareFeedRenderer {
             btnEdit.innerHTML = '<i data-lucide="pencil" class="w-3.5 h-3.5"></i>';
             btnEdit.onclick = () => {
                 ShareUI.playSound('mouse-click');
-                this.enterEditMode(shareManager, item, card, body);
+                ShareFeedState.enterEditMode(shareManager, item, card, body);
             };
             actionDiv.appendChild(btnEdit);
 
@@ -362,11 +209,11 @@ export class ShareFeedRenderer {
             btnStar.className = `p-1 rounded transition ${isStarred ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800/50'}`;
             btnStar.title = isStarred ? 'Unstar item' : 'Star item';
             if (isStarred) {
-                btnStar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+                btnStar.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
             } else {
-                btnStar.innerHTML = `<i data-lucide="star" class="w-3.5 h-3.5"></i>`;
+                btnStar.innerHTML = '<i data-lucide="star" class="w-3.5 h-3.5"></i>';
             }
-            btnStar.onclick = () => this.toggleStar(shareManager, item.id);
+            btnStar.onclick = () => ShareFeedState.toggleStar(shareManager, item.id);
             actionDiv.appendChild(btnStar);
 
             const btnDelete = document.createElement('button');
@@ -441,55 +288,10 @@ export class ShareFeedRenderer {
                 fileMeta.appendChild(fileDetails);
                 fileContainer.appendChild(fileMeta);
 
-                let fileUrl = '';
-                if (item.blob) {
-                    try { fileUrl = URL.createObjectURL(item.blob); } catch (e) {}
-                }
-                if (!fileUrl && item.base64Data) {
-                    fileUrl = item.base64Data;
-                }
-                if (!fileUrl && item.url) {
-                    const hostUrl = shareManager.hostUrl || '';
-                    if (shareManager.mode === 'online' && hostUrl && item.url.startsWith('/')) {
-                        fileUrl = hostUrl.replace(/\/+$/, '') + item.url;
-                    } else {
-                        fileUrl = item.url;
-                    }
-                }
+                const fileUrl = ShareMediaResolver.resolveFileUrl(item, shareManager);
 
-                // If online mode with Supabase and we have a path/filename, automatically resolve signedUrl or blob
-                if (isImg && shareManager.mode === 'online' && shareManager.supabase && (!item.blob && !item.base64Data)) {
-                    let path = item.uniqueFilename;
-                    if (!path && item.url) {
-                        try {
-                            const urlObj = new URL(item.url);
-                            const parts = urlObj.pathname.split('/shared-files/');
-                            if (parts.length > 1) path = decodeURIComponent(parts[1]);
-                            else path = urlObj.pathname.split('/').pop();
-                        } catch (e) { path = item.url.split('/').pop(); }
-                    }
-                    if (!path) path = item.filename;
-
-                    if (path) {
-                        // Request Signed URL valid for 10 years (315,360,000 seconds)
-                        shareManager.supabase.storage.from('shared-files').createSignedUrl(path, 315360000).then(res => {
-                            if (res.data?.signedUrl) {
-                                const cardEl = document.querySelector(`[data-item-id="${item.id}"]`);
-                                if (cardEl) {
-                                    const imgEl = cardEl.querySelector('img');
-                                    const imgWrapperEl = cardEl.querySelector('.group\\/img');
-                                    if (imgEl) imgEl.src = res.data.signedUrl;
-                                    if (imgWrapperEl) {
-                                        imgWrapperEl.onclick = (e) => {
-                                            e.stopPropagation();
-                                            ShareUI.playSound('mouse-click');
-                                            ShareUI.showImageModal(res.data.signedUrl, item.filename || 'Shared Image');
-                                        };
-                                    }
-                                }
-                            }
-                        }).catch(() => {});
-                    }
+                if (isImg) {
+                    ShareMediaResolver.initSignedUrl(item, shareManager);
                 }
                 
                 if (fileUrl) {
@@ -502,125 +304,7 @@ export class ShareFeedRenderer {
                         img.alt = item.filename || 'Shared image';
                         img.className = 'max-h-[280px] max-w-full rounded-xl object-contain transition-transform duration-300 group-hover/img:scale-[1.02]';
                         
-                        img.onerror = async () => {
-                            if (item.blob && (item.blob instanceof Blob || item.blob instanceof File)) {
-                                try {
-                                    const fallbackBlobUrl = URL.createObjectURL(item.blob);
-                                    if (img.src !== fallbackBlobUrl) {
-                                        img.src = fallbackBlobUrl;
-                                        imgWrapper.onclick = (e) => {
-                                            e.stopPropagation();
-                                            ShareUI.playSound('mouse-click');
-                                            ShareUI.showImageModal(fallbackBlobUrl, item.filename || 'Shared Image');
-                                        };
-                                        return;
-                                    }
-                                } catch (e) {}
-                            }
-                            if (item.base64Data && img.src !== item.base64Data) {
-                                img.src = item.base64Data;
-                                imgWrapper.onclick = (e) => {
-                                    e.stopPropagation();
-                                    ShareUI.playSound('mouse-click');
-                                    ShareUI.showImageModal(item.base64Data, item.filename || 'Shared Image');
-                                };
-                                return;
-                            }
-
-                            // If Online mode with Supabase, attempt downloading file blob directly
-                            if (shareManager.mode === 'online' && shareManager.supabase) {
-                                try {
-                                    let path = item.uniqueFilename;
-                                    if (!path && item.url) {
-                                        try {
-                                            const urlObj = new URL(item.url);
-                                            const parts = urlObj.pathname.split('/shared-files/');
-                                            if (parts.length > 1) {
-                                                path = decodeURIComponent(parts[1]);
-                                            } else {
-                                                path = urlObj.pathname.split('/').pop();
-                                            }
-                                        } catch (e) {
-                                            path = item.url.split('/').pop();
-                                        }
-                                    }
-                                    if (!path) path = item.filename;
-
-                                    if (path) {
-                                        let blobData = null;
-                                        let dlErr = null;
-                                        
-                                        // Try direct download first
-                                        const res = await shareManager.supabase
-                                            .storage
-                                            .from('shared-files')
-                                            .download(path);
-                                        blobData = res.data;
-                                        dlErr = res.error;
-
-                                        // Fallback: try createSignedUrl if download failed
-                                        if (dlErr || !blobData) {
-                                            const { data: signedData } = await shareManager.supabase
-                                                .storage
-                                                .from('shared-files')
-                                                .createSignedUrl(path, 3600);
-                                            
-                                            if (signedData?.signedUrl && img.src !== signedData.signedUrl) {
-                                                img.src = signedData.signedUrl;
-                                                imgWrapper.onclick = (e) => {
-                                                    e.stopPropagation();
-                                                    ShareUI.playSound('mouse-click');
-                                                    ShareUI.showImageModal(signedData.signedUrl, item.filename || 'Shared Image');
-                                                };
-                                                return;
-                                            }
-                                        }
-                                        
-                                         if (!dlErr && blobData) {
-                                            item.blob = blobData;
-                                            const downloadedBlobUrl = URL.createObjectURL(blobData);
-                                            img.src = downloadedBlobUrl;
-                                            imgWrapper.onclick = (e) => {
-                                                e.stopPropagation();
-                                                ShareUI.playSound('mouse-click');
-                                                ShareUI.showImageModal(downloadedBlobUrl, item.filename || 'Shared Image');
-                                            };
-                                            return;
-                                        }
-                                    }
-                                } catch (storageErr) {
-                                    console.warn('Supabase blob download fallback failed:', storageErr);
-                                }
-                            }
-
-                            // Check local IndexedDB storage for offline/cached blob as final fallback
-                            try {
-                                if (shareManager.dbStore && item.id) {
-                                    const localRecord = await shareManager.dbStore.get(item.id);
-                                    if (localRecord && localRecord.blob) {
-                                        const localBlobUrl = URL.createObjectURL(localRecord.blob);
-                                        img.src = localBlobUrl;
-                                        imgWrapper.onclick = (e) => {
-                                            e.stopPropagation();
-                                            ShareUI.playSound('mouse-click');
-                                            ShareUI.showImageModal(localBlobUrl, item.filename || 'Shared Image');
-                                        };
-                                        return;
-                                    }
-                                }
-                            } catch (localErr) {}
-
-                            imgWrapper.className = 'p-3.5 bg-slate-950/80 border border-amber-500/30 rounded-xl flex items-center gap-3 text-amber-300 text-xs font-mono max-w-full';
-                            imgWrapper.onclick = null;
-                            imgWrapper.innerHTML = `
-                                <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400 shrink-0"></i>
-                                <div class="min-w-0">
-                                    <p class="font-bold text-slate-200 truncate">${item.filename || 'Image'}</p>
-                                    <p class="text-[10px] text-amber-400/90 mt-0.5 leading-tight">Blocked by AdBlocker / Network (net::ERR_BLOCKED_BY_CLIENT). Disable extension or use Local Storage.</p>
-                                </div>
-                            `;
-                            if (window.lucide) window.lucide.createIcons();
-                        };
+                        img.onerror = () => ShareMediaResolver.handleImageFallback(img, imgWrapper, item, shareManager);
 
                         const zoomOverlay = document.createElement('div');
                         zoomOverlay.className = 'absolute inset-0 bg-slate-950/50 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none rounded-xl';

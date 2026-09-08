@@ -83,14 +83,14 @@ export class TradeActionsHandler {
         overlay.id = 'trade-assets-modal';
         overlay.className = 'share-overlay';
         overlay.innerHTML = `
-            <div class="share-modal-card max-w-md w-full" style="max-width: 440px;">
+            <div class="share-modal-card max-w-md w-full border-0" style="max-width: 440px;">
                 <div class="p-6 flex flex-col gap-4 text-left">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex justify-between items-center pb-3">
                         <div class="flex items-center gap-2">
                             <i data-lucide="layers" class="w-5 h-5 text-cyan-400"></i>
                             <h3 class="text-sm font-mono font-bold text-white uppercase tracking-wider">Manage Asset Types</h3>
                         </div>
-                        <button id="btn-close-assets-modal" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <button id="btn-close-assets-modal" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -98,8 +98,8 @@ export class TradeActionsHandler {
                     <div class="flex flex-col gap-2">
                         <label class="text-xs text-cyan-400 font-mono font-bold uppercase">Add New Asset Symbol</label>
                         <div class="flex gap-2">
-                            <input type="text" id="new-asset-input" placeholder="e.g. ETH/USD, SET50..." class="flex-1 bg-slate-950 text-slate-100 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono focus:border-cyan-500 focus:outline-none uppercase">
-                            <button id="btn-add-asset-submit" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono font-bold transition flex items-center gap-1">
+                            <input type="text" id="new-asset-input" placeholder="e.g. ETH/USD, SET50..." class="flex-1 bg-slate-950 text-slate-100 rounded-xl px-3 py-2 text-xs font-mono focus:bg-slate-900 focus:outline-none uppercase">
+                            <button id="btn-add-asset-submit" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono font-bold transition flex items-center gap-1 cursor-pointer">
                                 <i data-lucide="plus" class="w-4 h-4"></i> Add
                             </button>
                         </div>
@@ -123,10 +123,10 @@ export class TradeActionsHandler {
             container.innerHTML = '';
             assets.forEach(asset => {
                 const itemEl = document.createElement('div');
-                itemEl.className = 'flex justify-between items-center p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-xs font-mono text-slate-200 hover:border-slate-700 transition';
+                itemEl.className = 'flex justify-between items-center p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800/80 text-xs font-mono text-slate-200 transition';
                 itemEl.innerHTML = `
                     <span class="font-bold text-cyan-300">${asset}</span>
-                    <button class="btn-delete-asset-item p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition" title="Delete ${asset}">
+                    <button class="btn-delete-asset-item p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer" title="Delete ${asset}">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
                 `;
@@ -210,6 +210,17 @@ export class TradeActionsHandler {
         amount = Math.abs(amount);
         if (type === 'LOSS' || type === 'WITHDRAW') amount = -amount;
 
+        // Check Trading Discipline Limits (Smart Warning Mode)
+        if (this.app._disciplineManager) {
+            const violation = this.app._disciplineManager.checkTradeAllowed({ date, type, amount }, this.app.trades);
+            if (violation && violation.violates) {
+                const proceed = await this.app._disciplineManager.showViolationWarningModal(violation);
+                if (!proceed) {
+                    return; // User canceled
+                }
+            }
+        }
+
         const ts = Date.now();
         const trade = {
             id: ts,
@@ -225,6 +236,7 @@ export class TradeActionsHandler {
     }
 
     async handleDelete(id) {
+        ShareUI.playSound('mouse-click');
         const confirmed = await ShareUI.showConfirmModal({
             icon: 'trash-2',
             iconColor: 'text-red-400',
@@ -234,12 +246,14 @@ export class TradeActionsHandler {
             confirmClass: 'bg-red-600 hover:bg-red-500 text-white'
         });
         if (confirmed) {
+            ShareUI.playSound('remove');
             const trade = this.app.trades.find(t => t.firestoreId === id);
             await this.app.data.deleteTrade(this.app.auth.currentUser.uid, id, trade);
         }
     }
 
     async handleReset() {
+        ShareUI.playSound('mouse-click');
         const confirmed = await ShareUI.showConfirmModal({
             icon: 'alert-triangle',
             iconColor: 'text-red-400',
@@ -249,6 +263,7 @@ export class TradeActionsHandler {
             confirmClass: 'bg-red-600 hover:bg-red-500 text-white'
         });
         if (confirmed) {
+            ShareUI.playSound('remove');
             await this.app.data.resetAll(this.app.auth.currentUser.uid, this.app.trades);
         }
     }
