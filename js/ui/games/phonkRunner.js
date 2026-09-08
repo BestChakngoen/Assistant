@@ -12,6 +12,7 @@ export function initPhonkRunner() {
 
     if (!activeEngineInstance) {
         activeEngineInstance = new PhonkGameEngine(canvas);
+        window.__phonkEngineInstance = activeEngineInstance;
     }
     return activeEngineInstance;
 }

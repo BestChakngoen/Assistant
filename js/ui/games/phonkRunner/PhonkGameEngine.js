@@ -39,6 +39,8 @@ export class PhonkGameEngine {
         this.speed = PHONK_CONFIG.PHYSICS.INITIAL_SPEED;
         this.spawnTimer = 0;
         this.spawnInterval = PHONK_CONFIG.SPAWN.BASE_INTERVAL;
+        this.orbSpawnTimer = 0;
+        this.orbSpawnInterval = 25;
         this.level = 1;
         this.runStartTime = Date.now();
         this.rafId = null;
@@ -60,7 +62,22 @@ export class PhonkGameEngine {
         });
 
         this.loop = this.loop.bind(this);
+        window.__phonkStopEngine = () => this.stopEngine();
         this.loop();
+    }
+
+    stopEngine() {
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+        if (this.audio) {
+            this.audio.stopAll();
+        }
+        if (this.state === 'running') {
+            this.state = 'paused';
+            this.isPaused = true;
+        }
     }
 
     getStoredHiScore() {
@@ -143,6 +160,8 @@ export class PhonkGameEngine {
         this.speed = PHONK_CONFIG.PHYSICS.INITIAL_SPEED;
         this.spawnTimer = 0;
         this.spawnInterval = PHONK_CONFIG.SPAWN.BASE_INTERVAL;
+        this.orbSpawnTimer = 0;
+        this.orbSpawnInterval = 25;
         this.level = 1;
         this.frame = 0;
         this.runStartTime = Date.now();
@@ -254,7 +273,7 @@ export class PhonkGameEngine {
             if (this.spawnTimer >= this.spawnInterval) {
                 this.entities.spawnObstacleOrPit(this.level, this.speed);
                 
-                // Random Item & Energy Orbs Spawning
+                // Power-Up Items Spawning
                 if (!this.entities.isPotionApproaching) {
                     const itemRoll = Math.random();
                     if (itemRoll < (PHONK_CONFIG.BLAST.SPAWN_CHANCE || 0.18)) {
@@ -263,11 +282,19 @@ export class PhonkGameEngine {
                         this.entities.spawnGiantItem();
                     } else if (itemRoll < (PHONK_CONFIG.BLAST.SPAWN_CHANCE || 0.18) + (PHONK_CONFIG.GIANT.SPAWN_CHANCE || 0.15) + (PHONK_CONFIG.MAGNET.SPAWN_CHANCE || 0.15)) {
                         this.entities.spawnMagnetItem();
-                    } else if (Math.random() < (PHONK_CONFIG.ORB.SPAWN_CHANCE || 0.85)) {
-                        this.entities.spawnGroundRunTrail(this.W + 20, 220);
                     }
                 }
                 this.spawnTimer = 0;
+            }
+
+            // Continuous Cookie Run Energy Orb Spawner (Runs independently every ~25 frames)
+            this.orbSpawnTimer++;
+            if (this.orbSpawnTimer >= this.orbSpawnInterval) {
+                if (!this.entities.isPotionApproaching) {
+                    this.entities.spawnCookieRunOrbPattern(this.W + 20);
+                }
+                this.orbSpawnTimer = 0;
+                this.orbSpawnInterval = 22 + Math.floor(Math.random() * 12);
             }
 
             this.layers.forEach(l => { l.x += l.speed * this.speed; });
@@ -493,9 +520,18 @@ export class PhonkGameEngine {
     }
 
     loop() {
-        this.rafId = requestAnimationFrame(this.loop);
-        this.frame++;
-        this.updatePhysics();
-        this.render();
+        const gamePanel = document.getElementById('game-panel');
+        const isGameVisible = gamePanel && !gamePanel.classList.contains('hidden');
+        if (isGameVisible) {
+            this.frame++;
+            this.updatePhysics();
+            this.render();
+            this.rafId = requestAnimationFrame(this.loop);
+        } else {
+            if (this.rafId) {
+                cancelAnimationFrame(this.rafId);
+                this.rafId = null;
+            }
+        }
     }
 }

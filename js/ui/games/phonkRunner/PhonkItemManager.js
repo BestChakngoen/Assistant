@@ -100,17 +100,32 @@ export class PhonkItemManager {
     }
 
     spawnEnergyOrbs() {
-        const count = 4 + Math.floor(Math.random() * 3);
-        const startY = this.GROUND - (35 + Math.random() * 60);
-        const isArch = Math.random() > 0.5;
+        this.spawnCookieRunOrbPattern(this.W + 20);
+    }
+
+    spawnCookieRunOrbPattern(startX = this.W + 20, pits = []) {
+        if (this.isPotionApproaching) return;
+
+        // Do not spawn ground run orbs if start position is directly approaching or over a pit
+        if (pits && pits.some(pit => startX + 120 >= pit.x && startX - 20 <= pit.x + pit.w)) {
+            return;
+        }
+
+        const spacing = 26;
+        const count = 5 + Math.floor(Math.random() * 4);
+        const runY = this.GROUND - 22;
+
         for (let i = 0; i < count; i++) {
-            const arcY = isArch ? Math.sin((i / (count - 1)) * Math.PI) * 35 : 0;
+            const ox = startX + i * spacing;
+            if (pits && pits.some(pit => ox >= pit.x - 25 && ox <= pit.x + pit.w + 25)) {
+                continue;
+            }
             this.energyOrbs.push({
-                x: this.W + 20 + i * 26,
-                y: startY - arcY,
-                r: 6,
+                x: ox,
+                y: runY,
+                r: 6.5,
                 pulseT: Math.random() * Math.PI * 2,
-                isGold: Math.random() > 0.75
+                isGold: i % 3 === 0
             });
         }
     }
@@ -242,12 +257,12 @@ export class PhonkItemManager {
         }
     }
 
-    filterSafeFromObstacles(obstacles) {
-        if (!obstacles || obstacles.length === 0) return;
+    filterSafeFromObstacles(obstacles, pits = []) {
+        if ((!obstacles || obstacles.length === 0) && (!pits || pits.length === 0)) return;
+
         const isCloseToObstacle = (itemX, itemY, marginX = 45, marginY = 32) => {
-            // Only check newly spawned items near the right edge of the screen so items pulled by magnet are not destroyed
             if (itemX < this.W - 120) return false;
-            return obstacles.some(ob => {
+            return obstacles && obstacles.some(ob => {
                 const obCenterX = ob.x + ob.w / 2;
                 const obCenterY = ob.y + ob.h / 2;
                 const dx = Math.abs(itemX - obCenterX);
@@ -256,7 +271,13 @@ export class PhonkItemManager {
             });
         };
 
-        this.energyOrbs = this.energyOrbs.filter(orb => !isCloseToObstacle(orb.x, orb.y, 28, 22));
+        const isGroundOrbOverPit = (orbX, orbY) => {
+            // Ground-level Orbs (y > GROUND - 40) directly over pits are removed
+            if (orbY < this.GROUND - 40) return false; // High jump arcs are kept
+            return pits && pits.some(pit => orbX >= pit.x - 20 && orbX <= pit.x + pit.w + 20);
+        };
+
+        this.energyOrbs = this.energyOrbs.filter(orb => !isCloseToObstacle(orb.x, orb.y, 28, 22) && !isGroundOrbOverPit(orb.x, orb.y));
         this.blastItems = this.blastItems.filter(item => !isCloseToObstacle(item.x + item.w / 2, item.y + item.h / 2, 48, 36));
         this.giantItems = this.giantItems.filter(item => !isCloseToObstacle(item.x + item.w / 2, item.y + item.h / 2, 48, 36));
         this.magnetItems = this.magnetItems.filter(item => !isCloseToObstacle(item.x + item.w / 2, item.y + item.h / 2, 48, 36));

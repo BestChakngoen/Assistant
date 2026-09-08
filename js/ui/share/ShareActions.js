@@ -26,6 +26,13 @@ export class ShareActions {
             shareManager.dom.btnClearShare.onclick = () => this.clearHistory(shareManager);
         }
 
+        document.addEventListener('click', (e) => {
+            const dangerBtn = e.target.closest('#btn-clear-share-danger');
+            if (dangerBtn) {
+                this.clearHistory(shareManager);
+            }
+        });
+
         if (shareManager.dom.fileDropzone) {
             shareManager.dom.fileDropzone.onclick = () => {
                 if (shareManager.dom.fileInput) shareManager.dom.fileInput.click();
@@ -187,7 +194,16 @@ export class ShareActions {
     static async shareText(shareManager) {
         if (!shareManager.dom.textInput) return;
         const text = shareManager.dom.textInput.value.trim();
-        if (!text) return;
+        if (!text) {
+            ShareUI.playSound('mouse-click');
+            ShareUI.showAlertModal({
+                title: 'No Content to Send',
+                message: 'Please enter text, a note, or a link in the box before clicking Send Text.',
+                icon: 'message-square',
+                iconColor: 'text-cyan-400'
+            });
+            return;
+        }
         const title = shareManager.dom.textTitleInput ? shareManager.dom.textTitleInput.value.trim() : '';
 
         const newItem = {

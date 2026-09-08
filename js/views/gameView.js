@@ -22,9 +22,10 @@ export const gameViewHtml = `
                     </div>
                 </div>
             </div>
-            <div class="relative flex justify-center" style="background: #04000a;">
-                <canvas id="phonkRunnerCanvas" width="1100" height="260"
-                    style="image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; width: 100%; border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; box-shadow: 0 0 30px rgba(168,85,247,0.2), 0 0 60px rgba(0,200,255,0.1);">
+            <div class="relative flex justify-center w-full aspect-video rounded-xl overflow-hidden" style="background: #04000a;">
+                <canvas id="phonkRunnerCanvas" width="960" height="540"
+                    class="w-full h-full object-contain"
+                    style="image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; box-shadow: 0 0 30px rgba(168,85,247,0.2), 0 0 60px rgba(0,200,255,0.1);">
                 </canvas>
             </div>
             <div class="px-4 py-3 border-t border-purple-500/20 flex flex-col gap-3">

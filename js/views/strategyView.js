@@ -420,7 +420,7 @@ export const strategyViewHtml = `
             </div>
 
             <div id="pdf-frame-container" class="relative bg-slate-950/80 rounded-xl border border-slate-800 overflow-hidden h-[calc(100vh-120px)] min-h-[850px] flex items-center justify-center">
-                <iframe id="pdf-viewer-iframe" class="w-full h-full border-none hidden" src=""></iframe>
+                <iframe id="pdf-viewer-iframe" class="w-full h-full border-none hidden"></iframe>
                 <div id="pdf-placeholder" class="text-center p-6 flex flex-col items-center gap-3">
                     <i data-lucide="file-warning" class="w-12 h-12 text-slate-500"></i>
                     <p class="font-mono text-xs text-slate-400">No PDF configured. Paste your hosted PDF URL or local file path (e.g., assets/financial_bible.pdf) above to view it.</p>

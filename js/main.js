@@ -128,6 +128,9 @@ export class TradeApp {
         const btnAddTrade = document.getElementById('btn-add-trade');
         if (btnAddTrade) btnAddTrade.onclick = () => this.handleAddTrade();
 
+        const btnManageAssets = document.getElementById('btn-manage-assets');
+        if (btnManageAssets) btnManageAssets.onclick = () => this._tradeActions.showManageAssetsModal();
+
         const btnReset = document.getElementById('btn-reset');
         if (btnReset) btnReset.onclick = () => this.handleReset();
 

@@ -78,7 +78,10 @@ export const tradeTrackViewHtml = `
                             </select>
                         </div>
                         <div class="md:col-span-3">
-                            <label class="block text-xs text-slate-500 mb-1">ASSET</label>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs text-slate-500">ASSET</label>
+                                <button id="btn-manage-assets" class="text-[10px] text-cyan-400 hover:text-cyan-300 underline cursor-pointer font-mono font-bold tracking-wider" title="Manage Asset Types">+ MANAGE</button>
+                            </div>
                             <select id="input-asset" class="w-full px-3 py-2 rounded-lg font-mono text-white">
                                 <option value="BTC/USD">BTC/USD</option>
                                 <option value="XAU/USD">GOLD (XAU)</option>
@@ -96,10 +99,6 @@ export const tradeTrackViewHtml = `
                     <button id="btn-add-trade"
                         class="w-full mt-4 btn-press bg-cyan-600 hover:bg-cyan-500 text-white py-3 rounded-lg font-bold font-mono shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2">
                         <span>CONFIRM RECORD</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5 13l4 4L19 7"></path>
-                        </svg>
                     </button>
                 </div>
 

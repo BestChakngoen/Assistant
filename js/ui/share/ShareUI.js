@@ -147,6 +147,111 @@ export class ShareUI {
         });
     }
 
+    static showAlertModal(options = {}) {
+        return new Promise((resolve) => {
+            const existing = document.getElementById('share-alert-modal');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'share-alert-modal';
+            overlay.className = 'share-overlay';
+            overlay.innerHTML = `
+                <div class="share-modal-card">
+                    <div class="share-modal-body">
+                        <div class="share-modal-icon-badge ${options.iconColor || 'text-cyan-400'}">
+                            <i data-lucide="${options.icon || 'alert-circle'}" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="share-modal-title">${options.title || 'Information Required'}</h3>
+                        <p class="share-modal-message">${options.message || 'Please enter text content before sending.'}</p>
+                        <div class="share-modal-divider"></div>
+                        <div class="share-modal-actions">
+                            <button id="btn-share-alert-ok" class="share-modal-btn share-modal-btn-confirm ${options.confirmClass || 'bg-cyan-600 hover:bg-cyan-500 text-white'} w-full py-2.5 rounded-xl font-bold font-mono text-xs cursor-pointer">
+                                ${options.confirmLabel || 'OK'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            if (window.lucide) window.lucide.createIcons();
+
+            requestAnimationFrame(() => {
+                overlay.classList.add('share-overlay-visible');
+                const card = overlay.querySelector('.share-modal-card');
+                if (card) card.classList.add('share-modal-card-visible');
+            });
+
+            const close = () => {
+                this.playSound('mouse-click');
+                overlay.classList.remove('share-overlay-visible');
+                const card = overlay.querySelector('.share-modal-card');
+                if (card) card.classList.remove('share-modal-card-visible');
+                setTimeout(() => { overlay.remove(); resolve(true); }, 200);
+            };
+
+            const btnOk = overlay.querySelector('#btn-share-alert-ok');
+            if (btnOk) btnOk.onclick = close;
+            overlay.onclick = (e) => {
+                if (e.target === overlay) close();
+            };
+        });
+    }
+
+    static async downloadFileToDevice(url, filename, blob) {
+        this.playSound('mouse-click');
+        try {
+            let fileBlob = blob;
+            if (!fileBlob && url) {
+                const res = await fetch(url);
+                if (res.ok) fileBlob = await res.blob();
+            }
+
+            if (fileBlob) {
+                const file = new File([fileBlob], filename || 'download', { type: fileBlob.type });
+
+                // Try Web Share API on supported mobile browsers
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: filename || 'Download File'
+                        });
+                        return;
+                    } catch (shareErr) {
+                        if (shareErr.name !== 'AbortError') console.warn('Share API notice:', shareErr);
+                    }
+                }
+
+                // Trigger blob download for mobile / desktop
+                const blobUrl = URL.createObjectURL(fileBlob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename || 'download';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    a.remove();
+                    URL.revokeObjectURL(blobUrl);
+                }, 1000);
+                return;
+            }
+        } catch (e) {
+            console.warn('Direct blob fetch notice:', e);
+        }
+
+        // Direct anchor download fallback
+        if (url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'download';
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => a.remove(), 1000);
+        }
+    }
+
     static showLoadingModal(shareManager, title, message, onCancel = null) {
         this.hideLoadingModal(shareManager);
         const overlay = document.createElement('div');
@@ -213,10 +318,10 @@ export class ShareUI {
                         <span class="truncate">${filename}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="${imageUrl}" download="${filename}" class="p-2 rounded-xl bg-slate-800/80 hover:bg-cyan-600 text-slate-200 hover:text-white transition-all border border-slate-700/60 flex items-center gap-1.5 text-xs font-mono" title="Download Image">
+                        <button id="btn-download-lightbox" class="p-2 rounded-xl bg-slate-800/80 hover:bg-cyan-600 text-slate-200 hover:text-white transition-all border border-slate-700/60 flex items-center gap-1.5 text-xs font-mono cursor-pointer" title="Download Image">
                             <i data-lucide="download" class="w-4 h-4"></i>
                             <span class="hidden sm:inline">Download</span>
-                        </a>
+                        </button>
                         <button id="btn-close-lightbox" class="p-2 rounded-xl bg-slate-800/80 hover:bg-red-500/80 text-slate-300 hover:text-white transition-all border border-slate-700/60" title="Close (Esc)">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
@@ -456,6 +561,12 @@ export class ShareUI {
         };
 
         document.addEventListener('keydown', onKeyDown);
+        const btnDownload = overlay.querySelector('#btn-download-lightbox');
+        if (btnDownload) {
+            btnDownload.onclick = () => {
+                this.downloadFileToDevice(imageUrl, filename);
+            };
+        }
         overlay.querySelector('#btn-close-lightbox').onclick = close;
         overlay.onclick = (e) => { if (e.target === overlay) close(); };
 

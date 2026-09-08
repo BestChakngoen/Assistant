@@ -18,10 +18,41 @@ export class ShareFeedRenderer {
 
     static toggleStar(shareManager, itemId) {
         this.exitEditMode(shareManager);
-        if (shareManager.starredIds.has(itemId)) shareManager.starredIds.delete(itemId);
-        else shareManager.starredIds.add(itemId);
+        const isStarred = !shareManager.starredIds.has(itemId);
+
+        if (isStarred) {
+            shareManager.starredIds.add(itemId);
+        } else {
+            shareManager.starredIds.delete(itemId);
+        }
         this.saveStarred(shareManager);
-        this.renderFeed(shareManager);
+
+        // In-place update of target card without destroying the feed DOM!
+        const card = shareManager.dom.feed?.querySelector(`[data-item-id="${itemId}"]`);
+        if (card) {
+            if (isStarred) {
+                card.dataset.starred = 'true';
+            } else {
+                delete card.dataset.starred;
+            }
+
+            const btnStar = card.querySelector('[data-star-btn="true"]');
+            if (btnStar) {
+                btnStar.className = `p-1 rounded transition ${isStarred ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800/50'}`;
+                btnStar.title = isStarred ? 'Unstar item' : 'Star item';
+                if (isStarred) {
+                    btnStar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+                } else {
+                    btnStar.innerHTML = `<i data-lucide="star" class="w-3.5 h-3.5"></i>`;
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            }
+
+            // If currently filtering by starred, hide the card when unstarred
+            if (shareManager.currentFilter === 'starred' && !isStarred) {
+                card.style.display = 'none';
+            }
+        }
     }
 
     static toggleSelectAll(shareManager, forceChecked) {
@@ -308,6 +339,10 @@ export class ShareFeedRenderer {
                     btnDownload.href = downloadUrl;
                     btnDownload.download = item.filename || 'download';
                 }
+                btnDownload.onclick = (e) => {
+                    e.preventDefault();
+                    ShareUI.downloadFileToDevice(downloadUrl, item.filename || 'download', item.blob);
+                };
                 
                 actionDiv.appendChild(btnDownload);
             }
@@ -323,6 +358,7 @@ export class ShareFeedRenderer {
             actionDiv.appendChild(btnEdit);
 
             const btnStar = document.createElement('button');
+            btnStar.dataset.starBtn = 'true';
             btnStar.className = `p-1 rounded transition ${isStarred ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800/50'}`;
             btnStar.title = isStarred ? 'Unstar item' : 'Star item';
             if (isStarred) {

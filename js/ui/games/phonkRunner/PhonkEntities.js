@@ -84,6 +84,10 @@ export class PhonkEntities {
         this._items.spawnEnergyOrbs();
     }
 
+    spawnCookieRunOrbPattern(startX) {
+        this._items.spawnCookieRunOrbPattern(startX, this._obstacles.pits);
+    }
+
     spawnGuidingPath(pattern, startX, param) {
         this._items.spawnGuidingPath(pattern, startX, param);
     }
@@ -93,7 +97,7 @@ export class PhonkEntities {
     }
 
     filterSafeFromObstacles() {
-        this._items.filterSafeFromObstacles(this._obstacles.obstacles);
+        this._items.filterSafeFromObstacles(this._obstacles.obstacles, this._obstacles.pits);
     }
 
     drawHpPotions() {

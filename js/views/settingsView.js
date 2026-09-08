@@ -125,6 +125,9 @@ export const settingsViewHtml = `
                         <button id="btnDataManage" class="btn-press bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-slate-300 text-xs px-4 py-2.5 rounded-xl font-mono font-bold whitespace-nowrap">
                             MANAGE HEALTH DATA
                         </button>
+                        <button id="btn-clear-share-danger" class="btn-press bg-red-950/20 hover:bg-red-900/40 border border-red-900 text-red-400 text-xs px-4 py-2.5 rounded-xl font-mono font-bold whitespace-nowrap">
+                            CLEAR SHARED ITEMS
+                        </button>
                         <button id="btn-reset" class="btn-press bg-red-950/20 hover:bg-red-900/40 border border-red-900 text-red-400 text-xs px-4 py-2.5 rounded-xl font-mono font-bold whitespace-nowrap">
                             WIPE ALL TRADES
                         </button>

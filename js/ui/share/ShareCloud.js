@@ -90,23 +90,8 @@ export class ShareCloud {
 
                 if (error) throw error;
 
-                const activeFileNames = new Set(
-                    shareManager.items
-                        .filter(i => i.type === 'file')
-                        .map(i => i.uniqueFilename || (i.url ? i.url.split('/').pop() : i.filename))
-                        .filter(Boolean)
-                );
-
-                const orphanFiles = (fileList || [])
-                    .map(f => f.name)
-                    .filter(name => name && !activeFileNames.has(name));
-
-                if (orphanFiles.length > 0) {
-                    console.log('Cleaning up orphan Cloud Storage files:', orphanFiles);
-                    await shareManager.supabase.storage.from('shared-files').remove(orphanFiles);
-                    const { data: cleanList } = await shareManager.supabase.storage.from('shared-files').list();
-                    if (cleanList) fileList = cleanList;
-                }
+                // Note: Automatic orphan file deletion removed to prevent loss of user files
+                // when database query results or user sessions differ across clients.
 
                 const totalBytes = (fileList || []).reduce((acc, file) => acc + (file.metadata?.size || 0), 0);
                 const cloudQuotaBytes = 1024 * 1024 * 1024;

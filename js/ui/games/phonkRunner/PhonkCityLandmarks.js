@@ -39,25 +39,25 @@ export class PhonkCityLandmarks {
             {
                 w: 45,
                 draw: (x, frame) => {
-                    const h = 135;
+                    const h = 260;
                     ctx.save();
                     px(x, GROUND - h, 45, h, '#16033a');
                     ctx.fillStyle = '#000000';
                     ctx.beginPath();
                     ctx.moveTo(x + 30, GROUND - h);
                     ctx.lineTo(x + 45, GROUND - h);
-                    ctx.lineTo(x + 45, GROUND - h + 15);
+                    ctx.lineTo(x + 45, GROUND - h + 25);
                     ctx.closePath();
                     ctx.fill();
                     
-                    px(x + 15, GROUND - h - 15, 2, 15, '#22084f');
+                    px(x + 15, GROUND - h - 25, 2, 25, '#22084f');
                     if (Math.floor(frame / 15) % 2 === 0) {
-                        glowRect(x + 14, GROUND - h - 18, 4, 4, '#f43f5e', 8);
+                        glowRect(x + 14, GROUND - h - 28, 4, 4, '#f43f5e', 8);
                     }
-                    for (let wy = GROUND - h + 25; wy < GROUND - 10; wy += 12) {
+                    for (let wy = GROUND - h + 25; wy < GROUND - 10; wy += 14) {
                         for (let wx = x + 6; wx < x + 38; wx += 8) {
                             if ((Math.floor(wx) + wy) % 5 !== 0) {
-                                px(wx, wy, 3, 5, '#1b004a');
+                                px(wx, wy, 3, 6, '#1b004a');
                             }
                         }
                     }
@@ -65,40 +65,41 @@ export class PhonkCityLandmarks {
                 }
             },
             {
-                w: 64,
+                w: 80,
                 draw: (x, frame) => {
                     ctx.save();
-                    const cx = x + 32;
-                    const cy = GROUND - 85;
-                    px(cx - 3, cy, 6, 85, '#16033a');
-                    px(cx - 10, GROUND - 12, 20, 12, '#16033a');
+                    const cx = x + 40;
+                    const poleH = 170;
+                    const cy = GROUND - poleH;
+                    px(cx - 4, cy, 8, poleH, '#16033a');
+                    px(cx - 14, GROUND - 16, 28, 16, '#16033a');
                     
                     const angle = frame * 0.03;
                     ctx.strokeStyle = '#a855f7';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3;
                     ctx.shadowColor = '#a855f7';
-                    ctx.shadowBlur = 4;
+                    ctx.shadowBlur = 6;
                     for (let b = 0; b < 3; b++) {
                         const a = angle + (b * Math.PI * 2) / 3;
-                        const bx = cx + Math.cos(a) * 32;
-                        const by = cy + Math.sin(a) * 32;
+                        const bx = cx + Math.cos(a) * 55;
+                        const by = cy + Math.sin(a) * 55;
                         ctx.beginPath();
                         ctx.moveTo(cx, cy);
                         ctx.lineTo(bx, by);
                         ctx.stroke();
                         
-                        glowRect(bx - 1.5, by - 1.5, 3, 3, '#06b6d4', 2);
+                        glowRect(bx - 2, by - 2, 4, 4, '#06b6d4', 4);
                     }
-                    glowRect(cx - 4, cy - 4, 8, 8, '#06b6d4', 6);
+                    glowRect(cx - 6, cy - 6, 12, 12, '#06b6d4', 8);
                     ctx.restore();
                 }
             },
             {
-                w: 70,
+                w: 120,
                 draw: (x) => {
                     ctx.save();
-                    const r = 35;
-                    const cx = x + 35;
+                    const r = 60;
+                    const cx = x + 60;
                     const cy = GROUND;
                     
                     ctx.fillStyle = '#150235';
@@ -107,7 +108,7 @@ export class PhonkCityLandmarks {
                     ctx.fill();
                     
                     ctx.strokeStyle = 'rgba(168,85,247,0.35)';
-                    ctx.lineWidth = 1;
+                    ctx.lineWidth = 1.5;
                     
                     for (let i = -2; i <= 2; i++) {
                         const rx = r * (i / 3);
@@ -133,54 +134,54 @@ export class PhonkCityLandmarks {
                 }
             },
             {
-                w: 40,
+                w: 50,
                 draw: (x, frame) => {
                     ctx.save();
-                    const h = 120;
-                    const cx = x + 20;
+                    const h = 240;
+                    const cx = x + 25;
                     ctx.strokeStyle = '#16033a';
-                    ctx.lineWidth = 4;
+                    ctx.lineWidth = 6;
                     ctx.beginPath();
-                    ctx.moveTo(cx - 12, GROUND);
-                    ctx.lineTo(cx, GROUND - h + 40);
-                    ctx.lineTo(cx + 12, GROUND);
+                    ctx.moveTo(cx - 18, GROUND);
+                    ctx.lineTo(cx, GROUND - h + 60);
+                    ctx.lineTo(cx + 18, GROUND);
                     ctx.stroke();
                     
-                    px(cx - 2, GROUND - h, 4, h, '#16033a');
+                    px(cx - 3, GROUND - h, 6, h, '#16033a');
                     
-                    const deckY = GROUND - h + 30;
-                    px(cx - 15, deckY, 30, 8, '#20054e');
-                    glowRect(cx - 16, deckY + 3, 32, 2, '#06b6d4', 4);
+                    const deckY = GROUND - h + 50;
+                    px(cx - 22, deckY, 44, 12, '#20054e');
+                    glowRect(cx - 24, deckY + 4, 48, 3, '#06b6d4', 6);
                     
-                    px(cx - 1, GROUND - h - 15, 2, 15, '#16033a');
+                    px(cx - 1.5, GROUND - h - 20, 3, 20, '#16033a');
                     if (Math.floor(frame / 10) % 2 === 0) {
-                        glowRect(cx - 2, GROUND - h - 18, 4, 4, '#f43f5e', 8);
+                        glowRect(cx - 3, GROUND - h - 24, 6, 6, '#f43f5e', 10);
                     }
                     ctx.restore();
                 }
             },
             {
-                w: 90,
+                w: 140,
                 draw: (x) => {
                     ctx.save();
-                    const pyY = GROUND - 70;
-                    const p1 = x + 15;
-                    const p2 = x + 75;
+                    const pyH = 140;
+                    const pyY = GROUND - pyH;
+                    const p1 = x + 25;
+                    const p2 = x + 115;
                     
-                    px(p1 - 4, pyY, 8, 70, '#150235');
-                    px(p2 - 4, pyY, 8, 70, '#150235');
+                    px(p1 - 6, pyY, 12, pyH, '#150235');
+                    px(p2 - 6, pyY, 12, pyH, '#150235');
                     
-                    px(x, GROUND - 40, 90, 8, '#1b0445');
-                    glowRect(x, GROUND - 40, 90, 2, '#a855f7', 4);
+                    px(x, GROUND - 70, 140, 12, '#1b0445');
+                    glowRect(x, GROUND - 70, 140, 3, '#a855f7', 6);
                     
                     ctx.strokeStyle = 'rgba(6,182,212,0.4)';
-                    ctx.lineWidth = 1;
+                    ctx.lineWidth = 1.5;
                     ctx.beginPath();
-                    ctx.moveTo(x, GROUND - 40);
+                    ctx.moveTo(x, GROUND - 70);
                     ctx.lineTo(p1, pyY);
-                    ctx.lineTo(x + 45, GROUND - 40);
+                    ctx.lineTo(x + 70, GROUND - 70);
                     ctx.lineTo(p2, pyY);
-                    ctx.lineTo(x + 90, GROUND - 40);
                     ctx.stroke();
                     ctx.restore();
                 }
@@ -189,55 +190,55 @@ export class PhonkCityLandmarks {
 
         this.midCityLandmarks = [
             {
-                w: 50,
+                w: 60,
                 draw: (x) => {
                     ctx.save();
-                    const h = 75;
-                    const cx = x + 25;
+                    const h = 180;
+                    const cx = x + 30;
                     ctx.fillStyle = '#240656';
                     ctx.beginPath();
                     ctx.moveTo(x + 5, GROUND);
-                    ctx.quadraticCurveTo(cx - 10, GROUND - h/2, cx - 12, GROUND - h);
-                    ctx.lineTo(cx + 12, GROUND - h);
-                    ctx.quadraticCurveTo(cx + 10, GROUND - h/2, x + 45, GROUND);
+                    ctx.quadraticCurveTo(cx - 15, GROUND - h/2, cx - 16, GROUND - h);
+                    ctx.lineTo(cx + 16, GROUND - h);
+                    ctx.quadraticCurveTo(cx + 15, GROUND - h/2, x + 55, GROUND);
                     ctx.closePath();
                     ctx.fill();
                     
-                    glowRect(cx - 12, GROUND - h, 24, 2, '#06b6d4', 6);
+                    glowRect(cx - 16, GROUND - h, 32, 3, '#06b6d4', 8);
                     
-                    px(cx - 13, GROUND - h + 15, 26, 2, '#120033');
-                    px(cx - 15, GROUND - h + 35, 30, 2, '#120033');
-                    px(cx - 18, GROUND - h + 55, 36, 2, '#120033');
+                    px(cx - 18, GROUND - h + 30, 36, 3, '#120033');
+                    px(cx - 22, GROUND - h + 70, 44, 3, '#120033');
+                    px(cx - 25, GROUND - h + 110, 50, 3, '#120033');
                     ctx.restore();
                 }
             },
             {
-                w: 75,
+                w: 100,
                 draw: (x, frame) => {
                     ctx.save();
-                    const screenW = 65;
-                    const screenH = 45;
+                    const screenW = 90;
+                    const screenH = 65;
                     const screenX = x + 5;
-                    const screenY = GROUND - 85;
+                    const screenY = GROUND - 170;
                     
-                    px(x + 20, screenY + screenH, 4, 85 - screenH, '#20044b');
-                    px(x + 50, screenY + screenH, 4, 85 - screenH, '#20044b');
+                    px(x + 25, screenY + screenH, 6, 170 - screenH, '#20044b');
+                    px(x + 70, screenY + screenH, 6, 170 - screenH, '#20044b');
                     
                     px(screenX, screenY, screenW, screenH, '#240656');
-                    glowRect(screenX, screenY, screenW, 2, '#f43f5e', 4);
-                    glowRect(screenX, screenY + screenH - 2, screenW, 2, '#f43f5e', 4);
-                    glowRect(screenX, screenY, 2, screenH, '#f43f5e', 4);
-                    glowRect(screenX + screenW - 2, screenY, 2, screenH, '#f43f5e', 4);
+                    glowRect(screenX, screenY, screenW, 3, '#f43f5e', 6);
+                    glowRect(screenX, screenY + screenH - 3, screenW, 3, '#f43f5e', 6);
+                    glowRect(screenX, screenY, 3, screenH, '#f43f5e', 6);
+                    glowRect(screenX + screenW - 3, screenY, 3, screenH, '#f43f5e', 6);
                     
-                    const barCount = 7;
-                    const barW = 6;
-                    const spacing = 2;
+                    const barCount = 9;
+                    const barW = 7;
+                    const spacing = 3;
                     const startBarX = screenX + (screenW - (barCount * (barW + spacing) - spacing)) / 2;
                     for (let b = 0; b < barCount; b++) {
                         const val = Math.sin(frame * 0.15 + b) * 0.5 + 0.5;
-                        const barH = Math.max(4, Math.round(val * (screenH - 12)));
+                        const barH = Math.max(6, Math.round(val * (screenH - 16)));
                         const bx = startBarX + b * (barW + spacing);
-                        const by = screenY + screenH - 6 - barH;
+                        const by = screenY + screenH - 8 - barH;
                         px(bx, by, barW, barH, '#06b6d4');
                     }
                     ctx.restore();
@@ -305,19 +306,19 @@ export class PhonkCityLandmarks {
 
         this.nearCityLandmarks = [
             {
-                w: 50,
+                w: 60,
                 draw: (x, frame) => {
                     ctx.save();
-                    const h = 75;
-                    px(x, GROUND - h, 50, h, '#320a75');
+                    const h = 170;
+                    px(x, GROUND - h, 60, h, '#320a75');
                     
-                    const signX = x + 15;
-                    const signY = GROUND - h + 10;
-                    const signW = 20;
-                    const signH = 45;
+                    const signX = x + 18;
+                    const signY = GROUND - h + 20;
+                    const signW = 24;
+                    const signH = 90;
                     px(signX, signY, signW, signH, '#200252');
-                    glowRect(signX, signY, signW, 2, '#06b6d4', 4);
-                    glowRect(signX, signY + signH - 2, signW, 2, '#06b6d4', 4);
+                    glowRect(signX, signY, signW, 3, '#06b6d4', 6);
+                    glowRect(signX, signY + signH - 3, signW, 3, '#06b6d4', 6);
                     
                     px(signX + 6, signY + 6, 8, 8, '#06b6d4');
                     px(signX + 8, signY + 8, 4, 4, '#110033');

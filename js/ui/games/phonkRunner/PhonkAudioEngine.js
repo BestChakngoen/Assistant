@@ -241,6 +241,13 @@ export class PhonkAudioEngine {
         }
     }
 
+    stopAll() {
+        this.stopBGM();
+        if (this.audioCtx && this.audioCtx.state === 'running') {
+            try { this.audioCtx.suspend(); } catch (e) {}
+        }
+    }
+
     playJumpSfx(isDouble) {
         const ctx = this.getACtx();
         if (!ctx) return;

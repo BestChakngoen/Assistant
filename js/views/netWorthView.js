@@ -127,7 +127,7 @@ export const netWorthViewHtml = `
                     </div>
 
                     <!-- RECORD ITEMS CONTAINER -->
-                    <div id="nw-items-list" class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                    <div id="nw-items-list" class="space-y-2 pr-1">
                         <div class="text-center text-slate-500 py-12 text-xs font-mono">No financial items recorded yet.</div>
                     </div>
                 </div>
@@ -139,8 +139,8 @@ export const netWorthViewHtml = `
             </div>
         </div>
 
-        <!-- CHARTS SECTION: 2 PIE CHARTS (ASSETS & LIABILITIES BY CATEGORY) & 52-WEEK HISTORY CHART -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- CHARTS SECTION: 2 PIE CHARTS (ASSETS & LIABILITIES BY CATEGORY) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- ASSETS BY CATEGORY PIE CHART -->
             <div class="glass-panel p-6 rounded-2xl border-0 flex flex-col items-center justify-between">
                 <div class="w-full flex items-center justify-between mb-2">
@@ -166,19 +166,19 @@ export const netWorthViewHtml = `
                     <canvas id="nwLiabilityPieChart"></canvas>
                 </div>
             </div>
+        </div>
 
-            <!-- 52-WEEK NET WORTH HISTORY LINE CHART -->
-            <div class="glass-panel p-6 rounded-2xl border-0 flex flex-col justify-between">
-                <div class="w-full flex items-center justify-between mb-2">
-                    <h3 class="font-mono font-bold text-xs text-slate-300 flex items-center gap-2">
-                        <i data-lucide="trending-up" class="w-4 h-4 text-cyan-400"></i>
-                        <span>52-WEEK HISTORY</span>
-                    </h3>
-                    <span class="text-[10px] font-mono text-slate-500">Weekly Snapshots</span>
-                </div>
-                <div class="relative w-full h-[220px]">
-                    <canvas id="nwHistoryChart" class="w-full h-full"></canvas>
-                </div>
+        <!-- 52-WEEK NET WORTH HISTORY LINE CHART (FULL WIDTH BOTTOM SECTION) -->
+        <div class="glass-panel p-6 rounded-2xl border-0 flex flex-col justify-between">
+            <div class="w-full flex items-center justify-between mb-4">
+                <h3 class="font-mono font-bold text-sm text-slate-300 flex items-center gap-2">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-cyan-400"></i>
+                    <span>52-WEEK HISTORY</span>
+                </h3>
+                <span class="text-[10px] font-mono text-slate-500">Weekly Snapshots</span>
+            </div>
+            <div class="relative w-full h-[320px]">
+                <canvas id="nwHistoryChart" class="w-full h-full"></canvas>
             </div>
         </div>
     </div>

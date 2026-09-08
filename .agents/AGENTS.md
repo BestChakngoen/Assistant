@@ -1,6 +1,7 @@
 # Workspace Rules
 
 - **Build Frequency Constraint:** If the modification is minor (such as simple text renaming, minor translations, or trivial layout adjustments that do not introduce new Tailwind classes or custom CSS rules), you do NOT need to execute `npm run build` (or equivalent build steps) every time. Save build execution only for major changes or when new CSS utility classes are added.
+- **Mandatory Test Execution on Major Changes, Clean Code & Refactoring:** ต้องทำการรันคำสั่งทดสอบ (เช่น `node --check` สำหรับตรวจสอบไวยากรณ์สคริปต์ JS และ `npm run build` สำหรับตรวจสอบระบบ Build/CSS) **ทุกครั้ง** เมื่อมีการเปลี่ยนแปลงโค้ดขนาดใหญ่ (Major Changes), การทำ Clean Code หรือการ Refactor โค้ด เพื่อยืนยันความถูกต้องและรับประกันว่าระบบไร้ข้อผิดพลาดก่อนจบงานเสมอ
 
 ## 🎯 1. มาตรฐานการทำงานและการพัฒนา (Development Standards)
 - **Best Practices & Clean Code:** เขียนโค้ดที่สะอาด มีระเบียบ รองรับการขยายระบบ (Scalability) และยึดมาตรฐานสากล (Production-Ready)
@@ -22,6 +23,10 @@
 - **รวบรวมไฟล์ CSS:** ไฟล์ CSS ทั้งหมดที่เป็น Source Code ให้จัดเก็บรวบรวมไว้ในโฟลเดอร์ `css/` เดียวกัน
 - **แยกไฟล์ Style ใหม่:** เมื่อมีการออกแบบการใช้ Style ใหม่ ให้จัดทำ Style นั้นแยกเป็นไฟล์ `.css` ให้อยู่ในโฟลเดอร์ `css/` แล้วเรียกใช้ (หรือ `@import`) เพื่อให้ง่ายต่อการดูแลและแก้ไขปรับปรุง
 - **Strict No White Borders:** ห้ามใส่กรอบสีขาวหรือเส้นขอบสว่าง (เช่น `border border-white`, `border-slate-700` หรือเส้นขอบกรอบขาวใสรอบปุ่ม/องค์ประกอบ) ในองค์ประกอบ UI โดยเด็ดขาด ให้ใช้ดีไซน์ Frameless / Borderless ที่ใช้การเปลี่ยนสีพื้นหลัง (Background Tint) หรือความโปร่งแสงแทน
+
+## 🧹 Clean Code & Behavior Preservation Rules (กฎการ Clean Code และรักษาพฤติกรรมเดิมของระบบ)
+- **Clean Code & Zero Regression:** ทุกการเขียนโค้ด ปรับปรุง หรือทำ Clean Code ต้องเขียนโค้ดให้สะอาด มีระเบียบ อ่านง่าย อ่านเข้าใจได้ทันที (Readable & Maintainable) โดย **ห้ามกระทบต่อพฤติกรรมเดิม (Behavior Preservation), ฟังก์ชันเดิม หรือทำให้การทำงานใดๆ ของระบบเดิมเปลี่ยนแปลงหรือผิดเพี้ยนไปโดยเด็ดขาด**
+- **รักษาความถูกต้องของการทำงาน (Preserve Existing Functionality):** การลบส่วนที่ไม่จำเป็น (Unused Code) หรือจัดระเบียบโครงสร้างใหม่ ต้องได้รับการตรวจสอบและทดสอบอย่างถี่ถ้วน ให้มั่นใจว่าระบบยังคงทำงานได้ถูกต้องตรงตามข้อกำหนดเดิมทุกประการ
 
 
 

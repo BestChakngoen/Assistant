@@ -114,8 +114,8 @@ export const shareViewHtml = `
                                 <i data-lucide="check-square" class="w-3.5 h-3.5 text-cyan-400"></i>
                                 <span>Select All</span>
                             </button>
-                            <i data-lucide="list" class="w-4 h-4 text-cyan-400"></i>
-                            <div class="flex items-center gap-1.5 shrink-0">
+                            <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                                <i data-lucide="list" class="w-4 h-4 text-cyan-400"></i>
                                 <h3 class="text-sm font-mono font-bold text-white">Shared Items</h3>
                                 <span id="share-count-badge" class="text-[10px] font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/25 px-1.5 py-0.5 rounded-full">0</span>
                             </div>
@@ -135,11 +135,6 @@ export const shareViewHtml = `
                                 Import
                             </button>
                             <input type="file" id="import-backup-file" class="hidden" accept=".json">
-                            <span class="text-slate-800">|</span>
-                            <button id="btn-clear-share" class="text-xs text-red-400 hover:text-red-300 font-bold transition flex items-center gap-1.5">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                Clear
-                            </button>
                         </div>
                     </div>
 

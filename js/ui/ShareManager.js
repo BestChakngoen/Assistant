@@ -48,7 +48,7 @@ export class ShareManager {
             qrCard: document.getElementById('qr-sharing-card'),
             qrContainer: document.getElementById('qrcode'),
             hostUrlDisplay: document.getElementById('host-url-display'),
-            btnClearShare: document.getElementById('btn-clear-share'),
+            btnClearShare: document.getElementById('btn-clear-share-danger') || document.getElementById('btn-clear-share'),
             btnExportBackup: document.getElementById('btn-export-backup'),
             btnImportBackupTrigger: document.getElementById('btn-import-backup-trigger'),
             importBackupFile: document.getElementById('import-backup-file'),
@@ -70,10 +70,13 @@ export class ShareManager {
             return;
         }
 
-        // Initialize Supabase Client if available
+        // Initialize Supabase Client if available (Singleton pattern)
         if (typeof window !== 'undefined' && window.supabase) {
             try {
-                this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+                if (!window.supabaseClient) {
+                    window.supabaseClient = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+                }
+                this.supabase = window.supabaseClient;
             } catch (err) {
                 console.error('Failed to initialize Supabase client:', err);
             }

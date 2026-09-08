@@ -88,9 +88,20 @@ export class UINavigation {
                 
                 if (key === 'issues') {
                     uiManager.updateStrategyLabTime();
+                } else if (key === 'game') {
+                    if (window.__phonkEngineInstance && typeof window.__phonkEngineInstance.loop === 'function') {
+                        if (!window.__phonkEngineInstance.rafId) {
+                            window.__phonkEngineInstance.loop();
+                        }
+                    }
                 }
             } else {
                 panel.classList.add('hidden');
+                if (key === 'game') {
+                    if (window.__phonkStopEngine) {
+                        window.__phonkStopEngine();
+                    }
+                }
                 if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game') {
                     panel.classList.remove('flex');
                 } else if (key === 'pulls' || key === 'issues') {

@@ -18,35 +18,45 @@ export class PhonkInputHandler {
         this.initListeners();
     }
 
+    isGamePanelVisible() {
+        const panel = document.getElementById('game-panel');
+        return panel && !panel.classList.contains('hidden');
+    }
+
     isInputActive() {
+        if (!this.isGamePanelVisible()) return true;
         const activeEl = document.activeElement;
         return activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
     }
 
     handleKeyDown(e) {
-        if (this.isInputActive()) return;
-        if (e.code === 'KeyP' || e.code === 'Escape') {
+        if (!this.isGamePanelVisible() || this.isInputActive()) return;
+
+        const scrollBlockedKeys = ['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown'];
+        if (scrollBlockedKeys.includes(e.code)) {
             e.preventDefault();
+        }
+
+        if (e.code === 'KeyP' || e.code === 'Escape') {
             if (this.callbacks.onTogglePause) this.callbacks.onTogglePause();
             return;
         }
         if ((e.code === 'Space' || e.code === 'ArrowUp') && !e.repeat) {
-            e.preventDefault();
             if (this.callbacks.onJump) this.callbacks.onJump();
         } else if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'ArrowDown') && !e.repeat) {
-            e.preventDefault();
             if (this.callbacks.onSlide) this.callbacks.onSlide();
         }
     }
 
     handleKeyUp(e) {
-        if (this.isInputActive()) return;
+        if (!this.isGamePanelVisible() || this.isInputActive()) return;
         if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'ArrowDown') {
             if (this.callbacks.onReleaseSlide) this.callbacks.onReleaseSlide();
         }
     }
 
     handleCanvasClick(e) {
+        if (!this.isGamePanelVisible()) return;
         if (Date.now() - this.lastTouch < 350) return;
         if (this.canvas) {
             const rect = this.canvas.getBoundingClientRect();
@@ -72,6 +82,7 @@ export class PhonkInputHandler {
     }
 
     handleTouchStart(e) {
+        if (!this.isGamePanelVisible()) return;
         e.preventDefault();
         this.lastTouch = Date.now();
         if (this.canvas && e.touches && e.touches.length > 0) {
