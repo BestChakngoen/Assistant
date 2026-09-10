@@ -43,6 +43,11 @@ export const sidebarViewHtml = `
                 <i data-lucide="heart" class="w-4 h-4"></i>
                 <span>Health Track</span>
             </button>
+            <!-- Air & Climate -->
+            <button id="tab-air" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                <i data-lucide="cloud-sun" class="w-4 h-4"></i>
+                <span>Air & Climate</span>
+            </button>
             <!-- Net Worth -->
             <button id="tab-networth" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                 <i data-lucide="wallet" class="w-4 h-4"></i>
@@ -52,6 +57,11 @@ export const sidebarViewHtml = `
             <button id="tab-share" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                 <i data-lucide="share-2" class="w-4 h-4"></i>
                 <span>Share Files</span>
+            </button>
+            <!-- Tools -->
+            <button id="tab-tools" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                <i data-lucide="wrench" class="w-4 h-4"></i>
+                <span>Tools</span>
             </button>
             <!-- Learning Others -->
             <button id="tab-learning" onclick="window.toggleLearningMenu()" class="w-full flex items-center justify-between px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">

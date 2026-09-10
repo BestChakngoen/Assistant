@@ -11,7 +11,6 @@ export const netWorthViewHtml = `
                     <i data-lucide="wallet" class="w-6 h-6 text-emerald-400"></i>
                     <span>NET WORTH TRACKER</span>
                 </h2>
-                <p class="text-xs text-slate-400 font-mono mt-1">Track your total assets, liabilities, and overall financial net worth</p>
             </div>
             <div class="flex items-center gap-3">
                 <span id="nw-cloud-status" class="text-xs font-mono text-cyan-400 bg-cyan-500/10 px-3 py-1.5 rounded-xl border border-cyan-500/20 font-bold flex items-center gap-1.5">

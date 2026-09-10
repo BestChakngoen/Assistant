@@ -173,6 +173,7 @@ export class TradeApp {
         }
         bindTab('tab-issues', 'issues');
         bindTab('tab-pulls', 'pulls');
+        bindTab('tab-air', 'air');
 
         const tabWiki = document.getElementById('tab-wiki');
         if (tabWiki) {
@@ -187,6 +188,7 @@ export class TradeApp {
         }
 
         bindTab('tab-share', 'share');
+        bindTab('tab-tools', 'tools');
         
         const tabNetWorth = document.getElementById('tab-networth');
         if (tabNetWorth) {

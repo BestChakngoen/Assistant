@@ -57,44 +57,62 @@ export class ShareUI {
         if (!container) {
             container = document.createElement('div');
             container.id = 'toast-container';
-            container.className = 'fixed bottom-6 left-6 z-50 flex flex-col gap-3 max-w-sm w-full';
+            container.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2.5 max-w-md w-full pointer-events-none px-4';
             document.body.appendChild(container);
         }
 
         const toast = document.createElement('div');
-        const isError = type === 'error';
         
-        toast.className = `glass-panel p-4 rounded-xl border ${
-            isError ? 'border-red-500/30 bg-red-950/20' : 'border-green-500/30 bg-green-950/20'
-        } bg-slate-950/80 shadow-2xl flex gap-3 items-start transition-all duration-300 transform translate-y-2 opacity-0`;
+        let icon = 'check-circle';
+        let iconColor = 'text-emerald-400';
+        let bgIcon = 'bg-emerald-500/15';
 
-        const icon = isError ? 'alert-triangle' : 'check-circle';
-        const iconColor = isError ? 'text-red-400' : 'text-green-400';
+        if (type === 'error') {
+            icon = 'alert-circle';
+            iconColor = 'text-rose-400';
+            bgIcon = 'bg-rose-500/15';
+        } else if (type === 'warning') {
+            icon = 'alert-triangle';
+            iconColor = 'text-amber-400';
+            bgIcon = 'bg-amber-500/15';
+        } else if (type === 'info') {
+            icon = 'info';
+            iconColor = 'text-cyan-400';
+            bgIcon = 'bg-cyan-500/15';
+        }
+
+        toast.className = 'pointer-events-auto w-full sm:w-auto min-w-[320px] max-w-md bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl shadow-2xl shadow-black/60 flex items-start gap-3 transition-all duration-300 transform -translate-y-6 scale-95 opacity-0';
 
         toast.innerHTML = `
-            <div class="p-1.5 rounded-lg bg-slate-900/60 ${iconColor} shrink-0">
-                <i data-lucide="${icon}" class="w-5 h-5"></i>
+            <div class="p-2 rounded-xl ${bgIcon} ${iconColor} shrink-0">
+                <i data-lucide="${icon}" class="w-4 h-4"></i>
             </div>
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 pt-0.5">
                 <h4 class="text-xs font-mono font-bold text-white uppercase tracking-wider">${title}</h4>
-                <p class="text-xs text-slate-400 mt-1 leading-relaxed">${message}</p>
+                <p class="text-xs text-slate-300 mt-0.5 leading-relaxed font-sans">${message}</p>
             </div>
-            <button class="text-slate-500 hover:text-slate-350 transition-colors shrink-0" onclick="this.parentElement.remove()">
+            <button class="text-slate-500 hover:text-slate-300 transition-colors p-1 shrink-0" title="Close">
                 <i data-lucide="x" class="w-3.5 h-3.5"></i>
             </button>
         `;
+
+        const closeBtn = toast.querySelector('button');
+        const dismiss = () => {
+            toast.classList.add('-translate-y-6', 'scale-95', 'opacity-0');
+            setTimeout(() => toast.remove(), 250);
+        };
+
+        if (closeBtn) closeBtn.onclick = dismiss;
 
         container.appendChild(toast);
         if (window.lucide) window.lucide.createIcons();
 
         requestAnimationFrame(() => {
-            toast.classList.remove('translate-y-2', 'opacity-0');
+            toast.classList.remove('-translate-y-6', 'scale-95', 'opacity-0');
+            toast.classList.add('translate-y-0', 'scale-100', 'opacity-100');
         });
 
-        setTimeout(() => {
-            toast.classList.add('opacity-0', 'translate-y-2');
-            setTimeout(() => toast.remove(), 300);
-        }, 6000);
+        setTimeout(dismiss, 3500);
     }
 
     static showConfirmModal(options) {

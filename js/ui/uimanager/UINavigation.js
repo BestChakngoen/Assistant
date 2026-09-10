@@ -55,7 +55,9 @@ export class UINavigation {
             share: document.getElementById('share-panel'),
             networth: document.getElementById('networth-panel'),
             game: document.getElementById('game-panel'),
-            settings: document.getElementById('settings-panel')
+            settings: document.getElementById('settings-panel'),
+            tools: document.getElementById('tools-panel'),
+            air: document.getElementById('air-panel')
         };
         
         const tabs = {
@@ -67,7 +69,9 @@ export class UINavigation {
             share: document.getElementById('tab-share'),
             networth: document.getElementById('tab-networth'),
             game: document.getElementById('tab-game'),
-            settings: document.getElementById('tab-settings')
+            settings: document.getElementById('tab-settings'),
+            tools: document.getElementById('tab-tools'),
+            air: document.getElementById('tab-air')
         };
 
         Object.keys(panels).forEach(key => {
@@ -77,7 +81,7 @@ export class UINavigation {
 
             if (key === tabName) {
                 panel.classList.remove('hidden');
-                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game') {
+                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air') {
                     panel.classList.add('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     panel.classList.add('flex', 'flex-col');
@@ -88,6 +92,10 @@ export class UINavigation {
                 
                 if (key === 'issues') {
                     uiManager.updateStrategyLabTime();
+                } else if (key === 'air') {
+                    if (uiManager.airQuality) {
+                        uiManager.airQuality.refreshIfStale();
+                    }
                 } else if (key === 'game') {
                     if (window.__phonkEngineInstance && typeof window.__phonkEngineInstance.loop === 'function') {
                         if (!window.__phonkEngineInstance.rafId) {
@@ -102,7 +110,7 @@ export class UINavigation {
                         window.__phonkStopEngine();
                     }
                 }
-                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game') {
+                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air') {
                     panel.classList.remove('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     panel.classList.remove('flex', 'flex-col');

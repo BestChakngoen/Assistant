@@ -1,6 +1,8 @@
 // --- FILE 4: UI MANAGER ---
 import { DiagramManager } from './DiagramManager.js';
 import { ShareManager } from './ShareManager.js';
+import { ToolsManager } from '../tools/ToolsManager.js';
+import { AirQualityManager } from '../air/AirQualityManager.js';
 import { UIChartEngine } from './uimanager/UIChartEngine.js';
 import { UIStatsCalculator } from './uimanager/UIStatsCalculator.js';
 import { UIHistoryRenderer } from './uimanager/UIHistoryRenderer.js';
@@ -77,6 +79,14 @@ export class UIManager {
 
         this.share = new ShareManager();
         this.share.init();
+
+        this.tools = new ToolsManager();
+        this.tools.init();
+        window.toolsManager = this.tools;
+
+        this.airQuality = new AirQualityManager();
+        this.airQuality.init();
+        window.airQualityManager = this.airQuality;
     }
 
     initChart() {
