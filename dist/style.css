@@ -506,6 +506,186 @@
   opacity: 0.8;
 }
 
+/* game-mobile.css - Mobile Landscape Fullscreen Game Mode */
+
+/* When in Mobile Fullscreen Mode */
+
+.phonk-mobile-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 99999 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  background-color: #04000a !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+/* Exit button strictly hidden on desktop */
+
+@media screen and (min-width: 1025px) {
+  #btn-exit-game {
+    display: none !important;
+  }
+}
+
+/* Exit button positioning in mobile fullscreen (visible only when paused) */
+
+.phonk-mobile-fullscreen #btn-exit-game {
+  position: absolute !important;
+  top: max(10px, env(safe-area-inset-top, 10px)) !important;
+  right: max(12px, env(safe-area-inset-right, 12px)) !important;
+  z-index: 100001 !important;
+}
+
+.phonk-mobile-fullscreen #btn-exit-game.hidden {
+  display: none !important;
+}
+
+.phonk-mobile-fullscreen #btn-exit-game.flex {
+  display: flex !important;
+}
+
+/* Inner panel reset in mobile fullscreen */
+
+.phonk-mobile-fullscreen .glass-panel {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  position: relative !important;
+}
+
+/* Top HUD overlay */
+
+.phonk-mobile-fullscreen .phonk-top-hud {
+  position: absolute !important;
+  top: max(8px, env(safe-area-inset-top, 8px)) !important;
+  left: max(16px, env(safe-area-inset-left, 16px)) !important;
+  right: max(60px, calc(env(safe-area-inset-right, 0px) + 54px)) !important;
+  z-index: 100000 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+.phonk-mobile-fullscreen .phonk-top-hud * {
+  pointer-events: auto !important;
+}
+
+/* Canvas container fits the landscape screen */
+
+.phonk-mobile-fullscreen .phonk-canvas-container {
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0 !important;
+  background: #04000a !important;
+  position: relative !important;
+}
+
+.phonk-mobile-fullscreen #phonkRunnerCanvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  -o-object-fit: contain !important;
+     object-fit: contain !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Bottom touch buttons floating in corners */
+
+.phonk-mobile-fullscreen #phonk-mobile-btn-container {
+  position: absolute !important;
+  bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+  left: max(12px, env(safe-area-inset-left, 12px)) !important;
+  right: max(12px, env(safe-area-inset-right, 12px)) !important;
+  width: calc(100% - max(24px, calc(env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px) + 24px))) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  pointer-events: none !important;
+  z-index: 100000 !important;
+  margin: 0 !important;
+}
+
+.phonk-mobile-fullscreen #phonk-mobile-btn-container > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+}
+
+.phonk-mobile-fullscreen #phonk-mobile-btn-container button {
+  pointer-events: auto !important;
+  opacity: 0.85;
+  transition: transform 0.1s, opacity 0.1s;
+}
+
+.phonk-mobile-fullscreen #phonk-mobile-btn-container button:active {
+  opacity: 1;
+}
+
+/* Bottom instructions bar minimized in mobile fullscreen */
+
+.phonk-mobile-fullscreen .phonk-bottom-bar {
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+.phonk-mobile-fullscreen .phonk-bottom-bar > div:last-child {
+  position: absolute !important;
+  bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 100000 !important;
+  pointer-events: auto !important;
+  opacity: 0.75;
+}
+
+.phonk-mobile-fullscreen .phonk-bottom-bar > div:last-child p {
+  display: none !important;
+}
+
+/* Portrait orientation guide */
+
+@media screen and (orientation: portrait) {
+  .phonk-mobile-fullscreen .phonk-portrait-guide {
+    display: flex !important;
+  }
+}
+
+@media screen and (orientation: landscape) {
+  .phonk-mobile-fullscreen .phonk-portrait-guide {
+    display: none !important;
+  }
+}
+
 *, ::before, ::after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
@@ -1279,10 +1459,6 @@ video {
   top: 50%;
 }
 
-.top-2\.5 {
-  top: 0.625rem;
-}
-
 .top-3 {
   top: 0.75rem;
 }
@@ -1313,6 +1489,14 @@ video {
 
 .z-50 {
   z-index: 50;
+}
+
+.z-\[110\] {
+  z-index: 110;
+}
+
+.z-\[120\] {
+  z-index: 120;
 }
 
 .col-span-2 {
@@ -1842,6 +2026,10 @@ video {
   min-height: 320px;
 }
 
+.min-h-\[42px\] {
+  min-height: 42px;
+}
+
 .min-h-\[50px\] {
   min-height: 50px;
 }
@@ -1940,10 +2128,6 @@ video {
 
 .w-4 {
   width: 1rem;
-}
-
-.w-40 {
-  width: 10rem;
 }
 
 .w-44 {
@@ -5758,6 +5942,12 @@ input:focus, select:focus {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.active\:scale-95:active {
+  --tw-scale-x: .95;
+  --tw-scale-y: .95;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
 .active\:cursor-grabbing:active {
   cursor: grabbing;
 }
@@ -5957,6 +6147,10 @@ input:focus, select:focus {
     right: 1rem;
   }
 
+  .sm\:top-2\.5 {
+    top: 0.625rem;
+  }
+
   .sm\:top-4 {
     top: 1rem;
   }
@@ -5977,6 +6171,10 @@ input:focus, select:focus {
     margin-left: 0px;
   }
 
+  .sm\:mt-2 {
+    margin-top: 0.5rem;
+  }
+
   .sm\:inline-block {
     display: inline-block;
   }
@@ -5991,6 +6189,21 @@ input:focus, select:focus {
 
   .sm\:inline-flex {
     display: inline-flex;
+  }
+
+  .sm\:size-11 {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .sm\:size-4 {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .sm\:size-6 {
+    width: 1.5rem;
+    height: 1.5rem;
   }
 
   .sm\:size-9 {
@@ -6008,6 +6221,10 @@ input:focus, select:focus {
 
   .sm\:max-h-\[540px\] {
     max-height: 540px;
+  }
+
+  .sm\:min-h-0 {
+    min-height: 0px;
   }
 
   .sm\:w-12 {
@@ -6078,12 +6295,32 @@ input:focus, select:focus {
     justify-content: space-between;
   }
 
+  .sm\:gap-2\.5 {
+    gap: 0.625rem;
+  }
+
+  .sm\:gap-3\.5 {
+    gap: 0.875rem;
+  }
+
   .sm\:gap-4 {
     gap: 1rem;
   }
 
   .sm\:self-auto {
     align-self: auto;
+  }
+
+  .sm\:overflow-visible {
+    overflow: visible;
+  }
+
+  .sm\:rounded-3xl {
+    border-radius: 1.5rem;
+  }
+
+  .sm\:p-4 {
+    padding: 1rem;
   }
 
   .sm\:p-5 {
@@ -6100,6 +6337,30 @@ input:focus, select:focus {
 
   .sm\:p-8 {
     padding: 2rem;
+  }
+
+  .sm\:px-3\.5 {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
+  .sm\:px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .sm\:py-1\.5 {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .sm\:py-2 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .sm\:pb-0 {
+    padding-bottom: 0px;
   }
 
   .sm\:text-left {
@@ -6196,6 +6457,10 @@ input:focus, select:focus {
     min-height: calc(100dvh - 112px);
   }
 
+  .md\:w-auto {
+    width: auto;
+  }
+
   .md\:grid-cols-12 {
     grid-template-columns: repeat(12, minmax(0, 1fr));
   }
@@ -6230,6 +6495,15 @@ input:focus, select:focus {
 
   .md\:p-6 {
     padding: 1.5rem;
+  }
+
+  .md\:p-7 {
+    padding: 1.75rem;
+  }
+
+  .md\:text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
   }
 
   .md\:text-xs {

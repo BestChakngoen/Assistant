@@ -47,6 +47,7 @@ export class PhonkGameEngine {
         this.lastPotionKm = 0;
         this.hitScreenShakeTimer = 0;
         this.isPaused = false;
+        this.onPauseChange = null;
 
         this.layers = [
             { x: 0, speed: 0.2, draw: (ox) => this.city.drawFarCity(ox, this.frame) },
@@ -77,6 +78,9 @@ export class PhonkGameEngine {
         if (this.state === 'running') {
             this.state = 'paused';
             this.isPaused = true;
+            if (typeof this.onPauseChange === 'function') {
+                this.onPauseChange(true);
+            }
         }
     }
 
@@ -106,6 +110,9 @@ export class PhonkGameEngine {
             this.state = 'running';
             this.isPaused = false;
             this.audio.startBGM();
+        }
+        if (typeof this.onPauseChange === 'function') {
+            this.onPauseChange(this.isPaused);
         }
     }
 
@@ -150,6 +157,9 @@ export class PhonkGameEngine {
         this.isPaused = false;
         this.runStartTime = Date.now();
         this.audio.startBGM();
+        if (typeof this.onPauseChange === 'function') {
+            this.onPauseChange(false);
+        }
     }
 
     resetGame() {
@@ -176,6 +186,9 @@ export class PhonkGameEngine {
         this.state = 'running';
         this.audio.stopBGM();
         this.audio.startBGM();
+        if (typeof this.onPauseChange === 'function') {
+            this.onPauseChange(false);
+        }
     }
 
     killPlayer(reason = 'collision') {
@@ -193,6 +206,9 @@ export class PhonkGameEngine {
             this.saveHiScore(this.hiScore);
         }
         this.updateHUD();
+        if (typeof this.onPauseChange === 'function') {
+            this.onPauseChange(false);
+        }
     }
 
     checkAndUpdateHiScore() {

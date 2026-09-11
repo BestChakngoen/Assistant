@@ -4,82 +4,85 @@
 export const notificationViewHtml = `
     <div id="notifications-panel" class="hidden flex-col gap-6 w-full max-w-7xl mx-auto">
         <!-- Top Banner / Header -->
-        <div class="glass-panel p-6 sm:p-7 rounded-3xl bg-slate-900/40 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex items-center gap-3.5">
-                <div class="size-11 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 text-cyan-400 flex items-center justify-center shrink-0">
-                    <i data-lucide="bell" class="size-6"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h2 class="text-xl font-bold font-mono text-white tracking-wide">Notifications & Reminders</h2>
-                        <span id="notif-sync-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono text-emerald-400 bg-emerald-500/10 flex items-center gap-1">
-                            <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Cloud Sync
-                        </span>
+        <div class="glass-panel p-4 sm:p-6 md:p-7 rounded-2xl sm:rounded-3xl bg-slate-900/40 flex flex-col md:flex-row md:items-center md:justify-between gap-3.5 sm:gap-4">
+            <!-- Top Row on Mobile: Left (Bell + Title) & Right (Cloud Sync Badge) -->
+            <div class="flex items-center justify-between gap-3 w-full md:w-auto">
+                <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+                    <div class="size-10 sm:size-11 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 text-cyan-400 flex items-center justify-center shrink-0">
+                        <i data-lucide="bell" class="size-5 sm:size-6"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h2 class="text-sm sm:text-lg md:text-xl font-bold font-mono text-white tracking-wide truncate sm:overflow-visible">Notifications & Reminders</h2>
                     </div>
                 </div>
+
+                <!-- Cloud Sync Status Badge (Pinned to Top-Right on mobile & beside header) -->
+                <span id="notif-sync-badge" class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-mono font-medium text-emerald-400 bg-emerald-500/10 flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                    <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Cloud Sync</span>
+                </span>
             </div>
 
             <!-- Header Action Controls -->
-            <div class="flex flex-wrap items-center gap-2.5">
-                <button id="btn-request-browser-notif" type="button" class="btn-press px-3.5 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-2 transition-all cursor-pointer">
-                    <i data-lucide="shield-alert" class="size-3.5 text-cyan-400"></i>
-                    <span id="browser-notif-btn-label">Desktop Alerts</span>
+            <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 w-full md:w-auto">
+                <button id="btn-request-browser-notif" type="button" class="btn-press w-full sm:w-auto justify-center px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-2 transition-all cursor-pointer min-h-[42px] sm:min-h-0">
+                    <i data-lucide="shield-alert" class="size-3.5 text-cyan-400 shrink-0"></i>
+                    <span id="browser-notif-btn-label" class="truncate">Desktop Alerts</span>
                 </button>
-                <button id="btn-open-add-reminder" type="button" class="btn-press px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 font-mono text-xs font-bold flex items-center gap-2 transition-all cursor-pointer">
-                    <i data-lucide="plus" class="size-4"></i>
-                    <span>New Reminder</span>
+                <button id="btn-open-add-reminder" type="button" class="btn-press w-full sm:w-auto justify-center px-3.5 sm:px-4 py-2.5 sm:py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 font-mono text-xs font-bold flex items-center gap-2 transition-all cursor-pointer min-h-[42px] sm:min-h-0">
+                    <i data-lucide="plus" class="size-4 shrink-0"></i>
+                    <span class="truncate">New Reminder</span>
                 </button>
             </div>
         </div>
 
         <!-- 4-Stat Metric Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <!-- Active Reminders -->
-            <div class="glass-panel p-4 rounded-2xl bg-slate-900/30 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
+            <div class="glass-panel p-3.5 sm:p-4 rounded-2xl bg-slate-900/30 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[11px] sm:text-xs text-slate-400 font-mono">
                     <span>ACTIVE</span>
-                    <i data-lucide="bell-ring" class="size-4 text-cyan-400"></i>
+                    <i data-lucide="bell-ring" class="size-3.5 sm:size-4 text-cyan-400"></i>
                 </div>
-                <div class="mt-2">
-                    <span id="stat-notif-active" class="text-2xl font-mono font-bold text-white tabular-nums">0</span>
-                    <span class="text-xs text-slate-500 ml-1">reminders</span>
+                <div class="mt-1.5 sm:mt-2">
+                    <span id="stat-notif-active" class="text-xl sm:text-2xl font-mono font-bold text-white tabular-nums">0</span>
+                    <span class="text-[11px] sm:text-xs text-slate-500 ml-1">reminders</span>
                 </div>
             </div>
 
             <!-- Due Today -->
-            <div class="glass-panel p-4 rounded-2xl bg-slate-900/30 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
+            <div class="glass-panel p-3.5 sm:p-4 rounded-2xl bg-slate-900/30 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[11px] sm:text-xs text-slate-400 font-mono">
                     <span>DUE TODAY</span>
-                    <i data-lucide="calendar" class="size-4 text-amber-400"></i>
+                    <i data-lucide="calendar" class="size-3.5 sm:size-4 text-amber-400"></i>
                 </div>
-                <div class="mt-2">
-                    <span id="stat-notif-today" class="text-2xl font-mono font-bold text-amber-400 tabular-nums">0</span>
-                    <span class="text-xs text-slate-500 ml-1">scheduled</span>
+                <div class="mt-1.5 sm:mt-2">
+                    <span id="stat-notif-today" class="text-xl sm:text-2xl font-mono font-bold text-amber-400 tabular-nums">0</span>
+                    <span class="text-[11px] sm:text-xs text-slate-500 ml-1">scheduled</span>
                 </div>
             </div>
 
             <!-- Recurring Routines -->
-            <div class="glass-panel p-4 rounded-2xl bg-slate-900/30 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
+            <div class="glass-panel p-3.5 sm:p-4 rounded-2xl bg-slate-900/30 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[11px] sm:text-xs text-slate-400 font-mono">
                     <span>ROUTINES</span>
-                    <i data-lucide="repeat" class="size-4 text-emerald-400"></i>
+                    <i data-lucide="repeat" class="size-3.5 sm:size-4 text-emerald-400"></i>
                 </div>
-                <div class="mt-2">
-                    <span id="stat-notif-routine" class="text-2xl font-mono font-bold text-emerald-400 tabular-nums">0</span>
-                    <span class="text-xs text-slate-500 ml-1">repeating</span>
+                <div class="mt-1.5 sm:mt-2">
+                    <span id="stat-notif-routine" class="text-xl sm:text-2xl font-mono font-bold text-emerald-400 tabular-nums">0</span>
+                    <span class="text-[11px] sm:text-xs text-slate-500 ml-1">repeating</span>
                 </div>
             </div>
 
             <!-- History Logs -->
-            <div class="glass-panel p-4 rounded-2xl bg-slate-900/30 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
+            <div class="glass-panel p-3.5 sm:p-4 rounded-2xl bg-slate-900/30 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[11px] sm:text-xs text-slate-400 font-mono">
                     <span>HISTORY</span>
-                    <i data-lucide="history" class="size-4 text-blue-400"></i>
+                    <i data-lucide="history" class="size-3.5 sm:size-4 text-blue-400"></i>
                 </div>
-                <div class="mt-2">
-                    <span id="stat-notif-history" class="text-2xl font-mono font-bold text-slate-200 tabular-nums">0</span>
-                    <span class="text-xs text-slate-500 ml-1">triggered</span>
+                <div class="mt-1.5 sm:mt-2">
+                    <span id="stat-notif-history" class="text-xl sm:text-2xl font-mono font-bold text-slate-200 tabular-nums">0</span>
+                    <span class="text-[11px] sm:text-xs text-slate-500 ml-1">triggered</span>
                 </div>
             </div>
         </div>
@@ -87,16 +90,16 @@ export const notificationViewHtml = `
         <!-- Filter & Search Controls -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-slate-900/30 p-3 rounded-2xl">
             <!-- Filter Tabs -->
-            <div class="flex items-center gap-1.5 overflow-x-auto auto-hide-scrollbar" id="notif-filter-tabs">
-                <button type="button" data-filter="all" class="notif-filter-btn px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-cyan-500/20 text-cyan-400 transition-all">All</button>
-                <button type="button" data-filter="active" class="notif-filter-btn px-3 py-1.5 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition-all">Active</button>
-                <button type="button" data-filter="routine" class="notif-filter-btn px-3 py-1.5 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition-all">Routines (Recurring)</button>
-                <button type="button" data-filter="history" class="notif-filter-btn px-3 py-1.5 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition-all">History Logs</button>
+            <div class="flex items-center gap-1.5 overflow-x-auto auto-hide-scrollbar pb-1 sm:pb-0" id="notif-filter-tabs">
+                <button type="button" data-filter="all" class="notif-filter-btn px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-cyan-500/20 text-cyan-400 transition-all shrink-0 cursor-pointer">All</button>
+                <button type="button" data-filter="active" class="notif-filter-btn px-3 py-1.5 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition-all shrink-0 cursor-pointer">Active</button>
+                <button type="button" data-filter="routine" class="notif-filter-btn px-3 py-1.5 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition-all shrink-0 cursor-pointer">Routines (Recurring)</button>
+                <button type="button" data-filter="history" class="notif-filter-btn px-3 py-1.5 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition-all shrink-0 cursor-pointer">History Logs</button>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
                 <!-- Category Select Filter -->
-                <select id="notif-category-filter" class="px-3 py-1.5 rounded-xl bg-slate-950/70 text-slate-300 text-xs font-mono outline-none focus:ring-1 focus:ring-cyan-500/40 cursor-pointer">
+                <select id="notif-category-filter" class="w-full sm:w-auto px-3 py-2 sm:py-1.5 rounded-xl bg-slate-950/70 text-slate-300 text-xs font-mono outline-none focus:ring-1 focus:ring-cyan-500/40 cursor-pointer">
                     <option value="all">All Categories</option>
                     <option value="trading">Trading</option>
                     <option value="health">Health</option>
@@ -106,9 +109,9 @@ export const notificationViewHtml = `
                 </select>
 
                 <!-- Search input -->
-                <div class="relative">
-                    <input id="notif-search-input" type="text" placeholder="Search reminders..." class="w-40 sm:w-52 pl-8 pr-3 py-1.5 rounded-xl bg-slate-950/70 text-slate-200 placeholder:text-slate-500 text-xs font-mono outline-none focus:ring-1 focus:ring-cyan-500/40">
-                    <i data-lucide="search" class="size-3.5 text-slate-500 absolute left-2.5 top-2.5"></i>
+                <div class="relative w-full sm:w-52">
+                    <input id="notif-search-input" type="text" placeholder="Search reminders..." class="w-full pl-8 pr-3 py-2 sm:py-1.5 rounded-xl bg-slate-950/70 text-slate-200 placeholder:text-slate-500 text-xs font-mono outline-none focus:ring-1 focus:ring-cyan-500/40">
+                    <i data-lucide="search" class="size-3.5 text-slate-500 absolute left-2.5 top-3 sm:top-2.5"></i>
                 </div>
             </div>
         </div>

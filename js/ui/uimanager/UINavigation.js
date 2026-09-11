@@ -53,6 +53,12 @@ export class UINavigation {
             ShareFeedRenderer.exitEditMode(window.shareManager);
         }
 
+        const previousTab = uiManager.currentTab || 'code';
+        if (tabName !== 'game') {
+            uiManager.previousTab = previousTab;
+        }
+        uiManager.currentTab = tabName;
+
         const panels = {
             code: document.getElementById('journal-panel'),
             issues: document.getElementById('strategy-menu-container'),
@@ -115,12 +121,18 @@ export class UINavigation {
                             window.__phonkEngineInstance.loop();
                         }
                     }
+                    if (window.__phonkMobileAdapter) {
+                        window.__phonkMobileAdapter.enterGame(uiManager.previousTab || 'code');
+                    }
                 }
             } else {
                 panel.classList.add('hidden');
                 if (key === 'game') {
                     if (window.__phonkStopEngine) {
                         window.__phonkStopEngine();
+                    }
+                    if (window.__phonkMobileAdapter && window.__phonkMobileAdapter.isActive) {
+                        window.__phonkMobileAdapter.exitGame(false);
                     }
                 }
                 if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air' || key === 'notifications') {

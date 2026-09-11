@@ -3,10 +3,10 @@
  */
 export const gameViewHtml = `
     <!-- GAME PANEL -->
-    <div id="game-panel" class="hidden flex-1 space-y-6">
+    <div id="game-panel" class="hidden flex-1 space-y-6 relative">
         <!-- CYBER PHONK RUNNER GAME -->
-        <div class="glass-panel rounded-2xl overflow-hidden border border-purple-500/30 w-full" style="background: linear-gradient(135deg, #0a0015 0%, #0d0020 50%, #080010 100%);">
-            <div class="p-4 border-b border-purple-500/20 flex items-center justify-between">
+        <div class="glass-panel rounded-2xl overflow-hidden border border-purple-500/30 w-full relative" style="background: linear-gradient(135deg, #0a0015 0%, #0d0020 50%, #080010 100%);">
+            <div class="p-4 border-b border-purple-500/20 flex items-center justify-between phonk-top-hud">
                 <div class="flex items-center gap-3">
                     <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
                     <h3 class="font-mono font-bold text-purple-400 tracking-widest text-sm uppercase">⚡ CYBER PHONK RUNNER — Kill Time Protocol</h3>
@@ -22,13 +22,13 @@ export const gameViewHtml = `
                     </div>
                 </div>
             </div>
-            <div class="relative flex justify-center w-full aspect-video rounded-xl overflow-hidden" style="background: #04000a;">
+            <div class="relative flex justify-center w-full aspect-video rounded-xl overflow-hidden phonk-canvas-container" style="background: #04000a;">
                 <canvas id="phonkRunnerCanvas" width="960" height="540"
                     class="w-full h-full object-contain"
                     style="image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; box-shadow: 0 0 30px rgba(168,85,247,0.2), 0 0 60px rgba(0,200,255,0.1);">
                 </canvas>
             </div>
-            <div class="px-4 py-3 border-t border-purple-500/20 flex flex-col gap-3">
+            <div class="px-4 py-3 border-t border-purple-500/20 flex flex-col gap-3 phonk-bottom-bar">
                 <!-- Mobile 2-Handed Landscape Touch Control Buttons -->
                 <div id="phonk-mobile-btn-container" class="flex items-center w-full md:hidden">
                     <div class="flex-1 flex justify-center items-center">
@@ -52,6 +52,28 @@ export const gameViewHtml = `
                         <div id="game-level-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-purple-500/40 text-purple-400">LVL 1</div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Exit Game Button (Compact Circle Icon at top-right) -->
+        <button id="btn-exit-game" type="button" class="hidden absolute top-3 right-3 sm:top-4 sm:right-4 z-[110] size-10 rounded-full bg-slate-900/80 hover:bg-red-500/20 active:scale-95 text-slate-300 hover:text-red-400 flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg shadow-black/60 select-none touch-none" title="Exit Game" aria-label="Exit Game">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+
+        <!-- Orientation Rotate Guide for Mobile Portrait Mode -->
+        <div id="phonk-rotate-guide" class="phonk-portrait-guide hidden absolute inset-0 z-[120] bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 space-y-4">
+            <button type="button" onclick="window.__phonkMobileAdapter && window.__phonkMobileAdapter.exitGame(true)" class="absolute top-3 right-3 size-10 rounded-full bg-slate-900/80 text-slate-300 hover:text-red-400 flex items-center justify-center cursor-pointer select-none touch-none" title="Exit Game">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <div class="size-16 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center animate-pulse">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+                    <path d="M12 18h.01"/>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-base font-bold font-mono text-white">กรุณาหมุนโทรศัพท์เป็นแนวนอน</h3>
+                <p class="text-xs font-mono text-slate-400">Please rotate your device to landscape</p>
             </div>
         </div>
     </div>
