@@ -95,7 +95,5 @@ export class PdfConverterTool {
         this.imageToPdfManager.reset();
         this.pdfToImageManager.reset();
         this.pdfToTextManager.reset();
-
-        ShareUI.showToast('Reset', 'PDF Studio inputs cleared', 'info');
     }
 }

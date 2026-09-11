@@ -12,6 +12,7 @@ import { gameViewHtml } from './gameView.js';
 import { settingsViewHtml } from './settingsView.js';
 import { toolsViewHtml } from './toolsView.js';
 import { airQualityViewHtml } from './airQualityView.js';
+import { notificationViewHtml } from './notificationView.js';
 
 /**
  * ViewLoader - Synchronously mounts component templates into TrackerView container shell.
@@ -38,6 +39,7 @@ export function initViewComponents() {
             netWorthViewHtml,
             shareViewHtml,
             toolsViewHtml,
+            notificationViewHtml,
             gameViewHtml,
             settingsViewHtml
         ].join('\n');

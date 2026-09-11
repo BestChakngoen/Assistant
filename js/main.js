@@ -9,6 +9,7 @@ import { MarketWidgetManager } from './app/MarketWidgetManager.js';
 import { NetWorthManager } from './app/NetWorthManager.js';
 import { SystemSettingsManager } from './app/SystemSettingsManager.js';
 import { TradeDisciplineManager } from './app/TradeDisciplineManager.js';
+import { NotificationManager } from './notifications/NotificationManager.js';
 
 /**
  * TradeApp - Main Application Facade Coordinator
@@ -16,6 +17,7 @@ import { TradeDisciplineManager } from './app/TradeDisciplineManager.js';
  */
 export class TradeApp {
     constructor(userFirebaseConfig, appId = 'default-app-id') {
+        window.app = this;
         this.auth = new AuthService(userFirebaseConfig);
         this.data = new DataService(this.auth.app, userFirebaseConfig, appId);
         this.market = new MarketService();
@@ -31,6 +33,9 @@ export class TradeApp {
         this._netWorth = new NetWorthManager();
         this._settingsManager = new SystemSettingsManager();
         this._disciplineManager = new TradeDisciplineManager(this);
+        this.notifications = new NotificationManager(this);
+        this.notifications.init();
+        window.notificationManager = this.notifications;
 
         this.initListeners();
     }
@@ -119,6 +124,16 @@ export class TradeApp {
                     });
                 }
 
+                // Subscribe to Notifications & Reminders
+                if (this.notifications) {
+                    this.notifications.onSave = (data) => {
+                        this.data.saveNotifications(user.uid, data).catch(err => console.error("Firestore notifications save error:", err));
+                    };
+                    this.data.subscribeNotifications(user.uid, (cloudData) => {
+                        this.notifications.syncFromCloud(cloudData);
+                    });
+                }
+
                 // Initialize Health Track Managers
                 if (!this.healthInitialized) {
                     await this.initHealthTrack();
@@ -144,6 +159,12 @@ export class TradeApp {
                 }
                 if (this.data.unsubscribeQuickTable) {
                     this.data.unsubscribeQuickTable();
+                }
+                if (this.notifications) {
+                    this.notifications.onSave = null;
+                }
+                if (this.data.unsubscribeNotifications) {
+                    this.data.unsubscribeNotifications();
                 }
             }
         });
@@ -240,6 +261,23 @@ export class TradeApp {
 
         bindTab('tab-share', 'share');
         bindTab('tab-tools', 'tools');
+
+        const tabNotifications = document.getElementById('tab-notifications');
+        if (tabNotifications) {
+            tabNotifications.onclick = () => {
+                this.ui.switchTab('notifications');
+                if (this.notifications) this.notifications.render();
+            };
+        }
+
+        const btnHeaderNotifications = document.getElementById('btn-header-notifications');
+        if (btnHeaderNotifications) {
+            btnHeaderNotifications.onclick = (e) => {
+                if (e) e.preventDefault();
+                this.ui.switchTab('notifications');
+                if (this.notifications) this.notifications.render();
+            };
+        }
         
         const tabNetWorth = document.getElementById('tab-networth');
         if (tabNetWorth) {

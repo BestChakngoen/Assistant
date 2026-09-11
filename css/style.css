@@ -1,4 +1,5 @@
 @import './style-share.css';
+@import './style-time-wheel.css';
 
 @tailwind base;
 @tailwind components;

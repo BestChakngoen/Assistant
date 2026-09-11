@@ -15,13 +15,20 @@ export const headerViewHtml = `
             </div>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3 sm:gap-4">
             <div class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 text-cyan-400 font-mono text-xs font-bold">
                 <i data-lucide="calendar-clock" class="size-4 text-cyan-400 shrink-0"></i>
                 <span id="header-date" class="text-slate-200 font-semibold tabular-nums">--/--/----</span>
                 <span class="text-cyan-500/50 font-normal">|</span>
                 <span id="header-time" class="text-cyan-400 font-extrabold tracking-wider tabular-nums">--:--:--</span>
             </div>
+
+            <!-- Quick Notifications Bell Shortcut -->
+            <button id="btn-header-notifications" type="button" onclick="if(window.app && window.app.ui){ window.app.ui.switchTab('notifications'); if(window.notificationManager) window.notificationManager.render(); }" class="btn-press size-10 rounded-xl bg-slate-900/60 hover:bg-slate-800 text-slate-300 hover:text-cyan-400 flex items-center justify-center transition-colors relative cursor-pointer" title="Go to Notifications" aria-label="Notifications">
+                <i data-lucide="bell" class="size-4"></i>
+                <span id="header-notification-badge" class="hidden absolute -top-1 -right-1 size-4 rounded-full bg-rose-500 text-[10px] font-bold text-white flex items-center justify-center animate-pulse">0</span>
+            </button>
+
             <!-- Hidden element to satisfy main.js user-display-name binding -->
             <span id="user-display-name" class="hidden"></span>
         </div>

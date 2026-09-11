@@ -16,11 +16,13 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     opacity: 0;
+    pointer-events: none;
     transition: opacity 200ms ease;
 }
 
 .share-overlay-visible {
     opacity: 1 !important;
+    pointer-events: auto !important;
 }
 
 /* ── Apple-style Modal Card ── */

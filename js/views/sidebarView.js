@@ -63,6 +63,14 @@ export const sidebarViewHtml = `
                 <i data-lucide="wrench" class="w-4 h-4"></i>
                 <span>Tools</span>
             </button>
+            <!-- Notifications & Reminders -->
+            <button id="tab-notifications" class="w-full flex items-center justify-between px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    <span>Notifications</span>
+                </div>
+                <span id="tab-notif-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-mono font-bold text-white bg-rose-500">0</span>
+            </button>
             <!-- Learning Others -->
             <button id="tab-learning" onclick="window.toggleLearningMenu()" class="w-full flex items-center justify-between px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                 <div class="flex items-center gap-3">

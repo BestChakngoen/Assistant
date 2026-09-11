@@ -1,23 +1,19 @@
 import { ShareUI } from '../ui/share/ShareUI.js';
 import { TableCellParser } from './table/TableCellParser.js';
+import { TableStorage } from './table/TableStorage.js';
+import { TableExporter } from './table/TableExporter.js';
+import { TableClipboard } from './table/TableClipboard.js';
+import { TableGridRenderer } from './table/TableGridRenderer.js';
 
 /**
- * TableGridTool - Freeform Dynamic Data Grid Tool
- * Features:
- * - Blank canvas with freeform row & column additions/deletions
- * - Cells auto-expand/shrink to fit content length naturally
- * - Inline editable column headers & cells
- * - Excel/Google Sheets clipboard paste integration
- * - Copy to clipboard (Markdown / TSV)
- * - File export (.csv with UTF-8 BOM, .md)
- * - Realtime dual-sync (LocalStorage + Firestore)
+ * TableGridTool - Freeform Dynamic Data Grid Tool (Refactored Controller)
+ * Orchestrates Storage, Exporter, Clipboard, and Renderer modules.
+ * Adheres strictly to SOLID, Clean Code, and Zero Regression standards.
  */
 export class TableGridTool {
     constructor() {
         this.storageKey = 'assistant_quick_table_grid';
-        this.saveTimer = null;
-        this.onSave = null;
-        this.lastSavedTimestamp = 0;
+        this.storage = new TableStorage(this.storageKey);
 
         // Default blank state: 3 cols x 3 rows
         this.data = {
@@ -44,7 +40,6 @@ export class TableGridTool {
             tableBody: null,
             btnAddRow: null,
             btnAddCol: null,
-            btnQuickAddRow: null,
             btnQuickAddCol: null,
             btnPaste: null,
             btnCopy: null,
@@ -52,6 +47,14 @@ export class TableGridTool {
             btnExportMd: null,
             btnClear: null
         };
+    }
+
+    get onSave() {
+        return this.storage.onSave;
+    }
+
+    set onSave(fn) {
+        this.storage.onSave = fn;
     }
 
     init() {
@@ -70,7 +73,6 @@ export class TableGridTool {
 
         this.dom.btnAddRow = document.getElementById('btn-table-add-row');
         this.dom.btnAddCol = document.getElementById('btn-table-add-col');
-        this.dom.btnQuickAddRow = document.getElementById('btn-table-quick-add-row');
         this.dom.btnQuickAddCol = document.getElementById('btn-table-quick-add-col');
         this.dom.btnPaste = document.getElementById('btn-table-paste');
         this.dom.btnCopy = document.getElementById('btn-table-copy');
@@ -100,14 +102,12 @@ export class TableGridTool {
         if (this.dom.btnAddRow) {
             this.dom.btnAddRow.addEventListener('click', () => this.addRow());
         }
-        if (this.dom.btnQuickAddRow) {
-            this.dom.btnQuickAddRow.addEventListener('click', () => this.addRow());
+        const quickAddRowBtn = document.getElementById('btn-table-quick-add-row');
+        if (quickAddRowBtn) {
+            quickAddRowBtn.addEventListener('click', () => this.addRow());
         }
         if (this.dom.btnAddCol) {
             this.dom.btnAddCol.addEventListener('click', () => this.addColumn());
-        }
-        if (this.dom.btnQuickAddCol) {
-            this.dom.btnQuickAddCol.addEventListener('click', () => this.addColumn());
         }
         if (this.dom.btnPaste) {
             this.dom.btnPaste.addEventListener('click', () => this.pasteFromClipboard());
@@ -146,36 +146,8 @@ export class TableGridTool {
             if (row.length > colCount) row.length = colCount;
         });
 
-        // 1. Render Header Row (Sticky Header for vertical scrolling)
-        let headHtml = `
-            <tr class="sticky top-0 z-20 bg-slate-950 text-slate-300 text-xs font-mono border-b border-slate-800/40 shadow-sm">
-                <th class="w-10 py-2.5 px-3 text-center text-slate-500 font-normal select-none sticky top-0 z-20 bg-slate-950">#</th>
-        `;
-
-        this.data.headers.forEach((header, colIdx) => {
-            headHtml += `
-                <th class="py-2 px-2 text-left font-normal align-middle sticky top-0 z-20 bg-slate-950" data-col="${colIdx}">
-                    <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 transition-colors">
-                        <span contenteditable="plaintext-only" spellcheck="false" class="table-header-editor outline-none min-w-[70px] font-bold text-slate-200 text-xs font-mono whitespace-nowrap block" data-col="${colIdx}" title="Click to rename header">${this.escapeHtml(header)}</span>
-                        ${colCount > 1 ? `
-                            <button type="button" class="btn-del-col p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all shrink-0" data-col="${colIdx}" title="Delete Column">
-                                <i data-lucide="x" class="size-3"></i>
-                            </button>
-                        ` : ''}
-                    </div>
-                </th>
-            `;
-        });
-
-        headHtml += `
-                <th class="w-10 py-2 px-2 text-center align-middle select-none sticky top-0 z-20 bg-slate-950">
-                    <button id="btn-table-quick-add-col" type="button" class="p-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-all flex items-center justify-center mx-auto" title="Add New Column">
-                        <i data-lucide="plus" class="size-3.5"></i>
-                    </button>
-                </th>
-            </tr>
-        `;
-        this.dom.tableHead.innerHTML = headHtml;
+        // 1. Render Header Row
+        TableGridRenderer.renderHeader(this.dom.tableHead, this.data.headers);
 
         // Re-attach quick add col listener since innerHTML was updated
         this.dom.btnQuickAddCol = document.getElementById('btn-table-quick-add-col');
@@ -184,32 +156,7 @@ export class TableGridTool {
         }
 
         // 2. Render Body Rows
-        let bodyHtml = '';
-        this.data.rows.forEach((row, rowIdx) => {
-            bodyHtml += `
-                <tr class="group hover:bg-slate-800/20 transition-colors border-b border-slate-800/20" data-row="${rowIdx}">
-                    <td class="w-10 py-2.5 px-3 text-center text-slate-500 text-xs font-mono select-none">${rowIdx + 1}</td>
-            `;
-
-            row.forEach((cell, colIdx) => {
-                bodyHtml += `
-                    <td class="py-1.5 px-2 align-top" data-row="${rowIdx}" data-col="${colIdx}">
-                        ${this.renderCellContent(cell, rowIdx, colIdx)}
-                    </td>
-                `;
-            });
-
-            bodyHtml += `
-                    <td class="w-10 py-2 px-2 text-center align-middle select-none">
-                        <button type="button" class="btn-del-row p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-40 group-hover:opacity-100" data-row="${rowIdx}" title="Delete Row">
-                            <i data-lucide="trash-2" class="size-3.5"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-
-        this.dom.tableBody.innerHTML = bodyHtml;
+        TableGridRenderer.renderBody(this.dom.tableBody, this.data.rows);
 
         this.updateStats();
 
@@ -223,21 +170,12 @@ export class TableGridTool {
     }
 
     switchToEditor(td, rowIdx, colIdx) {
-        if (!td) return;
         const currentVal = this.data.rows[rowIdx] ? (this.data.rows[rowIdx][colIdx] || '') : '';
-        td.innerHTML = `
-            <div contenteditable="plaintext-only" spellcheck="false" role="textbox" class="table-cell-editor outline-none min-w-[90px] whitespace-pre-wrap break-words px-3 py-2 text-xs font-mono text-slate-100 rounded-xl transition-all focus:bg-slate-900/90 focus:ring-1 focus:ring-emerald-500/40" data-row="${rowIdx}" data-col="${colIdx}">${this.escapeHtml(currentVal)}</div>
-        `;
-        const editor = td.querySelector('.table-cell-editor');
-        if (editor) {
-            editor.focus();
-            const range = document.createRange();
-            const sel = window.getSelection();
-            range.selectNodeContents(editor);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }
+        TableGridRenderer.switchToEditor(td, rowIdx, colIdx, currentVal);
+    }
+
+    focusCell(row, col) {
+        TableGridRenderer.focusCell(this.dom.tableBody, row, col, (td, r, c) => this.switchToEditor(td, r, c));
     }
 
     handleTableInput(e) {
@@ -297,11 +235,9 @@ export class TableGridTool {
         if (isNaN(row) || isNaN(col)) return;
 
         // Enter key: move to same column in next row (or add row if at the end)
-        // Shift+Enter inserts a new line within the cell for multi-line content
         if (e.key === 'Enter' && !e.shiftKey && !e.altKey && !e.ctrlKey) {
             e.preventDefault();
 
-            // Commit and convert to media if rich
             const currentVal = target.innerText;
             if (this.data.rows[row]) {
                 this.data.rows[row][col] = currentVal;
@@ -330,7 +266,6 @@ export class TableGridTool {
         if (e.key === 'Tab') {
             e.preventDefault();
 
-            // Commit and convert to media if rich
             const currentVal = target.innerText;
             if (this.data.rows[row]) {
                 this.data.rows[row][col] = currentVal;
@@ -368,7 +303,7 @@ export class TableGridTool {
     }
 
     handleTableClick(e) {
-        // 1. Preview Image Click (Open Modal)
+        // 1. Preview Image Click
         const previewBtn = e.target.closest('.btn-cell-preview-image');
         if (previewBtn) {
             e.stopPropagation();
@@ -380,7 +315,7 @@ export class TableGridTool {
             return;
         }
 
-        // 2. Edit Cell Button Click (Flow or Single Media)
+        // 2. Edit Cell Button Click
         const editBtn = e.target.closest('.btn-cell-edit-flow, .btn-cell-edit-url');
         if (editBtn) {
             e.stopPropagation();
@@ -426,7 +361,7 @@ export class TableGridTool {
     }
 
     handleTablePaste(e) {
-        // 1. Check for clipboard image file paste (e.g. screenshots)
+        // 1. Check for clipboard image file paste
         const items = e.clipboardData?.items;
         if (items) {
             for (let i = 0; i < items.length; i++) {
@@ -434,7 +369,13 @@ export class TableGridTool {
                     const file = items[i].getAsFile();
                     if (file) {
                         e.preventDefault();
-                        this.handlePastedImageFile(file, e.target);
+                        TableClipboard.handlePastedImageFile(file, e.target, this.data, (td, newVal, row, col) => {
+                            this.handleDataChange();
+                            td.innerHTML = this.renderCellContent(newVal, row, col);
+                            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                                window.lucide.createIcons();
+                            }
+                        });
                         return;
                     }
                 }
@@ -444,7 +385,7 @@ export class TableGridTool {
         const text = (e.clipboardData || window.clipboardData)?.getData('text');
         if (!text) return;
 
-        // 2. If it's a multi-line or tab-separated string, parse into cells
+        // 2. Multi-line or tab-separated string paste
         if (text.includes('\t') || text.includes('\n')) {
             e.preventDefault();
             const target = e.target;
@@ -456,7 +397,7 @@ export class TableGridTool {
             return;
         }
 
-        // 3. Single value pasted onto a media/flow cell (which isn't contenteditable)
+        // 3. Single value pasted onto a media cell
         const td = e.target?.closest('td');
         if (td && !e.target.classList.contains('table-cell-editor')) {
             const row = parseInt(td.getAttribute('data-row'), 10);
@@ -475,120 +416,12 @@ export class TableGridTool {
         }
     }
 
-    async handlePastedImageFile(file, target) {
-        try {
-            const dataUrl = await this.compressImageFile(file, 600, 0.75);
-            const td = target?.closest('td');
-            if (!td) return;
-            const row = parseInt(td.getAttribute('data-row'), 10);
-            const col = parseInt(td.getAttribute('data-col'), 10);
-            if (isNaN(row) || isNaN(col)) return;
-
-            if (this.data.rows[row]) {
-                const currentVal = this.data.rows[row][col] || '';
-                const newVal = currentVal.trim() ? `${currentVal.trim()}\n${dataUrl}` : dataUrl;
-                this.data.rows[row][col] = newVal;
-                this.handleDataChange();
-                td.innerHTML = this.renderCellContent(newVal, row, col);
-                if (window.lucide && typeof window.lucide.createIcons === 'function') {
-                    window.lucide.createIcons();
-                }
-                ShareUI.showToast('Image Added', 'Pasted image added to cell', 'success');
-            }
-        } catch (e) {
-            console.error('Failed to process pasted image:', e);
-            ShareUI.showToast('Image Error', 'Could not process clipboard image', 'error');
-        }
-    }
-
-    compressImageFile(file, maxDim = 600, quality = 0.75) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (readerEvent) => {
-                const img = new Image();
-                img.onload = () => {
-                    let w = img.width;
-                    let h = img.height;
-                    if (w > maxDim || h > maxDim) {
-                        if (w > h) {
-                            h = Math.round((h * maxDim) / w);
-                            w = maxDim;
-                        } else {
-                            w = Math.round((w * maxDim) / h);
-                            h = maxDim;
-                        }
-                    }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-                img.onerror = reject;
-                img.src = readerEvent.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
     insertParsedData(text, startRow = 0, startCol = 0) {
-        const rawLines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-        // Filter trailing empty line
-        if (rawLines.length > 0 && rawLines[rawLines.length - 1] === '') {
-            rawLines.pop();
+        const success = TableClipboard.insertParsedData(this.data, text, startRow, startCol);
+        if (success) {
+            this.renderTable();
+            this.handleDataChange();
         }
-        if (rawLines.length === 0) return;
-
-        const parsedRows = rawLines.map(line => line.split('\t'));
-        const maxColsNeeded = Math.max(...parsedRows.map(r => r.length));
-
-        // Expand headers if needed
-        const totalColsNeeded = Math.max(this.data.headers.length, startCol + maxColsNeeded);
-        while (this.data.headers.length < totalColsNeeded) {
-            this.data.headers.push(`Col ${this.data.headers.length + 1}`);
-        }
-
-        // Expand rows if needed
-        const totalRowsNeeded = Math.max(this.data.rows.length, startRow + parsedRows.length);
-        while (this.data.rows.length < totalRowsNeeded) {
-            const newRow = new Array(this.data.headers.length).fill('');
-            this.data.rows.push(newRow);
-        }
-
-        // Fill cells
-        for (let r = 0; r < parsedRows.length; r++) {
-            const targetRow = startRow + r;
-            const rowData = parsedRows[r];
-            for (let c = 0; c < rowData.length; c++) {
-                const targetCol = startCol + c;
-                this.data.rows[targetRow][targetCol] = rowData[c];
-            }
-        }
-
-        this.renderTable();
-        this.handleDataChange();
-        ShareUI.showToast('Data Pasted', `Imported ${parsedRows.length} rows and ${maxColsNeeded} columns`, 'success');
-    }
-
-    focusCell(row, col) {
-        const td = this.dom.tableBody?.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
-        if (!td) return;
-        let cell = td.querySelector('.table-cell-editor');
-        if (!cell) {
-            this.switchToEditor(td, row, col);
-            return;
-        }
-        cell.focus();
-        cell.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-        // Move cursor to end of text
-        const range = document.createRange();
-        const sel = window.getSelection();
-        range.selectNodeContents(cell);
-        range.collapse(false);
-        sel.removeAllRanges();
-        sel.addRange(range);
     }
 
     addRow() {
@@ -603,7 +436,6 @@ export class TableGridTool {
 
     deleteRow(rowIdx) {
         if (this.data.rows.length <= 1) {
-            // Reset single row instead of deleting everything
             this.data.rows = [new Array(this.data.headers.length).fill('')];
         } else {
             this.data.rows.splice(rowIdx, 1);
@@ -628,10 +460,9 @@ export class TableGridTool {
         this.data.headers.splice(colIdx, 1);
         this.data.rows.forEach(row => row.splice(colIdx, 1));
 
-        // Re-index/re-sequence columns automatically when a column is deleted
+        // Re-sequence default column headers
         this.data.headers = this.data.headers.map((h, idx) => {
             const trimmed = (h || '').trim();
-            // If it matches default pattern like "Column X", "Col X", or is empty, re-sequence it
             if (!trimmed || /^(Column|Col)\s*\d+$/i.test(trimmed)) {
                 return `Column ${idx + 1}`;
             }
@@ -643,122 +474,27 @@ export class TableGridTool {
     }
 
     async pasteFromClipboard() {
-        try {
-            if (!navigator.clipboard || !navigator.clipboard.readText) {
-                ShareUI.showToast('Clipboard Error', 'Clipboard access not supported or denied by browser', 'error');
-                return;
-            }
-            const text = await navigator.clipboard.readText();
-            if (!text || !text.trim()) {
-                ShareUI.showToast('Clipboard Empty', 'No text found in clipboard', 'info');
-                return;
-            }
+        const text = await TableClipboard.readClipboardText();
+        if (text) {
             this.insertParsedData(text, 0, 0);
-        } catch (e) {
-            console.error('Failed to read clipboard:', e);
-            ShareUI.showToast('Clipboard Access', 'Please paste directly into the table (Ctrl+V)', 'info');
         }
     }
 
     copyToClipboard() {
         const tsv = this.generateTSV();
-        if (!tsv) {
-            ShareUI.showToast('Empty Table', 'No data to copy', 'info');
-            return;
-        }
-
-        navigator.clipboard.writeText(tsv).then(() => {
-            ShareUI.showToast('Copied', 'Table data copied to clipboard (TSV / Excel ready)', 'success');
-        }).catch(err => {
-            console.error('Copy failed:', err);
-            ShareUI.showToast('Copy Failed', 'Unable to copy table to clipboard', 'error');
-        });
+        TableClipboard.copyTsv(tsv);
     }
 
     generateTSV() {
-        const headerLine = this.data.headers.join('\t');
-        const rowLines = this.data.rows.map(row => row.join('\t'));
-        return [headerLine, ...rowLines].join('\n');
+        return TableExporter.generateTSV(this.data);
     }
 
     exportCsv() {
-        try {
-            const escapeCsvCell = (val) => {
-                const s = (val ?? '').toString();
-                if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
-                    return `"${s.replace(/"/g, '""')}"`;
-                }
-                return s;
-            };
-
-            const headerLine = this.data.headers.map(escapeCsvCell).join(',');
-            const rowLines = this.data.rows.map(row => row.map(escapeCsvCell).join(','));
-            const csvContent = '\uFEFF' + [headerLine, ...rowLines].join('\r\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const safeTitle = (this.data.title || 'quick_table')
-                .trim()
-                .toLowerCase()
-                .replace(/[^a-z0-9_\-\u0E00-\u0E7F]+/g, '_')
-                .replace(/^_+|_+$/g, '') || 'quick_table';
-            const filename = `${safeTitle}_${Date.now()}.csv`;
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            ShareUI.showToast('Exported', `Saved as ${filename}`, 'success');
-        } catch (e) {
-            console.error('Export CSV failed:', e);
-            ShareUI.showToast('Export Failed', 'Could not export CSV file', 'error');
-        }
+        TableExporter.exportCsv(this.data);
     }
 
     exportMarkdown() {
-        try {
-            const headers = this.data.headers.map(h => (h || '').trim());
-            const dividers = headers.map(() => '---');
-
-            const formatMdRow = (cells) => {
-                return '| ' + cells.map(c => (c || '').replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>')).join(' | ') + ' |';
-            };
-
-            const lines = [
-                formatMdRow(headers),
-                formatMdRow(dividers),
-                ...this.data.rows.map(r => formatMdRow(r))
-            ];
-
-            const titleText = this.data.title ? `# ${this.data.title}\n\n` : '';
-            const mdContent = titleText + lines.join('\n');
-
-            const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const safeTitle = (this.data.title || 'quick_table')
-                .trim()
-                .toLowerCase()
-                .replace(/[^a-z0-9_\-\u0E00-\u0E7F]+/g, '_')
-                .replace(/^_+|_+$/g, '') || 'quick_table';
-            const filename = `${safeTitle}_${Date.now()}.md`;
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            ShareUI.showToast('Exported', `Saved as ${filename}`, 'success');
-        } catch (e) {
-            console.error('Export Markdown failed:', e);
-            ShareUI.showToast('Export Failed', 'Could not export Markdown file', 'error');
-        }
+        TableExporter.exportMarkdown(this.data);
     }
 
     async clearTable() {
@@ -790,174 +526,56 @@ export class TableGridTool {
         if (this.dom.titleInput) this.dom.titleInput.value = '';
         this.renderTable();
         this.saveToStorage();
-        ShareUI.showToast('Cleared', 'Table reset to blank canvas', 'info');
     }
 
     updateStats() {
-        const numRows = this.data.rows.length;
-        const numCols = this.data.headers.length;
-        const numCells = numRows * numCols;
-
-        if (this.dom.rowsCount) this.dom.rowsCount.textContent = `${numRows.toLocaleString()} rows`;
-        if (this.dom.colsCount) this.dom.colsCount.textContent = `${numCols.toLocaleString()} columns`;
-        if (this.dom.cellsCount) this.dom.cellsCount.textContent = `${numCells.toLocaleString()} cells`;
+        TableGridRenderer.updateStats(this.dom, this.data);
     }
 
     handleDataChange() {
         this.updateStats();
-        this.setSaveStatus('saving');
-
-        clearTimeout(this.saveTimer);
-        this.saveTimer = setTimeout(() => {
-            this.saveToStorage();
-        }, 400);
+        this.storage.scheduleSave(this.data, (status, ts) => this.setSaveStatus(status, ts));
     }
 
     saveToStorage() {
-        try {
-            this.data.updatedAt = Date.now();
-            this.lastSavedTimestamp = this.data.updatedAt;
-            localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-            this.setSaveStatus('saved', this.data.updatedAt);
-
-            if (typeof this.onSave === 'function') {
-                this.onSave(this.data);
-            }
-        } catch (e) {
-            console.error('Failed to save table data to localStorage:', e);
-            this.setSaveStatus('error');
-        }
+        this.storage.save(this.data, (status, ts) => this.setSaveStatus(status, ts));
     }
 
     loadFromStorage() {
-        try {
-            const raw = localStorage.getItem(this.storageKey);
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                if (parsed && Array.isArray(parsed.headers) && Array.isArray(parsed.rows)) {
-                    this.data = {
-                        title: parsed.title || '',
-                        headers: parsed.headers.length > 0 ? parsed.headers : ['Column 1', 'Column 2', 'Column 3'],
-                        rows: parsed.rows.length > 0 ? parsed.rows : [['', '', ''], ['', '', ''], ['', '', '']],
-                        updatedAt: parsed.updatedAt || Date.now()
-                    };
-                    if (this.dom.titleInput) {
-                        this.dom.titleInput.value = this.data.title;
-                    }
-                    this.lastSavedTimestamp = this.data.updatedAt;
-                    this.setSaveStatus('saved', this.lastSavedTimestamp);
-                    return;
-                }
+        const loaded = this.storage.load();
+        if (loaded) {
+            this.data = loaded;
+            if (this.dom.titleInput) {
+                this.dom.titleInput.value = this.data.title;
             }
-        } catch (e) {
-            console.error('Failed to load table data from localStorage:', e);
+            this.setSaveStatus('saved', this.storage.lastSavedTimestamp);
+        } else {
+            this.setSaveStatus('ready');
         }
-
-        this.setSaveStatus('ready');
     }
 
     syncFromCloud(cloudData) {
-        if (!cloudData) {
-            // Push local data as initial seed if local exists and has content
-            const hasContent = this.data.rows.some(r => r.some(c => c.trim() !== '')) || this.data.title;
-            if (hasContent && typeof this.onSave === 'function') {
-                this.onSave(this.data);
-            }
-            return;
-        }
-
-        const cloudTime = typeof cloudData.updatedAt === 'number'
-            ? cloudData.updatedAt
-            : (cloudData.updatedAt ? new Date(cloudData.updatedAt).getTime() : 0);
-        const localTime = this.lastSavedTimestamp || 0;
-
-        // If user is actively typing right now and local changes are at least as new as cloud, don't interrupt
         const isEditing = this.dom.section && this.dom.section.contains(document.activeElement);
-        if (isEditing && localTime >= cloudTime) {
-            return;
-        }
-
-        if (cloudTime > localTime) {
-            let cloudRows = [];
-            if (Array.isArray(cloudData.rows)) {
-                cloudRows = cloudData.rows;
-            } else if (typeof cloudData.rowsJson === 'string') {
-                try {
-                    cloudRows = JSON.parse(cloudData.rowsJson);
-                } catch (e) {
-                    cloudRows = [];
-                }
+        const merged = this.storage.mergeCloudData(this.data, cloudData, isEditing);
+        if (merged) {
+            this.data = merged;
+            if (this.dom.titleInput) {
+                this.dom.titleInput.value = this.data.title;
             }
-
-            if (Array.isArray(cloudData.headers)) {
-                this.data = {
-                    title: cloudData.title || '',
-                    headers: cloudData.headers.length > 0 ? cloudData.headers : ['Column 1', 'Column 2', 'Column 3'],
-                    rows: cloudRows.length > 0 ? cloudRows : [['', '', ''], ['', '', ''], ['', '', '']],
-                    updatedAt: cloudTime
-                };
-                if (this.dom.titleInput) {
-                    this.dom.titleInput.value = this.data.title;
-                }
-                this.lastSavedTimestamp = cloudTime;
-                this.renderTable();
-                this.setSaveStatus('saved', cloudTime);
-            }
+            this.renderTable();
+            this.setSaveStatus('saved', merged.updatedAt);
         }
     }
 
     setSaveStatus(status, timestamp = null) {
-        if (!this.dom.saveBadge) return;
-
-        if (status === 'saving') {
-            this.dom.saveBadge.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400';
-            this.dom.saveBadge.innerHTML = `
-                <span class="size-1.5 rounded-full bg-amber-400 animate-ping"></span>
-                <span>Saving...</span>
-            `;
-            return;
-        }
-
-        if (status === 'saved') {
-            this.dom.saveBadge.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400';
-            this.dom.saveBadge.innerHTML = `
-                <span class="size-1.5 rounded-full bg-emerald-400"></span>
-                <span>Saved</span>
-            `;
-
-            if (this.dom.lastUpdated && timestamp) {
-                const date = new Date(timestamp);
-                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                this.dom.lastUpdated.textContent = `Auto-saved at ${timeStr}`;
-            }
-            return;
-        }
-
-        if (status === 'error') {
-            this.dom.saveBadge.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500/10 text-rose-400';
-            this.dom.saveBadge.innerHTML = `
-                <span class="size-1.5 rounded-full bg-rose-400"></span>
-                <span>Sync Error</span>
-            `;
-            return;
-        }
-
-        // Ready state
-        this.dom.saveBadge.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800/60 text-slate-400';
-        this.dom.saveBadge.innerHTML = `
-            <span class="size-1.5 rounded-full bg-slate-500"></span>
-            <span>Ready</span>
-        `;
+        this.storage.updateStatusBadge(this.dom, status, timestamp);
     }
 
     escapeHtml(text) {
-        if (!text) return '';
-        return text
-            .toString()
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+        return TableGridRenderer.escapeHtml(text);
+    }
+
+    compressImageFile(file, maxDim = 600, quality = 0.75) {
+        return TableClipboard.compressImageFile(file, maxDim, quality);
     }
 }

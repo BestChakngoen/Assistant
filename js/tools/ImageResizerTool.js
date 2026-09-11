@@ -140,7 +140,6 @@ export class ImageResizerTool {
                     const file = items[i].getAsFile();
                     if (file) {
                         this.loadFile(file);
-                        ShareUI.showToast('Pasted', 'Image loaded from clipboard', 'success');
                         break;
                     }
                 }
@@ -207,6 +206,8 @@ export class ImageResizerTool {
     }
 
     async loadFile(file) {
+        if (!file) return;
+
         try {
             const data = await ImageResizerEngine.loadImageFromFile(file);
 
@@ -231,7 +232,6 @@ export class ImageResizerTool {
             this.updateUiWithLoadedImage(file);
             this.updateQualityVisibility();
             this.renderPreview();
-            ShareUI.showToast('Image Loaded', `${data.originalWidth} x ${data.originalHeight} px loaded`, 'success');
         } catch (err) {
             console.error('Failed to load image file:', err);
             ShareUI.showToast('Error', 'Failed to load image file', 'error');
@@ -433,15 +433,13 @@ export class ImageResizerTool {
             return;
         }
 
-        const filename = ImageResizerEngine.downloadBlob({
+        ImageResizerEngine.downloadBlob({
             blob: this.state.previewBlob,
             baseFileName: this.state.originalFileName || 'image',
             width: this.state.currentWidth,
             height: this.state.currentHeight,
             format: this.state.format
         });
-
-        ShareUI.showToast('Download Complete', `${filename} saved successfully`, 'success');
     }
 
     clear() {

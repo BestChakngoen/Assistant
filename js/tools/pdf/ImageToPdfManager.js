@@ -100,8 +100,6 @@ export class ImageToPdfManager {
             return;
         }
 
-        ShareUI.showToast('Adding Images', `Processing ${imageFiles.length} image(s)...`, 'info');
-
         for (const file of imageFiles) {
             try {
                 const item = await this.readImageFile(file);
@@ -497,7 +495,6 @@ export class ImageToPdfManager {
 
             const timestamp = new Date().toISOString().slice(0, 10);
             doc.save(`converted_document_${timestamp}.pdf`);
-            ShareUI.showToast('Complete!', 'PDF document downloaded successfully', 'info');
         } catch (err) {
             console.error('PDF Generation failed:', err);
             ShareUI.showToast('Error', 'Failed to generate PDF document', 'error');

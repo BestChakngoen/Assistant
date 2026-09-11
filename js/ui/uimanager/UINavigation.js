@@ -42,6 +42,13 @@ export class UINavigation {
     }
 
     static switchTab(uiManager, tabName) {
+        if (window.innerWidth < 1024) {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+
         if (window.shareManager) {
             ShareFeedRenderer.exitEditMode(window.shareManager);
         }
@@ -57,7 +64,8 @@ export class UINavigation {
             game: document.getElementById('game-panel'),
             settings: document.getElementById('settings-panel'),
             tools: document.getElementById('tools-panel'),
-            air: document.getElementById('air-panel')
+            air: document.getElementById('air-panel'),
+            notifications: document.getElementById('notifications-panel')
         };
         
         const tabs = {
@@ -71,7 +79,8 @@ export class UINavigation {
             game: document.getElementById('tab-game'),
             settings: document.getElementById('tab-settings'),
             tools: document.getElementById('tab-tools'),
-            air: document.getElementById('tab-air')
+            air: document.getElementById('tab-air'),
+            notifications: document.getElementById('tab-notifications')
         };
 
         Object.keys(panels).forEach(key => {
@@ -81,7 +90,7 @@ export class UINavigation {
 
             if (key === tabName) {
                 panel.classList.remove('hidden');
-                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air') {
+                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air' || key === 'notifications') {
                     panel.classList.add('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     panel.classList.add('flex', 'flex-col');
@@ -95,6 +104,10 @@ export class UINavigation {
                 } else if (key === 'air') {
                     if (uiManager.airQuality) {
                         uiManager.airQuality.refreshIfStale();
+                    }
+                } else if (key === 'notifications') {
+                    if (window.notificationManager) {
+                        window.notificationManager.render();
                     }
                 } else if (key === 'game') {
                     if (window.__phonkEngineInstance && typeof window.__phonkEngineInstance.loop === 'function') {
@@ -110,7 +123,7 @@ export class UINavigation {
                         window.__phonkStopEngine();
                     }
                 }
-                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air') {
+                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air' || key === 'notifications') {
                     panel.classList.remove('flex');
                 } else if (key === 'pulls' || key === 'issues') {
                     panel.classList.remove('flex', 'flex-col');

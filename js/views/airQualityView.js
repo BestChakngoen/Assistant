@@ -11,7 +11,6 @@ export const airQualityViewHtml = `
                     <i data-lucide="cloud-sun" class="w-6 h-6 text-cyan-400"></i>
                     Air & Climate
                 </h2>
-                <p class="text-xs text-slate-400 mt-1 font-mono">Daily environmental health & human living comfort assessment</p>
             </div>
 
             <!-- Location & Action Controls -->

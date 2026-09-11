@@ -214,8 +214,6 @@ export class QRCodeTool {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
-            ShareUI.showToast('Download Complete', `QR code (${this.currentSize}x${this.currentSize} PNG) downloaded successfully`, 'success');
         } catch (err) {
             console.error('Download QR Code error:', err);
             ShareUI.showToast('Error', 'An error occurred while downloading the QR code', 'error');

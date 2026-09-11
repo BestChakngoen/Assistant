@@ -34,6 +34,7 @@ export class DataService {
         this.unsubscribeDiagram = null;
         this.unsubscribeQuickNote = null;
         this.unsubscribeQuickTable = null;
+        this.unsubscribeNotifications = null;
     }
 
     getCollectionPath(uid) {
@@ -68,6 +69,12 @@ export class DataService {
     getQuickTableDoc(uid) {
         if (this.useCustomConfig) return doc(this.db, 'users', uid, 'data', 'quickTable');
         return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'quickTable');
+    }
+
+    // --- NOTIFICATIONS & REMINDERS PATH ---
+    getNotificationsDoc(uid) {
+        if (this.useCustomConfig) return doc(this.db, 'users', uid, 'data', 'notifications');
+        return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'notifications');
     }
 
     getNetWorthDoc(uid) {
@@ -201,6 +208,7 @@ export class DataService {
         await setDoc(docRef, {
             title: data.title || '',
             content: data.content || '',
+            attachments: data.attachments || { links: [], images: [], files: [] },
             updatedAt: data.updatedAt || Date.now()
         }, { merge: true });
     }
@@ -242,6 +250,56 @@ export class DataService {
             title: data.title || '',
             headers: data.headers || [],
             rowsJson: JSON.stringify(data.rows || []),
+            updatedAt: data.updatedAt || Date.now()
+        }, { merge: true });
+    }
+
+    // --- NOTIFICATIONS & REMINDERS METHODS ---
+    subscribeNotifications(uid, callback) {
+        if (this.unsubscribeNotifications) this.unsubscribeNotifications();
+        const docRef = this.getNotificationsDoc(uid);
+        this.unsubscribeNotifications = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const cloudData = docSnap.data();
+                let reminders = [];
+                let history = [];
+                if (typeof cloudData.remindersJson === 'string') {
+                    try {
+                        reminders = JSON.parse(cloudData.remindersJson);
+                    } catch (e) {
+                        reminders = [];
+                    }
+                } else if (Array.isArray(cloudData.reminders)) {
+                    reminders = cloudData.reminders;
+                }
+                if (typeof cloudData.historyJson === 'string') {
+                    try {
+                        history = JSON.parse(cloudData.historyJson);
+                    } catch (e) {
+                        history = [];
+                    }
+                } else if (Array.isArray(cloudData.history)) {
+                    history = cloudData.history;
+                }
+                callback({
+                    reminders,
+                    history,
+                    updatedAt: cloudData.updatedAt || Date.now()
+                });
+            } else {
+                callback(null);
+            }
+        }, (err) => {
+            console.error("Firestore notifications subscription error:", err);
+        });
+        return this.unsubscribeNotifications;
+    }
+
+    async saveNotifications(uid, data) {
+        const docRef = this.getNotificationsDoc(uid);
+        await setDoc(docRef, {
+            remindersJson: JSON.stringify(data.reminders || []),
+            historyJson: JSON.stringify(data.history || []),
             updatedAt: data.updatedAt || Date.now()
         }, { merge: true });
     }

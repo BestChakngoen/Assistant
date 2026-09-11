@@ -1,8 +1,10 @@
 import { ShareUI } from '../ui/share/ShareUI.js';
+import { NoteSmartDetector } from './notepad/NoteSmartDetector.js';
 
 /**
- * NotePadTool - Instant Digital Scratchpad Tool with Realtime Auto-Save
- * Provides a blank digital sheet for note-taking, live statistics, clipboard copy, and file export.
+ * NotePadTool - Instant Digital Scratchpad Tool with Realtime Auto-Save & Smart Detection
+ * Provides a clean, stable digital sheet for writing, with automatic media & link detection.
+ * Adheres strictly to SOLID, Single Responsibility Principle (SRP), and Zero Regression.
  */
 export class NotePadTool {
     constructor() {
@@ -10,6 +12,7 @@ export class NotePadTool {
         this.saveTimer = null;
         this.onSave = null;
         this.lastSavedTimestamp = 0;
+        this.detector = new NoteSmartDetector();
         this.dom = {
             titleInput: null,
             contentInput: null,
@@ -40,6 +43,7 @@ export class NotePadTool {
 
         if (!this.dom.contentInput) return;
 
+        this.detector.init();
         this.loadFromStorage();
         this.bindEvents();
 
@@ -155,6 +159,7 @@ export class NotePadTool {
                 }
                 this.lastSavedTimestamp = data.updatedAt || Date.now();
                 this.updateStats();
+                this.detector.scan();
                 this.setSaveStatus('saved', this.lastSavedTimestamp);
                 return;
             }
@@ -163,12 +168,12 @@ export class NotePadTool {
         }
 
         this.updateStats();
+        this.detector.scan();
         this.setSaveStatus('ready');
     }
 
     syncFromCloud(cloudData) {
         if (!cloudData) {
-            // Cloud has no data yet. If local has existing notes, push to cloud as initial seed
             const local = this.getLocalData();
             if (local && (local.title || local.content) && typeof this.onSave === 'function') {
                 this.onSave(local);
@@ -210,9 +215,9 @@ export class NotePadTool {
                 console.error('Failed to cache cloud note to localStorage:', e);
             }
             this.updateStats();
+            this.detector.scan();
             this.setSaveStatus('saved', cloudTime);
         } else if (localTime > cloudTime && typeof this.onSave === 'function') {
-            // Local is newer than cloud (e.g. offline edits made earlier), sync up to cloud
             if (local) {
                 this.onSave(local);
             }
@@ -327,8 +332,6 @@ export class NotePadTool {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-
-            ShareUI.showToast('Exported', `Saved as ${filename}`, 'success');
         } catch (e) {
             console.error('Export note failed:', e);
             ShareUI.showToast('Error', 'Failed to export note file', 'error');
@@ -360,8 +363,7 @@ export class NotePadTool {
 
         this.saveToStorage();
         this.updateStats();
+        this.detector.scan();
         if (this.dom.contentInput) this.dom.contentInput.focus();
-
-        ShareUI.showToast('Cleared', 'Notepad has been reset', 'info');
     }
 }

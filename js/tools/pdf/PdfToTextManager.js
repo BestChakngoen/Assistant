@@ -82,8 +82,6 @@ export class PdfToTextManager {
 
             this.dom.btnCopyTxt.disabled = false;
             this.dom.btnDownloadTxt.disabled = false;
-
-            ShareUI.showToast('Extracted!', `Successfully extracted text from ${doc.numPages} pages`, 'info');
         } catch (err) {
             console.error('Failed to extract text:', err);
             this.dom.txtTextarea.value = '';
@@ -125,7 +123,6 @@ export class PdfToTextManager {
         downloadBlob(blob, filename);
 
         ShareUI.playSound('mouse-click');
-        ShareUI.showToast('Downloaded', 'Text file saved', 'info');
     }
 
     reset() {

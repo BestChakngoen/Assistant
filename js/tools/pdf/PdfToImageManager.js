@@ -233,8 +233,6 @@ export class PdfToImageManager {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(zipUrl);
-
-            ShareUI.showToast('Downloaded!', 'All pages exported in ZIP archive', 'info');
         } catch (err) {
             console.error('Failed to create ZIP:', err);
             ShareUI.showToast('Error', 'Failed to generate ZIP archive', 'error');

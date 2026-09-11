@@ -65,7 +65,37 @@ export const toolsViewHtml = `
 
                 <!-- Note Content Textarea -->
                 <div class="w-full relative">
-                    <textarea id="note-content-input" rows="10" placeholder="Type or paste your notes here... Everything is auto-saved in realtime." class="w-full px-4 py-3 rounded-2xl bg-slate-950/70 text-slate-100 placeholder:text-slate-600 outline-none focus:bg-slate-950 focus:ring-2 focus:ring-amber-500/30 text-xs sm:text-sm font-mono leading-relaxed transition-all resize-y select-text"></textarea>
+                    <textarea id="note-content-input" rows="10" placeholder="Type or paste your notes here... Paste images (Ctrl+V) or drop files directly onto this sheet." class="w-full px-4 py-3 rounded-2xl bg-slate-950/70 text-slate-100 placeholder:text-slate-600 outline-none focus:bg-slate-950 focus:ring-2 focus:ring-amber-500/30 text-xs sm:text-sm font-mono leading-relaxed transition-all resize-y select-text"></textarea>
+                </div>
+
+                <!-- Smart Auto-Detected Media & Links Section (Hidden by default, shown automatically when media/links detected) -->
+                <div id="note-smart-detector-container" class="hidden w-full flex flex-col space-y-3 pt-1">
+                    <!-- Header Bar -->
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="p-1.5 rounded-xl bg-amber-500/10 text-amber-400">
+                                <i data-lucide="sparkles" class="size-3.5"></i>
+                            </span>
+                            <span class="text-xs font-mono font-semibold text-slate-300">Auto-Detected Media & Links</span>
+                            <span id="note-detected-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800/60 text-slate-400">0 detected</span>
+                        </div>
+                    </div>
+
+                    <!-- Detected Items Container -->
+                    <div class="w-full flex flex-col space-y-2">
+                        <!-- Detected Links -->
+                        <div id="note-detected-links" class="hidden flex flex-col space-y-1.5"></div>
+                        <!-- Detected Images Grid -->
+                        <div id="note-detected-images" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5"></div>
+                        <!-- Detected Files List -->
+                        <div id="note-detected-files" class="hidden flex flex-col space-y-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- Drop Zone Indicator (shown when dragging files over note) -->
+                <div id="note-drop-zone" class="hidden w-full p-4 rounded-2xl bg-amber-500/10 text-amber-400 text-center text-xs font-mono flex items-center justify-center gap-2 transition-all">
+                    <i data-lucide="upload-cloud" class="size-4 animate-bounce"></i>
+                    <span>Drop image or file to insert into note automatically</span>
                 </div>
 
                 <!-- Footer Stats -->
