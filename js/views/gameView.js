@@ -55,26 +55,17 @@ export const gameViewHtml = `
             </div>
         </div>
 
-        <!-- Exit Game Button (Compact Circle Icon at top-right) -->
-        <button id="btn-exit-game" type="button" class="hidden absolute top-3 right-3 sm:top-4 sm:right-4 z-[110] size-10 rounded-full bg-slate-900/80 hover:bg-red-500/20 active:scale-95 text-slate-300 hover:text-red-400 flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg shadow-black/60 select-none touch-none" title="Exit Game" aria-label="Exit Game">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        <!-- Mobile Large Pause Button (Top-Right, visible during active play on mobile) -->
+        <button id="btn-mobile-pause" type="button" class="hidden absolute top-3 right-3 z-[110] size-11 sm:size-12 rounded-full bg-slate-900/80 hover:bg-cyan-500/20 active:scale-90 text-cyan-400 flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg shadow-black/60 select-none touch-none" title="Pause Game" aria-label="Pause Game">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16" rx="1"/>
+                <rect x="14" y="4" width="4" height="16" rx="1"/>
+            </svg>
         </button>
 
-        <!-- Orientation Rotate Guide for Mobile Portrait Mode -->
-        <div id="phonk-rotate-guide" class="phonk-portrait-guide hidden absolute inset-0 z-[120] bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 space-y-4">
-            <button type="button" onclick="window.__phonkMobileAdapter && window.__phonkMobileAdapter.exitGame(true)" class="absolute top-3 right-3 size-10 rounded-full bg-slate-900/80 text-slate-300 hover:text-red-400 flex items-center justify-center cursor-pointer select-none touch-none" title="Exit Game">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <div class="size-16 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center animate-pulse">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
-                    <path d="M12 18h.01"/>
-                </svg>
-            </div>
-            <div class="space-y-1">
-                <h3 class="text-base font-bold font-mono text-white">กรุณาหมุนโทรศัพท์เป็นแนวนอน</h3>
-                <p class="text-xs font-mono text-slate-400">Please rotate your device to landscape</p>
-            </div>
-        </div>
+        <!-- Exit Game Button (Compact Circle Icon at top-right, visible ONLY when paused on mobile) -->
+        <button id="btn-exit-game" type="button" class="hidden absolute top-3 right-3 z-[110] size-11 sm:size-12 rounded-full bg-slate-900/80 hover:bg-red-500/20 active:scale-90 text-slate-300 hover:text-red-400 flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg shadow-black/60 select-none touch-none" title="Exit Game" aria-label="Exit Game">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
     </div>
 `;

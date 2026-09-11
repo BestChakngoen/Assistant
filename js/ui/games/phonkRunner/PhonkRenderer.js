@@ -132,23 +132,23 @@ export class PhonkRenderer {
     drawPauseButton(isPaused) {
         const ctx = this.ctx;
         ctx.save();
-        const btnW = 34;
-        const btnH = 24;
-        const btnX = this.W - 48;
-        const btnY = 10;
+        const btnW = 46;
+        const btnH = 32;
+        const btnX = this.W - 60;
+        const btnY = 12;
 
         ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
         ctx.fillRect(btnX, btnY, btnW, btnH);
         ctx.strokeStyle = PHONK_CONFIG.COLORS.CYAN_NEON;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.5;
         ctx.strokeRect(btnX, btnY, btnW, btnH);
 
-        ctx.font = 'bold 12px monospace';
+        ctx.font = 'bold 16px monospace';
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.shadowColor = PHONK_CONFIG.COLORS.CYAN_NEON;
-        ctx.shadowBlur = 6;
-        ctx.fillText(isPaused ? '▶' : '❚❚', btnX + btnW / 2, btnY + 16);
+        ctx.shadowBlur = 8;
+        ctx.fillText(isPaused ? '▶' : '❚❚', btnX + btnW / 2, btnY + 22);
         ctx.textAlign = 'left';
         ctx.restore();
     }

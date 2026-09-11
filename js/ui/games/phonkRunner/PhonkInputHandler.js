@@ -63,8 +63,8 @@ export class PhonkInputHandler {
             const clickX = e.clientX - rect.left;
             const clickY = e.clientY - rect.top;
             
-            // Top-right pause button check
-            if (clickX >= rect.width - 60 && clickY <= 48) {
+            // Top-right pause button check (enlarged hit box for comfortable mobile tap)
+            if (clickX >= rect.width - 95 && clickY <= 75) {
                 if (this.callbacks.onTogglePause) this.callbacks.onTogglePause();
                 return;
             }
@@ -91,8 +91,8 @@ export class PhonkInputHandler {
             const touchX = touch.clientX - rect.left;
             const touchY = touch.clientY - rect.top;
 
-            // Top-right pause button check
-            if (touchX >= rect.width - 60 && touchY <= 48) {
+            // Top-right pause button check (enlarged hit box for comfortable mobile tap)
+            if (touchX >= rect.width - 95 && touchY <= 75) {
                 if (this.callbacks.onTogglePause) this.callbacks.onTogglePause();
                 return;
             }

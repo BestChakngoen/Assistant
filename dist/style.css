@@ -530,27 +530,31 @@
   overflow: hidden !important;
 }
 
-/* Exit button strictly hidden on desktop */
+/* Controls strictly hidden on desktop */
 
 @media screen and (min-width: 1025px) {
-  #btn-exit-game {
+  #btn-mobile-pause,
+    #btn-exit-game {
     display: none !important;
   }
 }
 
-/* Exit button positioning in mobile fullscreen (visible only when paused) */
+/* Control buttons positioning in mobile fullscreen */
 
+.phonk-mobile-fullscreen #btn-mobile-pause,
 .phonk-mobile-fullscreen #btn-exit-game {
   position: absolute !important;
-  top: max(10px, env(safe-area-inset-top, 10px)) !important;
-  right: max(12px, env(safe-area-inset-right, 12px)) !important;
+  top: max(12px, env(safe-area-inset-top, 12px)) !important;
+  right: max(14px, env(safe-area-inset-right, 14px)) !important;
   z-index: 100001 !important;
 }
 
+.phonk-mobile-fullscreen #btn-mobile-pause.hidden,
 .phonk-mobile-fullscreen #btn-exit-game.hidden {
   display: none !important;
 }
 
+.phonk-mobile-fullscreen #btn-mobile-pause.flex,
 .phonk-mobile-fullscreen #btn-exit-game.flex {
   display: flex !important;
 }
@@ -572,22 +576,10 @@
   position: relative !important;
 }
 
-/* Top HUD overlay */
+/* Top HUD (Title & High Score) completely hidden on mobile so it doesn't block gameplay */
 
 .phonk-mobile-fullscreen .phonk-top-hud {
-  position: absolute !important;
-  top: max(8px, env(safe-area-inset-top, 8px)) !important;
-  left: max(16px, env(safe-area-inset-left, 16px)) !important;
-  right: max(60px, calc(env(safe-area-inset-right, 0px) + 54px)) !important;
-  z-index: 100000 !important;
-  padding: 0 !important;
-  border: none !important;
-  background: transparent !important;
-  pointer-events: none !important;
-}
-
-.phonk-mobile-fullscreen .phonk-top-hud * {
-  pointer-events: auto !important;
+  display: none !important;
 }
 
 /* Canvas container fits the landscape screen */
@@ -670,20 +662,6 @@
 
 .phonk-mobile-fullscreen .phonk-bottom-bar > div:last-child p {
   display: none !important;
-}
-
-/* Portrait orientation guide */
-
-@media screen and (orientation: portrait) {
-  .phonk-mobile-fullscreen .phonk-portrait-guide {
-    display: flex !important;
-  }
-}
-
-@media screen and (orientation: landscape) {
-  .phonk-mobile-fullscreen .phonk-portrait-guide {
-    display: none !important;
-  }
 }
 
 *, ::before, ::after {
@@ -1493,10 +1471,6 @@ video {
 
 .z-\[110\] {
   z-index: 110;
-}
-
-.z-\[120\] {
-  z-index: 120;
 }
 
 .col-span-2 {
@@ -5942,12 +5916,6 @@ input:focus, select:focus {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-.active\:scale-95:active {
-  --tw-scale-x: .95;
-  --tw-scale-y: .95;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
 .active\:cursor-grabbing:active {
   cursor: grabbing;
 }
@@ -6194,6 +6162,11 @@ input:focus, select:focus {
   .sm\:size-11 {
     width: 2.75rem;
     height: 2.75rem;
+  }
+
+  .sm\:size-12 {
+    width: 3rem;
+    height: 3rem;
   }
 
   .sm\:size-4 {

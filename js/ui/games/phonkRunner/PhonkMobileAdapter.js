@@ -7,12 +7,15 @@ export class PhonkMobileAdapter {
     constructor(gameEngine) {
         this.gameEngine = gameEngine;
         this.gamePanel = document.getElementById('game-panel');
+        this.pauseBtn = document.getElementById('btn-mobile-pause');
         this.exitBtn = document.getElementById('btn-exit-game');
         this.isActive = false;
         this.previousTab = 'code';
 
         this.handlePopState = this.handlePopState.bind(this);
         this.handleExitClick = this.handleExitClick.bind(this);
+        this.handlePauseClick = this.handlePauseClick.bind(this);
+        this.handleFullscreenChange = this.handleFullscreenChange.bind(this);
 
         this.init();
     }
@@ -21,24 +24,44 @@ export class PhonkMobileAdapter {
         if (this.exitBtn) {
             this.exitBtn.addEventListener('click', this.handleExitClick);
         }
+        if (this.pauseBtn) {
+            this.pauseBtn.addEventListener('click', this.handlePauseClick);
+        }
+
         window.addEventListener('popstate', this.handlePopState);
+        document.addEventListener('fullscreenchange', this.handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
 
         if (this.gameEngine) {
             this.gameEngine.onPauseChange = (isPaused) => {
-                this.updateExitButtonVisibility(isPaused);
+                this.updateControlsVisibility(isPaused);
             };
         }
     }
 
-    updateExitButtonVisibility(isPaused) {
-        if (!this.exitBtn) return;
-        // Show ONLY on mobile AND ONLY when game is active and paused
-        if (this.isMobileDevice() && this.isActive && isPaused) {
-            this.exitBtn.classList.remove('hidden');
-            this.exitBtn.classList.add('flex');
-        } else {
-            this.exitBtn.classList.add('hidden');
-            this.exitBtn.classList.remove('flex');
+    updateControlsVisibility(isPaused) {
+        const isMobile = this.isMobileDevice();
+
+        // Pause button: show on mobile ONLY during active play (not paused)
+        if (this.pauseBtn) {
+            if (isMobile && this.isActive && !isPaused) {
+                this.pauseBtn.classList.remove('hidden');
+                this.pauseBtn.classList.add('flex');
+            } else {
+                this.pauseBtn.classList.add('hidden');
+                this.pauseBtn.classList.remove('flex');
+            }
+        }
+
+        // Exit button: show on mobile ONLY when game is active AND paused
+        if (this.exitBtn) {
+            if (isMobile && this.isActive && isPaused) {
+                this.exitBtn.classList.remove('hidden');
+                this.exitBtn.classList.add('flex');
+            } else {
+                this.exitBtn.classList.add('hidden');
+                this.exitBtn.classList.remove('flex');
+            }
         }
     }
 
@@ -58,7 +81,7 @@ export class PhonkMobileAdapter {
                 this.gamePanel.classList.add('phonk-mobile-fullscreen');
             }
 
-            // Push history state so mobile hardware/gesture back button exits game
+            // Push history state so mobile hardware/gesture back button exits game immediately
             try {
                 if (!window.history.state || !window.history.state.inPhonkGame) {
                     window.history.pushState({ inPhonkGame: true, fromTab: this.previousTab }, '', '#game');
@@ -74,7 +97,7 @@ export class PhonkMobileAdapter {
                     await root.requestFullscreen();
                 }
             } catch (err) {
-                // Fullscreen might be restricted by browser policy if gesture wasn't recognized
+                // Browser might restrict fullscreen without direct user gesture
             }
 
             // Lock screen orientation to landscape if supported
@@ -83,17 +106,21 @@ export class PhonkMobileAdapter {
                     await screen.orientation.lock('landscape');
                 }
             } catch (err) {
-                // iOS Safari or unsupported browsers will fall back to portrait rotate guide
+                // Ignore unsupported orientation lock
             }
         } else {
-            // Desktop mode: strictly hide exit button
+            // Desktop mode: strictly hide mobile controls
             if (this.exitBtn) {
                 this.exitBtn.classList.add('hidden');
                 this.exitBtn.classList.remove('flex');
             }
+            if (this.pauseBtn) {
+                this.pauseBtn.classList.add('hidden');
+                this.pauseBtn.classList.remove('flex');
+            }
         }
 
-        this.updateExitButtonVisibility(this.gameEngine?.isPaused || false);
+        this.updateControlsVisibility(this.gameEngine?.isPaused || false);
     }
 
     async exitGame(shouldPopHistory = true) {
@@ -101,17 +128,16 @@ export class PhonkMobileAdapter {
             return;
         }
         this.isActive = false;
-        this.updateExitButtonVisibility(false);
+        this.updateControlsVisibility(false);
 
-        // Remove mobile fullscreen styling
+        // Immediately remove mobile fullscreen styling
         if (this.gamePanel) {
             this.gamePanel.classList.remove('phonk-mobile-fullscreen');
         }
 
-        // Hide exit button
-        if (this.exitBtn) {
-            this.exitBtn.classList.add('hidden');
-            this.exitBtn.classList.remove('flex');
+        // Stop game engine & audio immediately
+        if (window.__phonkStopEngine) {
+            window.__phonkStopEngine();
         }
 
         // Unlock screen orientation
@@ -125,16 +151,11 @@ export class PhonkMobileAdapter {
 
         // Exit fullscreen if active
         try {
-            if (document.fullscreenElement && document.exitFullscreen) {
-                await document.exitFullscreen();
+            if ((document.fullscreenElement || document.webkitFullscreenElement) && document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
             }
         } catch (err) {
             // Ignore exitFullscreen errors
-        }
-
-        // Stop game engine & audio
-        if (window.__phonkStopEngine) {
-            window.__phonkStopEngine();
         }
 
         // Clean up URL hash if still #game
@@ -146,16 +167,25 @@ export class PhonkMobileAdapter {
             }
         }
 
-        // If history back should be popped
-        if (shouldPopHistory && window.history.state && window.history.state.inPhonkGame) {
-            window.history.back();
-            return;
-        }
-
-        // Switch back to previous tab
+        // Switch back to previous tab IMMEDIATELY
         const targetTab = this.previousTab || 'code';
         if (window.app && window.app.ui && typeof window.app.ui.switchTab === 'function') {
             window.app.ui.switchTab(targetTab);
+        }
+
+        // If history back should be popped (e.g. from exit button click)
+        if (shouldPopHistory && window.history.state && window.history.state.inPhonkGame) {
+            window.history.back();
+        }
+    }
+
+    handlePauseClick(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (this.gameEngine && typeof this.gameEngine.togglePause === 'function') {
+            this.gameEngine.togglePause();
         }
     }
 
@@ -169,7 +199,15 @@ export class PhonkMobileAdapter {
 
     handlePopState(e) {
         if (this.isActive) {
-            // Mobile back button was pressed
+            // Mobile back button was pressed -> exit game immediately!
+            this.exitGame(false);
+        }
+    }
+
+    handleFullscreenChange() {
+        // On Android, user swipe/back gesture exits fullscreen first.
+        // If user exited fullscreen while in mobile game mode, immediately exit game!
+        if (this.isActive && !document.fullscreenElement && !document.webkitFullscreenElement && this.isMobileDevice()) {
             this.exitGame(false);
         }
     }
@@ -178,6 +216,11 @@ export class PhonkMobileAdapter {
         if (this.exitBtn) {
             this.exitBtn.removeEventListener('click', this.handleExitClick);
         }
+        if (this.pauseBtn) {
+            this.pauseBtn.removeEventListener('click', this.handlePauseClick);
+        }
         window.removeEventListener('popstate', this.handlePopState);
+        document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', this.handleFullscreenChange);
     }
 }
