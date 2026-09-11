@@ -55,17 +55,14 @@ export const gameViewHtml = `
             </div>
         </div>
 
-        <!-- Mobile Large Pause Button (Top-Right, visible during active play on mobile) -->
-        <button id="btn-mobile-pause" type="button" class="hidden absolute top-3 right-3 z-[110] size-11 sm:size-12 rounded-full bg-slate-900/80 hover:bg-cyan-500/20 active:scale-90 text-cyan-400 flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg shadow-black/60 select-none touch-none" title="Pause Game" aria-label="Pause Game">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" rx="1"/>
-                <rect x="14" y="4" width="4" height="16" rx="1"/>
-            </svg>
-        </button>
-
-        <!-- Exit Game Button (Compact Circle Icon at top-right, visible ONLY when paused on mobile) -->
-        <button id="btn-exit-game" type="button" class="hidden absolute top-3 right-3 z-[110] size-11 sm:size-12 rounded-full bg-slate-900/80 hover:bg-red-500/20 active:scale-90 text-slate-300 hover:text-red-400 flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg shadow-black/60 select-none touch-none" title="Exit Game" aria-label="Exit Game">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
+        <!-- Centered Exit Button shown when game is paused -->
+        <div id="phonk-pause-overlay" class="hidden absolute inset-0 z-[110] flex flex-col items-center justify-center pointer-events-none">
+            <div class="mt-28 pointer-events-auto flex flex-col items-center">
+                <button id="btn-exit-game" type="button" class="btn-press px-6 py-2.5 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-white font-mono text-xs font-bold flex items-center gap-2 backdrop-blur-md shadow-lg shadow-black/80 transition-all cursor-pointer select-none touch-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <span>EXIT GAME</span>
+                </button>
+            </div>
+        </div>
     </div>
 `;

@@ -7,14 +7,12 @@ export class PhonkMobileAdapter {
     constructor(gameEngine) {
         this.gameEngine = gameEngine;
         this.gamePanel = document.getElementById('game-panel');
-        this.pauseBtn = document.getElementById('btn-mobile-pause');
+        this.pauseOverlay = document.getElementById('phonk-pause-overlay');
         this.exitBtn = document.getElementById('btn-exit-game');
         this.isActive = false;
-        this.previousTab = 'code';
 
         this.handlePopState = this.handlePopState.bind(this);
         this.handleExitClick = this.handleExitClick.bind(this);
-        this.handlePauseClick = this.handlePauseClick.bind(this);
         this.handleFullscreenChange = this.handleFullscreenChange.bind(this);
 
         this.init();
@@ -24,9 +22,6 @@ export class PhonkMobileAdapter {
         if (this.exitBtn) {
             this.exitBtn.addEventListener('click', this.handleExitClick);
         }
-        if (this.pauseBtn) {
-            this.pauseBtn.addEventListener('click', this.handlePauseClick);
-        }
 
         window.addEventListener('popstate', this.handlePopState);
         document.addEventListener('fullscreenchange', this.handleFullscreenChange);
@@ -34,34 +29,20 @@ export class PhonkMobileAdapter {
 
         if (this.gameEngine) {
             this.gameEngine.onPauseChange = (isPaused) => {
-                this.updateControlsVisibility(isPaused);
+                this.updatePauseOverlayVisibility(isPaused);
             };
         }
     }
 
-    updateControlsVisibility(isPaused) {
-        const isMobile = this.isMobileDevice();
+    updatePauseOverlayVisibility(isPaused) {
+        if (!this.pauseOverlay) return;
 
-        // Pause button: show on mobile ONLY during active play (not paused)
-        if (this.pauseBtn) {
-            if (isMobile && this.isActive && !isPaused) {
-                this.pauseBtn.classList.remove('hidden');
-                this.pauseBtn.classList.add('flex');
-            } else {
-                this.pauseBtn.classList.add('hidden');
-                this.pauseBtn.classList.remove('flex');
-            }
-        }
-
-        // Exit button: show on mobile ONLY when game is active AND paused
-        if (this.exitBtn) {
-            if (isMobile && this.isActive && isPaused) {
-                this.exitBtn.classList.remove('hidden');
-                this.exitBtn.classList.add('flex');
-            } else {
-                this.exitBtn.classList.add('hidden');
-                this.exitBtn.classList.remove('flex');
-            }
+        if (this.isActive && isPaused) {
+            this.pauseOverlay.classList.remove('hidden');
+            this.pauseOverlay.classList.add('flex');
+        } else {
+            this.pauseOverlay.classList.add('hidden');
+            this.pauseOverlay.classList.remove('flex');
         }
     }
 
@@ -72,8 +53,7 @@ export class PhonkMobileAdapter {
         return (isTouch && isNarrow) || isMobileUA;
     }
 
-    async enterGame(previousTab = 'code') {
-        this.previousTab = previousTab || 'code';
+    async enterGame() {
         this.isActive = true;
 
         if (this.isMobileDevice()) {
@@ -81,23 +61,13 @@ export class PhonkMobileAdapter {
                 this.gamePanel.classList.add('phonk-mobile-fullscreen');
             }
 
-            // Push history state so mobile hardware/gesture back button exits game immediately
+            // Push history state so mobile hardware/gesture back button exits game immediately to Trade Track
             try {
                 if (!window.history.state || !window.history.state.inPhonkGame) {
-                    window.history.pushState({ inPhonkGame: true, fromTab: this.previousTab }, '', '#game');
+                    window.history.pushState({ inPhonkGame: true }, '', '#game');
                 }
             } catch (e) {
                 console.warn('[PhonkMobileAdapter] Failed to push history state:', e);
-            }
-
-            // Request Fullscreen on mobile device
-            try {
-                const root = document.documentElement;
-                if (root.requestFullscreen && !document.fullscreenElement) {
-                    await root.requestFullscreen();
-                }
-            } catch (err) {
-                // Browser might restrict fullscreen without direct user gesture
             }
 
             // Lock screen orientation to landscape if supported
@@ -108,19 +78,9 @@ export class PhonkMobileAdapter {
             } catch (err) {
                 // Ignore unsupported orientation lock
             }
-        } else {
-            // Desktop mode: strictly hide mobile controls
-            if (this.exitBtn) {
-                this.exitBtn.classList.add('hidden');
-                this.exitBtn.classList.remove('flex');
-            }
-            if (this.pauseBtn) {
-                this.pauseBtn.classList.add('hidden');
-                this.pauseBtn.classList.remove('flex');
-            }
         }
 
-        this.updateControlsVisibility(this.gameEngine?.isPaused || false);
+        this.updatePauseOverlayVisibility(this.gameEngine?.isPaused || false);
     }
 
     async exitGame(shouldPopHistory = true) {
@@ -128,7 +88,7 @@ export class PhonkMobileAdapter {
             return;
         }
         this.isActive = false;
-        this.updateControlsVisibility(false);
+        this.updatePauseOverlayVisibility(false);
 
         // Immediately remove mobile fullscreen styling
         if (this.gamePanel) {
@@ -167,25 +127,14 @@ export class PhonkMobileAdapter {
             }
         }
 
-        // Switch back to previous tab IMMEDIATELY
-        const targetTab = this.previousTab || 'code';
+        // Switch back to Trade Track ('code' tab) IMMEDIATELY
         if (window.app && window.app.ui && typeof window.app.ui.switchTab === 'function') {
-            window.app.ui.switchTab(targetTab);
+            window.app.ui.switchTab('code');
         }
 
         // If history back should be popped (e.g. from exit button click)
         if (shouldPopHistory && window.history.state && window.history.state.inPhonkGame) {
             window.history.back();
-        }
-    }
-
-    handlePauseClick(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        if (this.gameEngine && typeof this.gameEngine.togglePause === 'function') {
-            this.gameEngine.togglePause();
         }
     }
 
@@ -199,14 +148,12 @@ export class PhonkMobileAdapter {
 
     handlePopState(e) {
         if (this.isActive) {
-            // Mobile back button was pressed -> exit game immediately!
+            // Mobile back button was pressed -> exit game to Trade Track immediately!
             this.exitGame(false);
         }
     }
 
     handleFullscreenChange() {
-        // On Android, user swipe/back gesture exits fullscreen first.
-        // If user exited fullscreen while in mobile game mode, immediately exit game!
         if (this.isActive && !document.fullscreenElement && !document.webkitFullscreenElement && this.isMobileDevice()) {
             this.exitGame(false);
         }
@@ -215,9 +162,6 @@ export class PhonkMobileAdapter {
     destroy() {
         if (this.exitBtn) {
             this.exitBtn.removeEventListener('click', this.handleExitClick);
-        }
-        if (this.pauseBtn) {
-            this.pauseBtn.removeEventListener('click', this.handlePauseClick);
         }
         window.removeEventListener('popstate', this.handlePopState);
         document.removeEventListener('fullscreenchange', this.handleFullscreenChange);

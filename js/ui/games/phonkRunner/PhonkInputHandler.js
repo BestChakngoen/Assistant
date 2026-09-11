@@ -55,22 +55,51 @@ export class PhonkInputHandler {
         }
     }
 
+    getTouchInfo(clientX, clientY) {
+        if (!this.canvas) return { isTopRight: false, isLeftHalf: true };
+        const rect = this.canvas.getBoundingClientRect();
+        const internalW = this.canvas.width || 960;
+        const internalH = this.canvas.height || 540;
+
+        // Account for object-fit: contain letterbox / pillarbox offsets on mobile
+        const scale = Math.min(rect.width / internalW, rect.height / internalH) || 1;
+        const drawW = internalW * scale;
+        const drawH = internalH * scale;
+        const offsetX = (rect.width - drawW) / 2;
+        const offsetY = (rect.height - drawH) / 2;
+
+        const canvasX = (clientX - rect.left - offsetX) / scale;
+        const canvasY = (clientY - rect.top - offsetY) / scale;
+        const clickX = clientX - rect.left;
+        const clickY = clientY - rect.top;
+
+        // Accurate top-right pause check: works on drawn button AND physical screen corner
+        const isTopRight = (canvasX >= internalW - 130 && canvasY <= 90) ||
+                           (clickX >= rect.width - 110 && clickY <= 90);
+
+        const isLeftHalf = clickX < rect.width / 2;
+
+        return { canvasX, canvasY, clickX, clickY, isTopRight, isLeftHalf };
+    }
+
     handleCanvasClick(e) {
         if (!this.isGamePanelVisible()) return;
         if (Date.now() - this.lastTouch < 350) return;
         if (this.canvas) {
-            const rect = this.canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-            
-            // Top-right pause button check (enlarged hit box for comfortable mobile tap)
-            if (clickX >= rect.width - 95 && clickY <= 75) {
+            // When paused: tapping anywhere on the screen unpauses/resumes!
+            if (this.callbacks.isPaused && this.callbacks.isPaused()) {
+                if (this.callbacks.onTogglePause) this.callbacks.onTogglePause();
+                return;
+            }
+
+            const info = this.getTouchInfo(e.clientX, e.clientY);
+            if (info.isTopRight) {
                 if (this.callbacks.onTogglePause) this.callbacks.onTogglePause();
                 return;
             }
 
             // 2-Handed Mobile Landscape Controls: Left half = JUMP, Right half = SLIDE
-            if (clickX < rect.width / 2) {
+            if (info.isLeftHalf) {
                 if (this.callbacks.onJump) this.callbacks.onJump();
             } else {
                 if (this.callbacks.onSlide) this.callbacks.onSlide();
@@ -86,19 +115,23 @@ export class PhonkInputHandler {
         e.preventDefault();
         this.lastTouch = Date.now();
         if (this.canvas && e.touches && e.touches.length > 0) {
-            const rect = this.canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const touchX = touch.clientX - rect.left;
-            const touchY = touch.clientY - rect.top;
+            // When paused: tapping anywhere on the screen unpauses/resumes!
+            if (this.callbacks.isPaused && this.callbacks.isPaused()) {
+                if (this.callbacks.onTogglePause) this.callbacks.onTogglePause();
+                return;
+            }
 
-            // Top-right pause button check (enlarged hit box for comfortable mobile tap)
-            if (touchX >= rect.width - 95 && touchY <= 75) {
+            const touch = e.touches[0];
+            const info = this.getTouchInfo(touch.clientX, touch.clientY);
+
+            // Top-right pause button check
+            if (info.isTopRight) {
                 if (this.callbacks.onTogglePause) this.callbacks.onTogglePause();
                 return;
             }
 
             // 2-Handed Mobile Landscape Controls: Left half = JUMP, Right half = SLIDE
-            if (touchX < rect.width / 2) {
+            if (info.isLeftHalf) {
                 if (this.callbacks.onJump) this.callbacks.onJump();
             } else {
                 if (this.callbacks.onSlide) this.callbacks.onSlide();

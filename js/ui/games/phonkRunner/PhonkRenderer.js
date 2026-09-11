@@ -156,21 +156,21 @@ export class PhonkRenderer {
     drawPauseScreen() {
         const ctx = this.ctx;
         ctx.save();
-        ctx.globalAlpha = 0.72;
+        ctx.globalAlpha = 0.78;
         ctx.fillStyle = '#04000a';
         ctx.fillRect(0, 0, this.W, this.H);
         ctx.globalAlpha = 1;
         ctx.textAlign = 'center';
-        ctx.font = 'bold 20px monospace';
+        ctx.font = 'bold 22px monospace';
         ctx.shadowColor = PHONK_CONFIG.COLORS.CYAN_NEON;
         ctx.shadowBlur = 20;
         ctx.fillStyle = PHONK_CONFIG.COLORS.CYAN_NEON;
-        ctx.fillText('// GAME PAUSED //', this.W / 2, this.H / 2 - 10);
-        ctx.font = '11px monospace';
+        ctx.fillText('// GAME PAUSED //', this.W / 2, this.H / 2 - 25);
+        ctx.font = '12px monospace';
         ctx.fillStyle = '#e9d5ff';
         ctx.shadowColor = PHONK_CONFIG.COLORS.PURPLE_NEON;
         ctx.shadowBlur = 10;
-        ctx.fillText('[ PRESS P / CLICK PAUSE BUTTON TO RESUME ]', this.W / 2, this.H / 2 + 18);
+        ctx.fillText('[ TAP SCREEN TO RESUME ]', this.W / 2, this.H / 2 + 10);
         ctx.textAlign = 'left';
         ctx.restore();
     }

@@ -21,30 +21,12 @@
     overflow: hidden !important;
 }
 
-/* Controls strictly hidden on desktop */
-@media screen and (min-width: 1025px) {
-    #btn-mobile-pause,
-    #btn-exit-game {
-        display: none !important;
-    }
-}
-
-/* Control buttons positioning in mobile fullscreen */
-.phonk-mobile-fullscreen #btn-mobile-pause,
-.phonk-mobile-fullscreen #btn-exit-game {
-    position: absolute !important;
-    top: max(12px, env(safe-area-inset-top, 12px)) !important;
-    right: max(14px, env(safe-area-inset-right, 14px)) !important;
-    z-index: 100001 !important;
-}
-
-.phonk-mobile-fullscreen #btn-mobile-pause.hidden,
-.phonk-mobile-fullscreen #btn-exit-game.hidden {
+/* Exit button / Pause overlay visibility */
+#phonk-pause-overlay.hidden {
     display: none !important;
 }
 
-.phonk-mobile-fullscreen #btn-mobile-pause.flex,
-.phonk-mobile-fullscreen #btn-exit-game.flex {
+#phonk-pause-overlay.flex {
     display: flex !important;
 }
 

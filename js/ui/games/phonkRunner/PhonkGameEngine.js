@@ -59,7 +59,8 @@ export class PhonkGameEngine {
             onJump: () => this.pressJump(),
             onSlide: () => this.pressSlide(),
             onReleaseSlide: () => this.releaseSlide(),
-            onTogglePause: () => this.togglePause()
+            onTogglePause: () => this.togglePause(),
+            isPaused: () => this.isPaused
         });
 
         this.loop = this.loop.bind(this);
@@ -140,7 +141,7 @@ export class PhonkGameEngine {
 
     pressSlide() {
         if (this.state === 'idle') { this.startGame(); return; }
-        if (this.state === 'paused') return;
+        if (this.state === 'paused') { this.togglePause(); return; }
         if (this.state === 'dead') { this.resetGame(); return; }
 
         const p = this.entities.player;
