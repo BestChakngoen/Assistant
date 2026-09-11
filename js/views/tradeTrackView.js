@@ -53,17 +53,22 @@ export const tradeTrackViewHtml = `
             <!-- Input Area -->
             <div id="trade-left-col" class="lg:col-span-2 flex flex-col gap-6">
                 <!-- Trading Discipline & Risk Guardian Widget -->
-                <div id="discipline-guardian-widget" class="glass-panel p-5 rounded-2xl border-0 bg-slate-900/50 backdrop-blur-md relative overflow-hidden flex flex-col gap-4">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                            <h3 class="font-mono font-bold text-sm text-cyan-400 uppercase tracking-wider">
-                                Discipline Guardian
-                            </h3>
-                            <span id="guardian-daily-status-badge" class="text-xs font-mono font-bold text-cyan-400 px-2.5 py-0.5 rounded-full bg-cyan-500/10">🟢 Safe (Active)</span>
+                <div id="discipline-guardian-widget" class="glass-panel p-4 sm:p-5 rounded-2xl border-0 bg-slate-900/50 backdrop-blur-md relative overflow-hidden flex flex-col gap-4">
+                    <div class="flex flex-wrap sm:flex-nowrap justify-between items-center gap-2.5">
+                        <div class="flex flex-wrap items-center gap-2 min-w-0">
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="size-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                                <h3 class="font-mono font-bold text-xs sm:text-sm text-cyan-400 uppercase tracking-wider">
+                                    Discipline Guardian
+                                </h3>
+                            </div>
+                            <span id="guardian-daily-status-badge" class="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-bold text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 shrink-0">
+                                <i data-lucide="shield-check" class="size-3.5 shrink-0"></i>
+                                <span>Safe (Active)</span>
+                            </span>
                         </div>
-                        <button id="btn-discipline-settings" class="px-2.5 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-1.5 transition cursor-pointer" title="Adjust Limits">
-                            <i data-lucide="sliders" class="w-3.5 h-3.5 text-cyan-400"></i>
+                        <button id="btn-discipline-settings" class="px-2.5 py-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-1.5 transition cursor-pointer shrink-0 ml-auto sm:ml-0" title="Adjust Limits">
+                            <i data-lucide="sliders" class="size-3.5 text-cyan-400"></i>
                             <span>LIMITS</span>
                         </button>
                     </div>

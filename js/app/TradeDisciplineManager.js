@@ -249,17 +249,20 @@ export class TradeDisciplineManager {
 
         if (dailyStatusBadgeEl) {
             if (daily.isLossBreached) {
-                dailyStatusBadgeEl.className = 'text-xs font-mono font-bold px-2.5 py-0.5 rounded-full text-rose-400 bg-rose-500/15 animate-pulse';
-                dailyStatusBadgeEl.innerText = '🔴 Loss Breached';
+                dailyStatusBadgeEl.className = 'inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-bold px-2.5 py-1 rounded-full text-rose-400 bg-rose-500/15 animate-pulse shrink-0';
+                dailyStatusBadgeEl.innerHTML = '<i data-lucide="shield-alert" class="size-3.5 shrink-0"></i><span>Loss Breached</span>';
             } else if (daily.isProfitReached) {
-                dailyStatusBadgeEl.className = 'text-xs font-mono font-bold px-2.5 py-0.5 rounded-full text-emerald-400 bg-emerald-500/15';
-                dailyStatusBadgeEl.innerText = '🎯 Target Reached';
+                dailyStatusBadgeEl.className = 'inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-bold px-2.5 py-1 rounded-full text-emerald-400 bg-emerald-500/15 shrink-0';
+                dailyStatusBadgeEl.innerHTML = '<i data-lucide="target" class="size-3.5 shrink-0"></i><span>Target Reached</span>';
             } else if (daily.pnlPercent < 0 && Math.abs(daily.pnlPercent) >= this.limits.maxDailyLossPct * 0.7) {
-                dailyStatusBadgeEl.className = 'text-xs font-mono font-bold px-2.5 py-0.5 rounded-full text-amber-400 bg-amber-500/15';
-                dailyStatusBadgeEl.innerText = '⚠️ Near Loss Limit';
+                dailyStatusBadgeEl.className = 'inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-bold px-2.5 py-1 rounded-full text-amber-400 bg-amber-500/15 shrink-0';
+                dailyStatusBadgeEl.innerHTML = '<i data-lucide="alert-triangle" class="size-3.5 shrink-0"></i><span>Near Loss Limit</span>';
             } else {
-                dailyStatusBadgeEl.className = 'text-xs font-mono font-bold px-2.5 py-0.5 rounded-full text-cyan-400 bg-cyan-500/10';
-                dailyStatusBadgeEl.innerText = '🟢 Safe (Active)';
+                dailyStatusBadgeEl.className = 'inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-bold px-2.5 py-1 rounded-full text-emerald-400 bg-emerald-500/10 shrink-0';
+                dailyStatusBadgeEl.innerHTML = '<i data-lucide="shield-check" class="size-3.5 shrink-0"></i><span>Safe (Active)</span>';
+            }
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
             }
         }
     }

@@ -1,4 +1,5 @@
 import { ShareUI } from '../ui/share/ShareUI.js';
+import { TableCellParser } from './table/TableCellParser.js';
 
 /**
  * TableGridTool - Freeform Dynamic Data Grid Tool
@@ -124,11 +125,13 @@ export class TableGridTool {
             this.dom.btnClear.addEventListener('click', () => this.clearTable());
         }
 
-        // Table Event Delegation (Input, Keydown, Click, Paste)
+        // Table Event Delegation (Input, Keydown, Click, DblClick, FocusOut, Paste)
         if (this.dom.tableEl) {
             this.dom.tableEl.addEventListener('input', (e) => this.handleTableInput(e));
             this.dom.tableEl.addEventListener('keydown', (e) => this.handleTableKeydown(e));
             this.dom.tableEl.addEventListener('click', (e) => this.handleTableClick(e));
+            this.dom.tableEl.addEventListener('dblclick', (e) => this.handleTableDblClick(e));
+            this.dom.tableEl.addEventListener('focusout', (e) => this.handleTableFocusOut(e));
             this.dom.tableEl.addEventListener('paste', (e) => this.handleTablePaste(e));
         }
     }
@@ -191,7 +194,7 @@ export class TableGridTool {
             row.forEach((cell, colIdx) => {
                 bodyHtml += `
                     <td class="py-1.5 px-2 align-top" data-row="${rowIdx}" data-col="${colIdx}">
-                        <div contenteditable="plaintext-only" spellcheck="false" role="textbox" class="table-cell-editor outline-none min-w-[90px] whitespace-pre-wrap break-words px-3 py-2 text-xs font-mono text-slate-100 rounded-xl transition-all focus:bg-slate-900/90 focus:ring-1 focus:ring-emerald-500/40" data-row="${rowIdx}" data-col="${colIdx}">${this.escapeHtml(cell)}</div>
+                        ${this.renderCellContent(cell, rowIdx, colIdx)}
                     </td>
                 `;
             });
@@ -212,6 +215,28 @@ export class TableGridTool {
 
         if (window.lucide && typeof window.lucide.createIcons === 'function') {
             window.lucide.createIcons();
+        }
+    }
+
+    renderCellContent(cell, rowIdx, colIdx) {
+        return TableCellParser.renderCellContent(cell, rowIdx, colIdx);
+    }
+
+    switchToEditor(td, rowIdx, colIdx) {
+        if (!td) return;
+        const currentVal = this.data.rows[rowIdx] ? (this.data.rows[rowIdx][colIdx] || '') : '';
+        td.innerHTML = `
+            <div contenteditable="plaintext-only" spellcheck="false" role="textbox" class="table-cell-editor outline-none min-w-[90px] whitespace-pre-wrap break-words px-3 py-2 text-xs font-mono text-slate-100 rounded-xl transition-all focus:bg-slate-900/90 focus:ring-1 focus:ring-emerald-500/40" data-row="${rowIdx}" data-col="${colIdx}">${this.escapeHtml(currentVal)}</div>
+        `;
+        const editor = td.querySelector('.table-cell-editor');
+        if (editor) {
+            editor.focus();
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.selectNodeContents(editor);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
         }
     }
 
@@ -238,6 +263,31 @@ export class TableGridTool {
         }
     }
 
+    handleTableFocusOut(e) {
+        const target = e.target;
+        if (!target || !target.classList.contains('table-cell-editor')) return;
+
+        const row = parseInt(target.getAttribute('data-row'), 10);
+        const col = parseInt(target.getAttribute('data-col'), 10);
+        if (isNaN(row) || isNaN(col)) return;
+
+        const val = target.innerText;
+        if (this.data.rows[row]) {
+            this.data.rows[row][col] = val;
+            this.handleDataChange();
+        }
+
+        if (TableCellParser.hasRichMedia(val)) {
+            const td = target.closest('td');
+            if (td) {
+                td.innerHTML = this.renderCellContent(val, row, col);
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            }
+        }
+    }
+
     handleTableKeydown(e) {
         const target = e.target;
         if (!target || !target.classList.contains('table-cell-editor')) return;
@@ -247,8 +297,26 @@ export class TableGridTool {
         if (isNaN(row) || isNaN(col)) return;
 
         // Enter key: move to same column in next row (or add row if at the end)
+        // Shift+Enter inserts a new line within the cell for multi-line content
         if (e.key === 'Enter' && !e.shiftKey && !e.altKey && !e.ctrlKey) {
             e.preventDefault();
+
+            // Commit and convert to media if rich
+            const currentVal = target.innerText;
+            if (this.data.rows[row]) {
+                this.data.rows[row][col] = currentVal;
+                this.handleDataChange();
+            }
+            if (TableCellParser.hasRichMedia(currentVal)) {
+                const td = target.closest('td');
+                if (td) {
+                    td.innerHTML = this.renderCellContent(currentVal, row, col);
+                    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                        window.lucide.createIcons();
+                    }
+                }
+            }
+
             if (row + 1 < this.data.rows.length) {
                 this.focusCell(row + 1, col);
             } else {
@@ -261,6 +329,23 @@ export class TableGridTool {
         // Tab key: navigate cells
         if (e.key === 'Tab') {
             e.preventDefault();
+
+            // Commit and convert to media if rich
+            const currentVal = target.innerText;
+            if (this.data.rows[row]) {
+                this.data.rows[row][col] = currentVal;
+                this.handleDataChange();
+            }
+            if (TableCellParser.hasRichMedia(currentVal)) {
+                const td = target.closest('td');
+                if (td) {
+                    td.innerHTML = this.renderCellContent(currentVal, row, col);
+                    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                        window.lucide.createIcons();
+                    }
+                }
+            }
+
             if (e.shiftKey) {
                 // Prev cell
                 if (col > 0) {
@@ -283,6 +368,32 @@ export class TableGridTool {
     }
 
     handleTableClick(e) {
+        // 1. Preview Image Click (Open Modal)
+        const previewBtn = e.target.closest('.btn-cell-preview-image');
+        if (previewBtn) {
+            e.stopPropagation();
+            const url = previewBtn.getAttribute('data-url');
+            if (url) {
+                ShareUI.playSound('mouse-click');
+                ShareUI.showImageModal(url, 'Table Image');
+            }
+            return;
+        }
+
+        // 2. Edit Cell Button Click (Flow or Single Media)
+        const editBtn = e.target.closest('.btn-cell-edit-flow, .btn-cell-edit-url');
+        if (editBtn) {
+            e.stopPropagation();
+            const row = parseInt(editBtn.getAttribute('data-row'), 10);
+            const col = parseInt(editBtn.getAttribute('data-col'), 10);
+            const td = editBtn.closest('td');
+            if (td && !isNaN(row) && !isNaN(col)) {
+                this.switchToEditor(td, row, col);
+            }
+            return;
+        }
+
+        // 3. Delete Column
         const delColBtn = e.target.closest('.btn-del-col');
         if (delColBtn) {
             const col = parseInt(delColBtn.getAttribute('data-col'), 10);
@@ -292,6 +403,7 @@ export class TableGridTool {
             return;
         }
 
+        // 4. Delete Row
         const delRowBtn = e.target.closest('.btn-del-row');
         if (delRowBtn) {
             const row = parseInt(delRowBtn.getAttribute('data-row'), 10);
@@ -301,23 +413,124 @@ export class TableGridTool {
         }
     }
 
+    handleTableDblClick(e) {
+        const mediaCard = e.target.closest('.table-cell-flow, .table-cell-media');
+        if (mediaCard) {
+            const row = parseInt(mediaCard.getAttribute('data-row'), 10);
+            const col = parseInt(mediaCard.getAttribute('data-col'), 10);
+            const td = mediaCard.closest('td');
+            if (td && !isNaN(row) && !isNaN(col)) {
+                this.switchToEditor(td, row, col);
+            }
+        }
+    }
+
     handleTablePaste(e) {
+        // 1. Check for clipboard image file paste (e.g. screenshots)
+        const items = e.clipboardData?.items;
+        if (items) {
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type && items[i].type.startsWith('image/')) {
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        e.preventDefault();
+                        this.handlePastedImageFile(file, e.target);
+                        return;
+                    }
+                }
+            }
+        }
+
         const text = (e.clipboardData || window.clipboardData)?.getData('text');
         if (!text) return;
 
-        // If it's a multi-line or tab-separated string, parse into cells
+        // 2. If it's a multi-line or tab-separated string, parse into cells
         if (text.includes('\t') || text.includes('\n')) {
             e.preventDefault();
             const target = e.target;
-            const startRow = target && target.classList.contains('table-cell-editor')
-                ? parseInt(target.getAttribute('data-row'), 10)
-                : 0;
-            const startCol = target && target.classList.contains('table-cell-editor')
-                ? parseInt(target.getAttribute('data-col'), 10)
-                : 0;
+            const td = target?.closest('td');
+            const startRow = td ? parseInt(td.getAttribute('data-row'), 10) : 0;
+            const startCol = td ? parseInt(td.getAttribute('data-col'), 10) : 0;
 
             this.insertParsedData(text, isNaN(startRow) ? 0 : startRow, isNaN(startCol) ? 0 : startCol);
+            return;
         }
+
+        // 3. Single value pasted onto a media/flow cell (which isn't contenteditable)
+        const td = e.target?.closest('td');
+        if (td && !e.target.classList.contains('table-cell-editor')) {
+            const row = parseInt(td.getAttribute('data-row'), 10);
+            const col = parseInt(td.getAttribute('data-col'), 10);
+            if (!isNaN(row) && !isNaN(col) && this.data.rows[row]) {
+                e.preventDefault();
+                const currentVal = this.data.rows[row][col] || '';
+                const newVal = currentVal.trim() ? `${currentVal.trim()}\n${text}` : text;
+                this.data.rows[row][col] = newVal;
+                this.handleDataChange();
+                td.innerHTML = this.renderCellContent(newVal, row, col);
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            }
+        }
+    }
+
+    async handlePastedImageFile(file, target) {
+        try {
+            const dataUrl = await this.compressImageFile(file, 600, 0.75);
+            const td = target?.closest('td');
+            if (!td) return;
+            const row = parseInt(td.getAttribute('data-row'), 10);
+            const col = parseInt(td.getAttribute('data-col'), 10);
+            if (isNaN(row) || isNaN(col)) return;
+
+            if (this.data.rows[row]) {
+                const currentVal = this.data.rows[row][col] || '';
+                const newVal = currentVal.trim() ? `${currentVal.trim()}\n${dataUrl}` : dataUrl;
+                this.data.rows[row][col] = newVal;
+                this.handleDataChange();
+                td.innerHTML = this.renderCellContent(newVal, row, col);
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+                ShareUI.showToast('Image Added', 'Pasted image added to cell', 'success');
+            }
+        } catch (e) {
+            console.error('Failed to process pasted image:', e);
+            ShareUI.showToast('Image Error', 'Could not process clipboard image', 'error');
+        }
+    }
+
+    compressImageFile(file, maxDim = 600, quality = 0.75) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (readerEvent) => {
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) {
+                            h = Math.round((h * maxDim) / w);
+                            w = maxDim;
+                        } else {
+                            w = Math.round((w * maxDim) / h);
+                            h = maxDim;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = reject;
+                img.src = readerEvent.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
     insertParsedData(text, startRow = 0, startCol = 0) {
@@ -360,18 +573,22 @@ export class TableGridTool {
     }
 
     focusCell(row, col) {
-        const cell = this.dom.tableBody?.querySelector(`.table-cell-editor[data-row="${row}"][data-col="${col}"]`);
-        if (cell) {
-            cell.focus();
-            cell.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-            // Move cursor to end of text
-            const range = document.createRange();
-            const sel = window.getSelection();
-            range.selectNodeContents(cell);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
+        const td = this.dom.tableBody?.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+        if (!td) return;
+        let cell = td.querySelector('.table-cell-editor');
+        if (!cell) {
+            this.switchToEditor(td, row, col);
+            return;
         }
+        cell.focus();
+        cell.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        // Move cursor to end of text
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(cell);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
     }
 
     addRow() {
@@ -508,7 +725,7 @@ export class TableGridTool {
             const dividers = headers.map(() => '---');
 
             const formatMdRow = (cells) => {
-                return '| ' + cells.map(c => (c || '').replace(/\|/g, '\\|').replace(/\n/g, ' ')).join(' | ') + ' |';
+                return '| ' + cells.map(c => (c || '').replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>')).join(' | ') + ' |';
             };
 
             const lines = [
