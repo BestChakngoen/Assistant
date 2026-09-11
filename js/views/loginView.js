@@ -5,21 +5,21 @@ export const loginViewHtml = `
     <div id="login-screen"
         class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1121] bg-opacity-95 backdrop-blur-sm">
         <div
-            class="glass-panel p-8 rounded-2xl max-w-md w-full text-center border border-cyan-500/30 relative overflow-hidden">
+            class="glass-panel p-8 rounded-2xl max-w-md w-full text-center relative overflow-hidden">
             <div
                 class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-b from-transparent via-cyan-500 to-transparent h-[20%] w-full animate-scan">
             </div>
 
             <h1
-                class="text-4xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 neon-text mb-2">
+                class="text-4xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-2">
                 SYSTEM ACCESS
             </h1>
             <p class="text-slate-400 text-sm tracking-[0.2em] mb-8 uppercase">Identity Verification Required</p>
 
             <div class="space-y-4">
                 <button id="btn-login"
-                    class="w-full btn-press group relative flex items-center justify-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-cyan-400 text-white py-4 rounded-xl transition-all shadow-lg hover:shadow-cyan-500/20">
-                    <svg class="w-6 h-6" viewBox="0 0 24 24">
+                    class="w-full btn-press group relative flex items-center justify-center gap-3 bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-xl transition-all shadow-lg hover:shadow-cyan-500/10">
+                    <svg class="size-6" viewBox="0 0 24 24">
                         <path fill="#4285F4"
                             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                         <path fill="#34A853"
@@ -34,8 +34,8 @@ export const loginViewHtml = `
                 
                 <!-- GUEST LOGIN BUTTON -->
                 <button id="btn-login-guest"
-                    class="w-full btn-press group relative flex items-center justify-center gap-3 bg-slate-800/50 hover:bg-slate-700 border border-slate-600 hover:border-slate-400 text-slate-400 py-3 rounded-xl transition-all shadow-lg hover:shadow-slate-500/20">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="w-full btn-press group relative flex items-center justify-center gap-3 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-slate-200 py-3.5 rounded-xl transition-all shadow-md">
+                    <svg class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                     <span class="font-mono font-bold tracking-wider group-hover:text-slate-200">CONTINUE AS GUEST</span>

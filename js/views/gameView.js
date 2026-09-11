@@ -14,11 +14,11 @@ export const gameViewHtml = `
                 <div class="flex items-center gap-4">
                     <div class="text-right">
                         <p class="text-[9px] text-slate-400 font-mono font-bold uppercase tracking-widest">HIGH SCORE</p>
-                        <p id="game-hi-score" class="text-lg font-mono font-bold text-yellow-300" style="text-shadow: 0 0 10px rgba(253, 224, 71, 0.6);">000000</p>
+                        <p id="game-hi-score" class="text-lg font-mono font-bold text-yellow-300 tabular-nums" style="text-shadow: 0 0 10px rgba(253, 224, 71, 0.6);">000000</p>
                     </div>
                     <div class="text-right hidden">
                         <p class="text-[9px] text-slate-400 font-mono font-bold uppercase tracking-widest">SCORE</p>
-                        <p id="game-score" class="text-lg font-mono font-bold text-cyan-300" style="text-shadow: 0 0 10px rgba(6, 182, 212, 0.65);">000000</p>
+                        <p id="game-score" class="text-lg font-mono font-bold text-cyan-300 tabular-nums" style="text-shadow: 0 0 10px rgba(6, 182, 212, 0.65);">000000</p>
                     </div>
                 </div>
             </div>

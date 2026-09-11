@@ -5,7 +5,8 @@
 
 ## 🎯 1. มาตรฐานการทำงานและการพัฒนา (Development Standards)
 - **Best Practices & Clean Code:** เขียนโค้ดที่สะอาด มีระเบียบ รองรับการขยายระบบ (Scalability) และยึดมาตรฐานสากล (Production-Ready)
-- **OOP & SOLID Principles:** เขียนโค้ดตามหลักการ OOP และ SOLID Principles อย่างเคร่งครัด หลีกเลี่ยง God Class / God Object ที่รวม Responsibilities ไว้มากเกินไป และแยกตรรกะการคำนวณ (Business/Math Logic) ออกจากส่วนแสดงผล/ควบคุมเหตุการณ์ (View/Event Controllers)
+- **OOP & SOLID Principles:** เขียนโค้ดตามหลักการ OOP และ SOLID Principles อย่างเคร่งครัด และแยกตรรกะการคำนวณ (Business/Math Logic) ออกจากส่วนแสดงผล/ควบคุมเหตุการณ์ (View/Event Controllers)
+- **Strict No God Object:** ห้ามสร้าง God Object หรือ God Class ที่รวมความรับผิดชอบ (Responsibilities) หรือตรรกะหลายอย่างไว้ในคลาส/ออบเจกต์เดียวโดยเด็ดขาด ต้องยึดหลัก Single Responsibility Principle (SRP) อย่างเคร่งครัด โดยแยกส่วนการคำนวณ (Business/Math Logic), การจัดการสถานะ (State Management), และส่วนแสดงผล/ควบคุมเหตุการณ์ (View/Event Controllers) ออกเป็นคลาสหรือโมดูลย่อยที่ชัดเจนและมีหน้าที่เฉพาะเจาะจง
 - **Security First:** ป้องกันช่องโหว่พื้นฐาน เช่น SQL Injection, XSS, CSRF และปฏิบัติตามมาตรฐาน OWASP
 - **Performance:** Optimization ทั้งความเร็ว (Loading Speed) และการจัดการหน่วยความจำ (Memory Management)
 - **Responsive Design:** รองรับการแสดงผลทุกหน้าจอ (Mobile, Tablet, Desktop) แบบ Mobile-First

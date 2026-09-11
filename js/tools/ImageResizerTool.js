@@ -1,7 +1,10 @@
 import { ShareUI } from '../ui/share/ShareUI.js';
+import { ImageResizerMath } from './resizer/ImageResizerMath.js';
+import { ImageResizerEngine } from './resizer/ImageResizerEngine.js';
 
 /**
- * ImageResizerTool - Handles image loading, aspect ratio math, canvas scaling, format conversion, and export.
+ * ImageResizerTool - Controller managing UI interactions, event binding,
+ * and coordinating canvas scaling and export operations.
  */
 export class ImageResizerTool {
     constructor() {
@@ -203,53 +206,36 @@ export class ImageResizerTool {
         }
     }
 
-    loadFile(file) {
-        if (!file || !file.type.startsWith('image/')) {
-            ShareUI.showToast('Invalid File', 'Please upload a valid image file (PNG, JPG, WEBP)', 'error');
-            return;
+    async loadFile(file) {
+        try {
+            const data = await ImageResizerEngine.loadImageFromFile(file);
+
+            this.state.originalImage = data.image;
+            this.state.originalWidth = data.originalWidth;
+            this.state.originalHeight = data.originalHeight;
+            this.state.aspectRatio = data.aspectRatio;
+            this.state.originalFileSize = data.originalFileSize;
+            this.state.originalFileName = data.originalFileName;
+            this.state.originalMimeType = data.originalMimeType;
+
+            // Defaults
+            this.state.scaleFactor = 1.0;
+            this.state.currentWidth = data.originalWidth;
+            this.state.currentHeight = data.originalHeight;
+            this.state.format = data.defaultFormat;
+
+            if (this.dom.formatSelect) {
+                this.dom.formatSelect.value = this.state.format;
+            }
+
+            this.updateUiWithLoadedImage(file);
+            this.updateQualityVisibility();
+            this.renderPreview();
+            ShareUI.showToast('Image Loaded', `${data.originalWidth} x ${data.originalHeight} px loaded`, 'success');
+        } catch (err) {
+            console.error('Failed to load image file:', err);
+            ShareUI.showToast('Error', 'Failed to load image file', 'error');
         }
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                this.state.originalImage = img;
-                this.state.originalWidth = img.naturalWidth || img.width;
-                this.state.originalHeight = img.naturalHeight || img.height;
-                this.state.aspectRatio = this.state.originalWidth / this.state.originalHeight;
-                this.state.originalFileSize = file.size;
-                this.state.originalFileName = file.name.replace(/\.[^/.]+$/, '');
-                this.state.originalMimeType = file.type;
-
-                // Defaults
-                this.state.scaleFactor = 1.0;
-                this.state.currentWidth = this.state.originalWidth;
-                this.state.currentHeight = this.state.originalHeight;
-
-                // Auto match format if supported
-                if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
-                    this.state.format = 'image/jpeg';
-                } else if (file.type === 'image/webp') {
-                    this.state.format = 'image/webp';
-                } else {
-                    this.state.format = 'image/png';
-                }
-
-                if (this.dom.formatSelect) {
-                    this.dom.formatSelect.value = this.state.format;
-                }
-
-                this.updateUiWithLoadedImage(file);
-                this.updateQualityVisibility();
-                this.renderPreview();
-                ShareUI.showToast('Image Loaded', `${img.naturalWidth} x ${img.naturalHeight} px loaded`, 'success');
-            };
-            img.onerror = () => {
-                ShareUI.showToast('Error', 'Failed to load image file', 'error');
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
     }
 
     updateUiWithLoadedImage(file) {
@@ -262,7 +248,7 @@ export class ImageResizerTool {
 
         // Populate info
         if (this.dom.fileNameEl) this.dom.fileNameEl.textContent = file.name;
-        if (this.dom.fileSizeEl) this.dom.fileSizeEl.textContent = this.formatBytes(file.size);
+        if (this.dom.fileSizeEl) this.dom.fileSizeEl.textContent = ImageResizerMath.formatBytes(file.size);
         if (this.dom.fileDimsEl) this.dom.fileDimsEl.textContent = `${this.state.originalWidth} x ${this.state.originalHeight} px`;
 
         // Populate inputs
@@ -284,14 +270,14 @@ export class ImageResizerTool {
 
         this.state.currentWidth = val;
         if (this.state.maintainAspectRatio && this.state.aspectRatio > 0) {
-            this.state.currentHeight = Math.max(1, Math.round(val / this.state.aspectRatio));
+            this.state.currentHeight = ImageResizerMath.calculateHeightFromWidth(val, this.state.aspectRatio);
             if (this.dom.inputHeight) {
                 this.dom.inputHeight.value = this.state.currentHeight;
             }
         }
 
         if (this.state.originalWidth > 0) {
-            this.state.scaleFactor = Math.round((this.state.currentWidth / this.state.originalWidth) * 100) / 100;
+            this.state.scaleFactor = ImageResizerMath.calculateScaleFactor(this.state.currentWidth, this.state.originalWidth);
             this.updateScaleIndicator();
         }
 
@@ -304,14 +290,14 @@ export class ImageResizerTool {
 
         this.state.currentHeight = val;
         if (this.state.maintainAspectRatio && this.state.aspectRatio > 0) {
-            this.state.currentWidth = Math.max(1, Math.round(val * this.state.aspectRatio));
+            this.state.currentWidth = ImageResizerMath.calculateWidthFromHeight(val, this.state.aspectRatio);
             if (this.dom.inputWidth) {
                 this.dom.inputWidth.value = this.state.currentWidth;
             }
         }
 
         if (this.state.originalHeight > 0) {
-            this.state.scaleFactor = Math.round((this.state.currentHeight / this.state.originalHeight) * 100) / 100;
+            this.state.scaleFactor = ImageResizerMath.calculateScaleFactor(this.state.currentHeight, this.state.originalHeight);
             this.updateScaleIndicator();
         }
 
@@ -330,7 +316,7 @@ export class ImageResizerTool {
                 }
                 // Re-align height to current width
                 if (this.state.currentWidth > 0 && this.state.aspectRatio > 0) {
-                    this.state.currentHeight = Math.max(1, Math.round(this.state.currentWidth / this.state.aspectRatio));
+                    this.state.currentHeight = ImageResizerMath.calculateHeightFromWidth(this.state.currentWidth, this.state.aspectRatio);
                     if (this.dom.inputHeight) {
                         this.dom.inputHeight.value = this.state.currentHeight;
                     }
@@ -353,9 +339,7 @@ export class ImageResizerTool {
     stepScale(delta) {
         if (!this.state.originalWidth || !this.state.originalHeight) return;
 
-        const nextScale = Math.round((this.state.scaleFactor + delta) * 10) / 10;
-        this.state.scaleFactor = Math.max(0.1, Math.min(5.0, nextScale));
-
+        this.state.scaleFactor = ImageResizerMath.stepScaleFactor(this.state.scaleFactor, delta);
         this.applyScaleFactor();
     }
 
@@ -366,8 +350,14 @@ export class ImageResizerTool {
     }
 
     applyScaleFactor() {
-        this.state.currentWidth = Math.max(1, Math.round(this.state.originalWidth * this.state.scaleFactor));
-        this.state.currentHeight = Math.max(1, Math.round(this.state.originalHeight * this.state.scaleFactor));
+        const dims = ImageResizerMath.calculateScaledDimensions(
+            this.state.originalWidth,
+            this.state.originalHeight,
+            this.state.scaleFactor
+        );
+
+        this.state.currentWidth = dims.width;
+        this.state.currentHeight = dims.height;
 
         if (this.dom.inputWidth) this.dom.inputWidth.value = this.state.currentWidth;
         if (this.dom.inputHeight) this.dom.inputHeight.value = this.state.currentHeight;
@@ -399,31 +389,20 @@ export class ImageResizerTool {
         }, 120);
     }
 
-    renderPreview() {
+    async renderPreview() {
         if (!this.state.originalImage) return;
 
         const targetW = Math.max(1, this.state.currentWidth);
         const targetH = Math.max(1, this.state.currentHeight);
 
-        const canvas = document.createElement('canvas');
-        canvas.width = targetW;
-        canvas.height = targetH;
-        const ctx = canvas.getContext('2d');
-
-        // High quality image smoothing
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-
-        // Draw white background if converting PNG with transparency to JPEG
-        if (this.state.format === 'image/jpeg') {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, targetW, targetH);
-        }
-
-        ctx.drawImage(this.state.originalImage, 0, 0, targetW, targetH);
-
-        canvas.toBlob((blob) => {
-            if (!blob) return;
+        try {
+            const blob = await ImageResizerEngine.renderToBlob({
+                image: this.state.originalImage,
+                targetWidth: targetW,
+                targetHeight: targetH,
+                format: this.state.format,
+                quality: this.state.quality
+            });
 
             if (this.state.previewBlob) {
                 URL.revokeObjectURL(this.dom.previewImage?.src);
@@ -441,9 +420,11 @@ export class ImageResizerTool {
             }
 
             if (this.dom.previewSizeEl) {
-                this.dom.previewSizeEl.textContent = this.formatBytes(blob.size);
+                this.dom.previewSizeEl.textContent = ImageResizerMath.formatBytes(blob.size);
             }
-        }, this.state.format, this.state.quality);
+        } catch (err) {
+            console.error('Failed to render image preview:', err);
+        }
     }
 
     download() {
@@ -452,22 +433,13 @@ export class ImageResizerTool {
             return;
         }
 
-        const extMap = {
-            'image/png': 'png',
-            'image/jpeg': 'jpg',
-            'image/webp': 'webp'
-        };
-        const ext = extMap[this.state.format] || 'png';
-        const filename = `${this.state.originalFileName || 'image'}_${this.state.currentWidth}x${this.state.currentHeight}.${ext}`;
-
-        const url = URL.createObjectURL(this.state.previewBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const filename = ImageResizerEngine.downloadBlob({
+            blob: this.state.previewBlob,
+            baseFileName: this.state.originalFileName || 'image',
+            width: this.state.currentWidth,
+            height: this.state.currentHeight,
+            format: this.state.format
+        });
 
         ShareUI.showToast('Download Complete', `${filename} saved successfully`, 'success');
     }
@@ -510,10 +482,6 @@ export class ImageResizerTool {
     }
 
     formatBytes(bytes) {
-        if (!bytes || bytes === 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        return ImageResizerMath.formatBytes(bytes);
     }
 }

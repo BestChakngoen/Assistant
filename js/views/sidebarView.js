@@ -6,18 +6,18 @@ export const sidebarViewHtml = `
         <!-- Sidebar Header / Logo -->
         <div class="p-6 border-b border-slate-800/60">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                    <i data-lucide="activity" class="w-5 h-5 text-white"></i>
+                <div class="size-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <i data-lucide="activity" class="size-5 text-white"></i>
                 </div>
                 <div>
-                    <h1 class="text-base font-bold font-mono text-white tracking-wider">Infomation</h1>
+                    <h1 class="text-base font-bold font-mono text-white tracking-wider">Information</h1>
                     <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Workspace</span>
                 </div>
             </div>
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto" id="repo-tabs-container">
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto auto-hide-scrollbar" id="repo-tabs-container">
             <!-- Code (Journal/Dashboard) -->
             <button id="tab-code" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-cyan-500 bg-cyan-500/10 text-cyan-400 font-bold text-sm rounded-r-xl transition-all btn-press">
                 <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
@@ -100,8 +100,8 @@ export const sidebarViewHtml = `
         <!-- User Info / Profile -->
         <div class="p-4 border-t border-slate-800/60 bg-[#0a0d16]/40 flex items-center justify-between">
             <div class="flex items-center gap-2.5 overflow-hidden">
-                <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
-                    <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                <div class="size-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
+                    <i data-lucide="user" class="size-4 text-slate-400"></i>
                 </div>
                 <div class="overflow-hidden">
                     <p id="top-user-display" class="text-xs font-bold text-slate-200 truncate font-mono">guest</p>

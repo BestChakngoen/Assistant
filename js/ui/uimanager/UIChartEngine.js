@@ -134,7 +134,7 @@ export class UIChartEngine {
             const btnContainer = uiManager.dom.chartControls.next.parentNode;
             
             uiManager.periodStatsEl = document.createElement('div');
-            uiManager.periodStatsEl.className = 'ml-3 text-xs font-mono font-bold flex items-center gap-2 px-3 py-1 bg-slate-800/50 rounded-lg border border-slate-700/50';
+            uiManager.periodStatsEl.className = 'ml-3 text-xs font-mono font-bold flex items-center gap-2 px-3 py-1 bg-slate-800/60 rounded-lg tabular-nums';
             uiManager.periodStatsEl.innerHTML = '<span class="text-slate-500">PERIOD:</span> <span class="text-slate-300">...</span>';
             
             btnContainer.parentNode.insertBefore(uiManager.periodStatsEl, btnContainer.nextSibling);

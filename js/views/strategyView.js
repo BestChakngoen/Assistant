@@ -4,7 +4,7 @@
 export const strategyViewHtml = `
     <div id="strategy-menu-container" class="w-full hidden flex-col gap-6 animate-fade-in pb-10">
         <!-- Diagram Board Panel -->
-        <div class="glass-panel p-4 rounded-2xl flex flex-col h-[calc(100vh-160px)] min-h-[700px]">
+        <div class="glass-panel p-4 rounded-2xl flex flex-col h-[calc(100dvh-160px)] min-h-[700px]">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-3 shrink-0">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
@@ -15,7 +15,7 @@ export const strategyViewHtml = `
                     <button id="diagram-btn-zoom-out" class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition" title="Zoom Out">
                         <i data-lucide="zoom-out" class="w-4 h-4"></i>
                     </button>
-                    <span id="diagram-zoom-percent" class="font-mono text-xs text-slate-300 min-w-[3.5rem] text-center font-bold">100%</span>
+                    <span id="diagram-zoom-percent" class="font-mono text-xs text-slate-300 min-w-[3.5rem] text-center font-bold tabular-nums">100%</span>
                     <button id="diagram-btn-zoom-in" class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition" title="Zoom In">
                         <i data-lucide="zoom-in" class="w-4 h-4"></i>
                     </button>
@@ -102,7 +102,7 @@ export const strategyViewHtml = `
 
                 <!-- Fill Shape -->
                 <label class="flex items-center gap-1.5 cursor-pointer select-none">
-                    <input type="checkbox" id="diagram-toggle-fill" class="w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500">
+                    <input type="checkbox" id="diagram-toggle-fill" class="size-4 rounded border-slate-800 bg-slate-800 text-cyan-500 focus:ring-cyan-500">
                     <span class="text-[10px] font-mono text-slate-500 uppercase font-bold">Fill Shape</span>
                 </label>
             </div>
@@ -120,7 +120,7 @@ export const strategyViewHtml = `
         </div>
 
         <!-- Diagram Shortcuts Modal -->
-        <div id="diagram-help-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+        <div id="diagram-help-modal" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
             <div class="glass-panel p-6 rounded-3xl shadow-xl max-w-md w-full border border-slate-800">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
                     <h3 class="text-base font-bold text-cyan-400 font-mono flex items-center gap-2">
@@ -130,7 +130,7 @@ export const strategyViewHtml = `
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
-                <div class="space-y-2.5 max-h-[400px] overflow-y-auto pr-1 text-slate-300 text-xs font-mono">
+                <div class="space-y-2.5 max-h-[400px] overflow-y-auto pr-1 text-slate-300 text-xs font-mono auto-hide-scrollbar">
                     <div class="flex justify-between border-b border-slate-900/50 pb-1.5">
                         <span class="text-slate-400">Select / Move (เลือกจับวัตถุ)</span>
                         <span class="bg-slate-900 px-2 py-0.5 rounded text-cyan-400 font-bold border border-slate-850">V / A</span>
@@ -436,7 +436,7 @@ export const strategyViewHtml = `
                 </div>
             </div>
 
-            <div id="pdf-frame-container" class="relative bg-slate-950/80 rounded-xl border border-slate-800 overflow-hidden h-[calc(100vh-120px)] min-h-[850px] flex items-center justify-center">
+            <div id="pdf-frame-container" class="relative bg-slate-950/80 rounded-xl border border-slate-800 overflow-hidden h-[calc(100dvh-120px)] min-h-[850px] flex items-center justify-center">
                 <iframe id="pdf-viewer-iframe" class="w-full h-full border-none hidden"></iframe>
                 <div id="pdf-placeholder" class="text-center p-6 flex flex-col items-center gap-3">
                     <i data-lucide="file-warning" class="w-12 h-12 text-slate-500"></i>

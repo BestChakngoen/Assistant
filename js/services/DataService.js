@@ -32,6 +32,8 @@ export class DataService {
         this.unsubscribe = null;
         this.unsubscribeNotes = null;
         this.unsubscribeDiagram = null;
+        this.unsubscribeQuickNote = null;
+        this.unsubscribeQuickTable = null;
     }
 
     getCollectionPath(uid) {
@@ -54,6 +56,18 @@ export class DataService {
     getDiagramDoc(uid) {
         if (this.useCustomConfig) return doc(this.db, 'users', uid, 'data', 'diagram');
         return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'diagram');
+    }
+
+    // --- QUICK NOTE & SCRATCHPAD PATH ---
+    getQuickNoteDoc(uid) {
+        if (this.useCustomConfig) return doc(this.db, 'users', uid, 'data', 'quickNote');
+        return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'quickNote');
+    }
+
+    // --- QUICK TABLE GRID PATH ---
+    getQuickTableDoc(uid) {
+        if (this.useCustomConfig) return doc(this.db, 'users', uid, 'data', 'quickTable');
+        return doc(this.db, 'artifacts', this.appId, 'users', uid, 'data', 'quickTable');
     }
 
     getNetWorthDoc(uid) {
@@ -164,6 +178,72 @@ export class DataService {
     async saveDiagram(uid, shapes) {
         const docRef = this.getDiagramDoc(uid);
         await setDoc(docRef, { shapes, lastUpdated: new Date().toISOString() }, { merge: true });
+    }
+
+    // --- QUICK NOTE & SCRATCHPAD METHODS ---
+    subscribeQuickNote(uid, callback) {
+        if (this.unsubscribeQuickNote) this.unsubscribeQuickNote();
+        const docRef = this.getQuickNoteDoc(uid);
+        this.unsubscribeQuickNote = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                callback(docSnap.data());
+            } else {
+                callback(null);
+            }
+        }, (err) => {
+            console.error("Firestore quickNote subscription error:", err);
+        });
+        return this.unsubscribeQuickNote;
+    }
+
+    async saveQuickNote(uid, data) {
+        const docRef = this.getQuickNoteDoc(uid);
+        await setDoc(docRef, {
+            title: data.title || '',
+            content: data.content || '',
+            updatedAt: data.updatedAt || Date.now()
+        }, { merge: true });
+    }
+
+    // --- QUICK TABLE GRID METHODS ---
+    subscribeQuickTable(uid, callback) {
+        if (this.unsubscribeQuickTable) this.unsubscribeQuickTable();
+        const docRef = this.getQuickTableDoc(uid);
+        this.unsubscribeQuickTable = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const cloudData = docSnap.data();
+                let rows = [];
+                if (typeof cloudData.rowsJson === 'string') {
+                    try {
+                        rows = JSON.parse(cloudData.rowsJson);
+                    } catch (e) {
+                        console.error("Failed to parse quickTable rowsJson:", e);
+                        rows = [];
+                    }
+                } else if (Array.isArray(cloudData.rows)) {
+                    rows = cloudData.rows;
+                }
+                callback({
+                    ...cloudData,
+                    rows
+                });
+            } else {
+                callback(null);
+            }
+        }, (err) => {
+            console.error("Firestore quickTable subscription error:", err);
+        });
+        return this.unsubscribeQuickTable;
+    }
+
+    async saveQuickTable(uid, data) {
+        const docRef = this.getQuickTableDoc(uid);
+        await setDoc(docRef, {
+            title: data.title || '',
+            headers: data.headers || [],
+            rowsJson: JSON.stringify(data.rows || []),
+            updatedAt: data.updatedAt || Date.now()
+        }, { merge: true });
     }
     // NetWorth removed from Firestore - migrated to Supabase
 

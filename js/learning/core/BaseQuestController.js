@@ -176,6 +176,8 @@ export class BaseQuestController {
             this.renderDefaultBlueprint(board);
         }
 
+        this.initSlideBars(board);
+
         if (window.lucide) window.lucide.createIcons();
     }
 
@@ -274,7 +276,7 @@ export class BaseQuestController {
                     <p>
                         บทเรียนของหัวข้อ <strong>${topic.title}</strong> ในส่วนของ <strong>${stage.title}</strong> กำลังจัดเตรียมเนื้อหาทฤษฎีและคำอธิบายอย่างละเอียด
                     </p>
-                    <div class="border-l-2 border-slate-700 pl-3.5 my-2 text-slate-400 italic font-sans">
+                    <div class="border-l-2 border-cyan-500/40 pl-3.5 my-2 text-slate-400 italic font-sans">
                         "ความรู้ที่ดีไม่ได้เกิดจากการท่องจำ แต่เกิดจากการทำความเข้าใจโครงสร้างและการนำไปประยุกต์ใช้งาน..."
                     </div>
                     <p class="text-[10px] text-slate-500 border-t border-slate-900 pt-2 font-mono">
@@ -323,5 +325,33 @@ export class BaseQuestController {
         const overallPct = Math.round((completedStages / totalStages) * 100);
         const overviewProgEl = document.getElementById('overview-progress-pct');
         if (overviewProgEl) overviewProgEl.innerText = `${overallPct}%`;
+    }
+
+    /**
+     * Initializes universal horizontal slide bars (.custom-slide-bar)
+     * Handles horizontal mouse wheel scrolling and auto-hiding scrollbar
+     */
+    initSlideBars(container = document) {
+        const slideBars = container.querySelectorAll ? container.querySelectorAll('.custom-slide-bar') : [];
+        slideBars.forEach(bar => {
+            if (bar.dataset.hasSlideBarInit) return;
+            bar.dataset.hasSlideBarInit = 'true';
+
+            bar.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    bar.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+
+            let timer;
+            bar.addEventListener('scroll', () => {
+                bar.classList.add('is-scrolling');
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    bar.classList.remove('is-scrolling');
+                }, 800);
+            }, { passive: true });
+        });
     }
 }

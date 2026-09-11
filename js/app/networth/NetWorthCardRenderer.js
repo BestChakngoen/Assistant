@@ -269,13 +269,13 @@ export class NetWorthCardRenderer {
                 card.innerHTML = `
                     <div class="w-full flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-1 font-mono">
                         <div class="flex flex-1 gap-2">
-                            <input type="text" class="nw-edit-name bg-slate-950 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1 text-xs flex-1 focus:border-cyan-500 outline-none" value="${item.name}" placeholder="Item Name">
-                            <select class="nw-edit-cat bg-slate-950 text-slate-300 border border-slate-700 rounded-lg px-2 py-1 text-[11px] focus:border-cyan-500 outline-none">
+                            <input type="text" class="nw-edit-name bg-slate-950 text-slate-200 border border-slate-800/80 rounded-lg px-2.5 py-1 text-xs flex-1 focus:border-cyan-500 outline-none" value="${item.name}" placeholder="Item Name">
+                            <select class="nw-edit-cat bg-slate-950 text-slate-300 border border-slate-800/80 rounded-lg px-2 py-1 text-[11px] focus:border-cyan-500 outline-none">
                                 ${categoryOptions}
                             </select>
                         </div>
                         <div class="flex items-center gap-2">
-                            <input type="number" step="0.01" min="0" class="nw-edit-amount w-28 bg-slate-950 text-emerald-400 font-bold border border-slate-700 rounded-lg px-2.5 py-1 text-xs focus:border-cyan-500 outline-none" value="${displayAmt}" placeholder="Amount">
+                            <input type="number" step="0.01" min="0" class="nw-edit-amount w-28 bg-slate-950 text-emerald-400 font-bold border border-slate-800/80 rounded-lg px-2.5 py-1 text-xs focus:border-cyan-500 outline-none tabular-nums" value="${displayAmt}" placeholder="Amount">
                             <button class="nw-save-btn px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition">Save</button>
                             <button class="nw-cancel-btn px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-lg text-xs transition">Cancel</button>
                         </div>

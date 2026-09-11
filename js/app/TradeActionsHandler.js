@@ -107,7 +107,7 @@ export class TradeActionsHandler {
 
                     <div class="flex flex-col gap-2 mt-2">
                         <label class="text-xs text-slate-400 font-mono font-bold uppercase">Current Asset Categories</label>
-                        <div id="asset-list-container" class="max-h-48 overflow-y-auto flex flex-col gap-1.5 pr-1">
+                        <div id="asset-list-container" class="max-h-48 overflow-y-auto flex flex-col gap-1.5 pr-1 auto-hide-scrollbar">
                         </div>
                     </div>
                 </div>

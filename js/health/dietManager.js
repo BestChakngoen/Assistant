@@ -239,10 +239,10 @@ export default class DietManager {
                 else { icon='cookie'; colorClass='bg-yellow-950/30 text-yellow-400 border border-yellow-500/20'; }
 
                 return `
-                    <div class="flex items-center justify-between p-4 bg-slate-900/40 rounded-2xl border border-slate-800 group hover:border-slate-700 transition-colors">
+                    <div class="flex items-center justify-between p-4 bg-slate-900/40 rounded-2xl group hover:bg-slate-900/70 transition-colors">
                         <div class="flex items-center gap-4">
                             <div class="p-3 rounded-xl ${colorClass}">
-                                <i data-lucide="${icon}" class="w-5 h-5"></i>
+                                <i data-lucide="${icon}" class="size-5"></i>
                             </div>
                             <div>
                                 <div class="text-sm sm:text-base font-bold text-white">${item.name}</div>
@@ -252,7 +252,7 @@ export default class DietManager {
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-lg font-mono font-bold text-cyan-400 mr-4">${item.calories || 0} kcal</span>
+                            <span class="text-lg font-mono font-bold text-cyan-400 mr-4 tabular-nums">${item.calories || 0} kcal</span>
                             <button data-action="edit" data-id="${item.id}" class="text-slate-500 hover:text-cyan-400 p-2 transition" title="Edit">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
                             </button>
@@ -356,7 +356,7 @@ export default class DietManager {
                     <div class="w-full max-w-[32px] sm:max-w-[48px] bg-slate-800 rounded-t-md overflow-visible flex flex-col-reverse relative transition-height duration-500 ${isSelected ? 'ring-2 ring-cyan-500' : ''}" style="height: ${barPct}%">
                         <!-- Tooltip pinned above bar top -->
                         <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 scale-90 group-hover:scale-100 origin-bottom pointer-events-none z-30 whitespace-nowrap">
-                            <div class="bg-slate-900 border border-slate-700 text-white text-[10px] font-mono font-bold px-2 py-1 rounded-lg shadow-xl flex flex-col items-center gap-0.5">
+                            <div class="bg-slate-900 text-white text-[10px] font-mono font-bold px-2 py-1 rounded-lg shadow-xl flex flex-col items-center gap-0.5 tabular-nums">
                                 <span class="text-cyan-400">${d.total} kcal</span>
                                 <div class="flex gap-1.5 text-[9px]">
                                     <span class="text-green-400">${d.meal || 0}M</span>
@@ -364,7 +364,7 @@ export default class DietManager {
                                     <span class="text-yellow-400">${d.snack || 0}S</span>
                                 </div>
                             </div>
-                            <div class="w-2 h-2 bg-slate-900 border-r border-b border-slate-700 rotate-45 mx-auto -mt-1"></div>
+                            <div class="size-2 bg-slate-900 rotate-45 mx-auto -mt-1"></div>
                         </div>
                         <!-- Stacked colour segments -->
                         <div class="overflow-hidden w-full h-full flex flex-col-reverse rounded-t-md">
@@ -381,25 +381,25 @@ export default class DietManager {
         const targetY = isNaN((this.state.targetCalories/maxVal)*100) ? 0 : (this.state.targetCalories/maxVal)*100;
 
         this.dom.chartContainer.innerHTML = `
-            <div class="p-6 bg-slate-900/30 rounded-3xl border border-slate-800 w-full">
+            <div class="p-6 bg-slate-900/30 rounded-3xl w-full">
                 <div class="flex justify-between items-center mb-6">
                     <h4 class="text-xs uppercase tracking-wider text-slate-300 font-bold flex items-center gap-2">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-cyan-400"></i> Calorie Intake History (${rawPageData.length}/${totalRecords})
+                        <i data-lucide="bar-chart-3" class="size-5 text-cyan-400"></i> Calorie Intake History (${rawPageData.length}/${totalRecords})
                     </h4>
-                    <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1">
-                        <button id="btnPrevDietPage" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-all ${this.viewOffset >= totalPages - 1 ? 'text-slate-700 cursor-not-allowed' : ''}" ${this.viewOffset >= totalPages - 1 ? 'disabled' : ''}>
-                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    <div class="flex items-center gap-2 bg-slate-950 rounded-xl p-1">
+                        <button id="btnPrevDietPage" class="size-8 flex items-center justify-center hover:bg-slate-800 rounded-lg text-slate-400 transition-all ${this.viewOffset >= totalPages - 1 ? 'text-slate-700 cursor-not-allowed' : ''}" ${this.viewOffset >= totalPages - 1 ? 'disabled' : ''}>
+                            <i data-lucide="chevron-left" class="size-4"></i>
                         </button>
-                        <span class="text-xs font-bold text-slate-300 px-3 min-w-[100px] text-center">
+                        <span class="text-xs font-bold text-slate-300 px-3 min-w-[100px] text-center tabular-nums">
                             ${rangeLabel}
                         </span>
-                        <button id="btnNextDietPage" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-all ${this.viewOffset <= 0 ? 'text-slate-700 cursor-not-allowed' : ''}" ${this.viewOffset <= 0 ? 'disabled' : ''}>
-                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <button id="btnNextDietPage" class="size-8 flex items-center justify-center hover:bg-slate-800 rounded-lg text-slate-400 transition-all ${this.viewOffset <= 0 ? 'text-slate-700 cursor-not-allowed' : ''}" ${this.viewOffset <= 0 ? 'disabled' : ''}>
+                            <i data-lucide="chevron-right" class="size-4"></i>
                         </button>
                     </div>
                 </div>
-                <div class="flex items-end justify-between h-[250px] gap-4 pb-4 pt-8 border-b-2 border-slate-800 relative overflow-visible">
-                    <div class="absolute w-full border-t-2 border-dashed border-slate-700/50 z-0 opacity-50" style="bottom: ${targetY}%"></div>
+                <div class="flex items-end justify-between h-[250px] gap-4 pb-4 pt-8 border-b-2 border-slate-800/80 relative overflow-visible">
+                    <div class="absolute w-full border-t border-dashed border-cyan-500/30 z-0 opacity-60" style="bottom: ${targetY}%"></div>
                     ${barsHTML}
                 </div>
                 <div class="flex justify-center gap-5 text-xs text-slate-400 font-medium mt-4">

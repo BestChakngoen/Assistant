@@ -21,12 +21,12 @@ export class ShareLightbox {
                         <span class="truncate">${filename}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button id="btn-download-lightbox" class="p-2 rounded-xl bg-slate-800/80 hover:bg-cyan-600 text-slate-200 hover:text-white transition-all border border-slate-700/60 flex items-center gap-1.5 text-xs font-mono cursor-pointer" title="Download Image">
-                            <i data-lucide="download" class="w-4 h-4"></i>
+                        <button id="btn-download-lightbox" class="p-2 rounded-xl bg-slate-800/80 hover:bg-cyan-600 text-slate-200 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono cursor-pointer" title="Download Image">
+                            <i data-lucide="download" class="size-4"></i>
                             <span class="hidden sm:inline">Download</span>
                         </button>
-                        <button id="btn-close-lightbox" class="p-2 rounded-xl bg-slate-800/80 hover:bg-red-500/80 text-slate-300 hover:text-white transition-all border border-slate-700/60" title="Close (Esc)">
-                            <i data-lucide="x" class="w-5 h-5"></i>
+                        <button id="btn-close-lightbox" class="size-9 rounded-xl bg-slate-800/80 hover:bg-red-500/80 text-slate-300 hover:text-white transition-all flex items-center justify-center cursor-pointer" title="Close (Esc)">
+                            <i data-lucide="x" class="size-5"></i>
                         </button>
                     </div>
                 </div>
@@ -37,7 +37,7 @@ export class ShareLightbox {
                     <button class="share-lightbox-zoom-btn" id="btn-zoom-out" title="Zoom Out (-)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
                     </button>
-                    <span class="share-lightbox-zoom-level" id="lightbox-zoom-level">100%</span>
+                    <span class="share-lightbox-zoom-level tabular-nums" id="lightbox-zoom-level">100%</span>
                     <button class="share-lightbox-zoom-btn" id="btn-zoom-in" title="Zoom In (+)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
                     </button>

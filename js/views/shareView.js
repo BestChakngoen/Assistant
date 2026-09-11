@@ -139,42 +139,42 @@ export const shareViewHtml = `
                     </div>
 
                     <div id="share-filter-bar" class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-slate-800/50 shrink-0">
-                        <button data-filter="all"     class="share-filter-btn active-filter flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-cyan-500/40 bg-cyan-500/15 text-cyan-400">
-                            <i data-lucide="layout-grid" class="w-3 h-3"></i> All
+                        <button data-filter="all"     class="share-filter-btn active-filter flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-cyan-500/20 text-cyan-400">
+                            <i data-lucide="layout-grid" class="size-3.5"></i> All
                         </button>
-                        <button data-filter="starred" class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-amber-500/40 hover:text-amber-400">
-                            <i data-lucide="star" class="w-3 h-3"></i> Starred
+                        <button data-filter="starred" class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-amber-400">
+                            <i data-lucide="star" class="size-3.5"></i> Starred
                         </button>
-                        <button data-filter="text"    class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-violet-500/40 hover:text-violet-400">
-                            <i data-lucide="type" class="w-3 h-3"></i> Text
+                        <button data-filter="text"    class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-violet-400">
+                            <i data-lucide="type" class="size-3.5"></i> Text
                         </button>
-                        <button data-filter="link"    class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-blue-500/40 hover:text-blue-400">
-                            <i data-lucide="link" class="w-3 h-3"></i> Links
+                        <button data-filter="link"    class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-blue-400">
+                            <i data-lucide="link" class="size-3.5"></i> Links
                         </button>
-                        <button data-filter="image"   class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-pink-500/40 hover:text-pink-400">
-                            <i data-lucide="image" class="w-3 h-3"></i> Images
+                        <button data-filter="image"   class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-pink-400">
+                            <i data-lucide="image" class="size-3.5"></i> Images
                         </button>
-                        <button data-filter="docx"    class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-blue-400/40 hover:text-blue-400">
-                            <i data-lucide="file-text" class="w-3 h-3"></i> DOCX
+                        <button data-filter="docx"    class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-blue-400">
+                            <i data-lucide="file-text" class="size-3.5"></i> DOCX
                         </button>
-                        <button data-filter="pdf"     class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-red-500/40 hover:text-red-400">
-                            <i data-lucide="file-text" class="w-3 h-3"></i> PDF
+                        <button data-filter="pdf"     class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-red-400">
+                            <i data-lucide="file-text" class="size-3.5"></i> PDF
                         </button>
-                        <button data-filter="video"   class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-purple-500/40 hover:text-purple-400">
-                            <i data-lucide="video" class="w-3 h-3"></i> Video
+                        <button data-filter="video"   class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-purple-400">
+                            <i data-lucide="video" class="size-3.5"></i> Video
                         </button>
-                        <button data-filter="audio"   class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-emerald-500/40 hover:text-emerald-400">
-                            <i data-lucide="music" class="w-3 h-3"></i> Audio
+                        <button data-filter="audio"   class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-emerald-400">
+                            <i data-lucide="music" class="size-3.5"></i> Audio
                         </button>
-                        <button data-filter="file"    class="share-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-mono transition-all border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-amber-500/40 hover:text-amber-400">
-                            <i data-lucide="file" class="w-3 h-3"></i> Other Files
+                        <button data-filter="file"    class="share-filter-btn flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-colors bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-amber-400">
+                            <i data-lucide="file" class="size-3.5"></i> Other Files
                         </button>
                         <div class="ml-auto">
                             <input id="share-search" type="text" placeholder="Search..." class="text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-300 focus:border-cyan-500 outline-none w-36 placeholder-slate-600 transition">
                         </div>
                     </div>
 
-                    <div id="share-feed" class="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+                    <div id="share-feed" class="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1 auto-hide-scrollbar">
                         <div class="flex flex-col items-center justify-center h-full text-slate-500">
                             <i data-lucide="inbox" class="w-10 h-10 mb-2 stroke-1 animate-bounce"></i>
                             <p class="text-sm">No items shared yet</p>

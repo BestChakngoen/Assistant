@@ -68,7 +68,7 @@ export const programmingScopeQuest = {
                                 
                                 <div class="space-y-3.5 leading-relaxed text-slate-300 text-xs overflow-x-auto no-scrollbar py-1 select-text">
                                     <div class="flex items-center gap-2 whitespace-nowrap">
-                                        <select id="sel-name" class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg px-2 py-0.5 text-cyan-400 font-bold focus:border-cyan-500 outline-none text-xs">
+                                        <select id="sel-name" class="bg-slate-900 rounded-lg px-2 py-0.5 text-cyan-400 font-bold focus:ring-1 focus:ring-cyan-500 outline-none text-xs cursor-pointer">
                                             <option value="">-- select --</option>
                                             <option value="var">var</option>
                                             <option value="let">let</option>
@@ -79,7 +79,7 @@ export const programmingScopeQuest = {
                                         <span class="text-emerald-450">"Apollo-XI"</span>;
                                     </div>
                                     <div class="flex items-center gap-2 whitespace-nowrap">
-                                        <select id="sel-fuel" class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg px-2 py-0.5 text-cyan-400 font-bold focus:border-cyan-500 outline-none text-xs">
+                                        <select id="sel-fuel" class="bg-slate-900 rounded-lg px-2 py-0.5 text-cyan-400 font-bold focus:ring-1 focus:ring-cyan-500 outline-none text-xs cursor-pointer">
                                             <option value="">-- select --</option>
                                             <option value="var">var</option>
                                             <option value="let">let</option>
@@ -95,7 +95,7 @@ export const programmingScopeQuest = {
                                             <span class="text-purple-400">if</span> (fuelLevel &gt; <span class="text-amber-400">50</span>) {
                                         </div>
                                         <div class="pl-8 flex items-center gap-2 whitespace-nowrap">
-                                            <select id="sel-speed" class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg px-2 py-0.5 text-cyan-400 font-bold focus:border-cyan-500 outline-none text-xs">
+                                            <select id="sel-speed" class="bg-slate-900 rounded-lg px-2 py-0.5 text-cyan-400 font-bold focus:ring-1 focus:ring-cyan-500 outline-none text-xs cursor-pointer">
                                                 <option value="">-- select --</option>
                                                 <option value="var">var</option>
                                                 <option value="let">let</option>
@@ -146,7 +146,7 @@ export const programmingScopeQuest = {
                         ใน JavaScript การประกาศตัวแปรมี 3 คีย์เวิร์ดหลัก ซึ่งมีพฤติกรรมเกี่ยวกับขอบเขต (Scope) และความสามารถในการเขียนทับค่า (Reassignment) แตกต่างกันดังนี้:
                     </p>
                     
-                    <div class="overflow-x-auto w-full border border-slate-900 bg-slate-950/20 rounded-xl p-3">
+                    <div class="w-full border border-slate-900 bg-slate-950/20 rounded-xl p-3 custom-slide-bar">
                         <table class="w-full text-left border-collapse text-[10px] sm:text-[11px]">
                             <thead>
                                 <tr class="border-b border-slate-800 text-slate-400">

@@ -84,11 +84,11 @@ export class NetWorthSyncService {
         if (!statusEl) return;
 
         if (isConnected) {
-            statusEl.className = 'text-xs font-mono text-cyan-400 bg-cyan-500/10 px-3 py-1.5 rounded-xl border border-cyan-500/20 font-bold flex items-center gap-1.5';
-            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span><span>SUPABASE CONNECTED</span>`;
+            statusEl.className = 'text-xs font-mono text-green-400 bg-green-500/10 px-3 py-1.5 rounded-xl border border-green-500/20 font-bold flex items-center gap-1.5';
+            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span><span>CLOUD SYNC ACTIVE</span>`;
         } else {
             statusEl.className = 'text-xs font-mono text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20 font-bold flex items-center gap-1.5';
-            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>SUPABASE OFFLINE</span>`;
+            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>STANDALONE MODE (OFFLINE)</span>`;
         }
     }
 

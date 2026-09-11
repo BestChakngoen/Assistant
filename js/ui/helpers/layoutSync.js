@@ -84,11 +84,9 @@ export function activateShareFilter(btn) {
     document.querySelectorAll('.share-filter-btn').forEach(b => {
         const active = b === btn;
         b.classList.toggle('active-filter', active);
-        b.classList.toggle('bg-cyan-500/15', active);
-        b.classList.toggle('border-cyan-500/40', active);
+        b.classList.toggle('bg-cyan-500/20', active);
         b.classList.toggle('text-cyan-400', active);
-        b.classList.toggle('bg-slate-800/50', !active);
-        b.classList.toggle('border-slate-700', !active);
+        b.classList.toggle('bg-slate-800/60', !active);
         b.classList.toggle('text-slate-400', !active);
     });
     applyShareFilter();

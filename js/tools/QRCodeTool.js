@@ -5,6 +5,7 @@ import { ShareUI } from '../ui/share/ShareUI.js';
  */
 export class QRCodeTool {
     constructor() {
+        this.currentSize = 256;
         this.dom = {
             input: null,
             charCount: null,
@@ -12,6 +13,9 @@ export class QRCodeTool {
             emptyPlaceholder: null,
             codeWrapper: null,
             qrOutput: null,
+            sizeSlider: null,
+            sizeBadge: null,
+            presetBtns: null,
             btnDownload: null,
             btnCopyLink: null,
             btnClear: null
@@ -25,6 +29,9 @@ export class QRCodeTool {
         this.dom.emptyPlaceholder = document.getElementById('qr-empty-placeholder');
         this.dom.codeWrapper = document.getElementById('qr-code-wrapper');
         this.dom.qrOutput = document.getElementById('qr-code-output');
+        this.dom.sizeSlider = document.getElementById('qr-size-slider');
+        this.dom.sizeBadge = document.getElementById('qr-size-badge');
+        this.dom.presetBtns = document.querySelectorAll('.btn-qr-size-preset');
         this.dom.btnDownload = document.getElementById('btn-qr-download');
         this.dom.btnCopyLink = document.getElementById('btn-qr-copy-link');
         this.dom.btnClear = document.getElementById('btn-qr-clear');
@@ -32,6 +39,9 @@ export class QRCodeTool {
         if (!this.dom.input || !this.dom.qrOutput) return;
 
         this.bindEvents();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+        }
     }
 
     bindEvents() {
@@ -39,6 +49,23 @@ export class QRCodeTool {
         this.dom.input.addEventListener('input', () => {
             this.generate(this.dom.input.value);
         });
+
+        // Size slider listener
+        if (this.dom.sizeSlider) {
+            this.dom.sizeSlider.addEventListener('input', (e) => {
+                this.setSize(parseInt(e.target.value, 10));
+            });
+        }
+
+        // Quick size preset buttons
+        if (this.dom.presetBtns) {
+            this.dom.presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const size = parseInt(btn.dataset.qrSize, 10);
+                    if (size) this.setSize(size);
+                });
+            });
+        }
 
         // Clear button
         if (this.dom.btnClear) {
@@ -53,6 +80,33 @@ export class QRCodeTool {
         // Copy link button
         if (this.dom.btnCopyLink) {
             this.dom.btnCopyLink.addEventListener('click', () => this.copyLink());
+        }
+    }
+
+    /**
+     * Sets QR code output resolution (width & height in px)
+     */
+    setSize(size) {
+        this.currentSize = Math.max(128, Math.min(1024, size));
+        if (this.dom.sizeSlider) this.dom.sizeSlider.value = this.currentSize;
+        if (this.dom.sizeBadge) this.dom.sizeBadge.textContent = `${this.currentSize} × ${this.currentSize} px`;
+
+        // Update active preset button highlighting
+        if (this.dom.presetBtns) {
+            this.dom.presetBtns.forEach(btn => {
+                const btnSize = parseInt(btn.dataset.qrSize, 10);
+                if (btnSize === this.currentSize) {
+                    btn.className = 'btn-qr-size-preset btn-press px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all bg-cyan-500/20 text-cyan-300 font-bold shadow-[0_0_8px_rgba(6,182,212,0.2)]';
+                } else {
+                    btn.className = 'btn-qr-size-preset btn-press px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all bg-slate-800/40 hover:bg-slate-800 text-slate-400 hover:text-slate-200';
+                }
+            });
+        }
+
+        // Re-generate QR Code dynamically if text exists
+        const text = (this.dom.input?.value || '').trim();
+        if (text) {
+            this.generate(text);
         }
     }
 
@@ -100,8 +154,8 @@ export class QRCodeTool {
                 try {
                     new window.QRCode(this.dom.qrOutput, {
                         text: text,
-                        width: 200,
-                        height: 200,
+                        width: this.currentSize,
+                        height: this.currentSize,
                         colorDark: "#080b11",
                         colorLight: "#ffffff",
                         correctLevel: window.QRCode.CorrectLevel.H
@@ -129,8 +183,8 @@ export class QRCodeTool {
         let srcCanvas = canvas;
         if (!srcCanvas && img && img.complete) {
             const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = img.naturalWidth || 200;
-            tempCanvas.height = img.naturalHeight || 200;
+            tempCanvas.width = img.naturalWidth || this.currentSize;
+            tempCanvas.height = img.naturalHeight || this.currentSize;
             const ctx = tempCanvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
             srcCanvas = tempCanvas;
@@ -142,8 +196,8 @@ export class QRCodeTool {
         }
 
         try {
-            // Add a white quiet zone (margin: 24px) for scanner readability
-            const padding = 24;
+            // Proportional quiet zone padding for optimal scanner readability (~8% margin)
+            const padding = Math.max(16, Math.round(this.currentSize * 0.08));
             const downloadCanvas = document.createElement('canvas');
             downloadCanvas.width = srcCanvas.width + (padding * 2);
             downloadCanvas.height = srcCanvas.height + (padding * 2);
@@ -156,12 +210,12 @@ export class QRCodeTool {
             const dataUrl = downloadCanvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.href = dataUrl;
-            link.download = `qrcode_${Date.now()}.png`;
+            link.download = `qrcode_${this.currentSize}x${this.currentSize}_${Date.now()}.png`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
-            ShareUI.showToast('Download Complete', 'QR code image (PNG) downloaded successfully', 'success');
+            ShareUI.showToast('Download Complete', `QR code (${this.currentSize}x${this.currentSize} PNG) downloaded successfully`, 'success');
         } catch (err) {
             console.error('Download QR Code error:', err);
             ShareUI.showToast('Error', 'An error occurred while downloading the QR code', 'error');

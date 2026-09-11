@@ -40,11 +40,11 @@ export const healthViewHtml = `
                             <div class="text-center sm:text-left mb-4 sm:mb-0">
                                 <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Sleep Duration</span>
                                 <div class="flex items-baseline gap-2 justify-center sm:justify-start">
-                                    <span id="sleepDurationText" class="text-4xl font-mono font-bold text-cyan-400">0.0</span>
+                                    <span id="sleepDurationText" class="text-4xl font-mono font-bold text-cyan-400 tabular-nums">0.0</span>
                                     <span class="text-sm text-slate-400 font-bold">hrs</span>
                                 </div>
                                 <div class="text-[10px] mt-2 inline-flex items-center px-2 py-1 rounded-md bg-slate-800 text-slate-400 font-bold">
-                                    Target: <span class="font-mono font-bold mx-1 text-cyan-400">7.5 - 9.0</span> hrs
+                                    Target: <span class="font-mono font-bold mx-1 text-cyan-400 tabular-nums">7.5 - 9.0</span> hrs
                                 </div>
                             </div>
                             
@@ -115,19 +115,19 @@ export const healthViewHtml = `
                         <div class="grid grid-cols-4 gap-2">
                             <div>
                                 <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Weight (kg)</label>
-                                <input type="number" id="weightInput" step="0.1" class="w-full rounded-xl py-2 px-1 text-center font-mono font-bold text-white bg-slate-900 border border-slate-800 focus:border-cyan-500" placeholder="0.0">
+                                <input type="number" id="weightInput" step="0.1" class="w-full rounded-xl py-2 px-1 text-center font-mono font-bold text-white bg-slate-900 border border-slate-800 focus:border-cyan-500 tabular-nums" placeholder="0.0">
                             </div>
                             <div>
                                 <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Height (cm)</label>
-                                <input type="number" id="heightInput" class="w-full rounded-xl py-2 px-1 text-center font-mono font-bold text-white bg-slate-900 border border-slate-800 focus:border-cyan-500">
+                                <input type="number" id="heightInput" class="w-full rounded-xl py-2 px-1 text-center font-mono font-bold text-white bg-slate-900 border border-slate-800 focus:border-cyan-500 tabular-nums">
                             </div>
                             <div>
                                 <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Age</label>
-                                <input type="number" id="ageInput" class="w-full rounded-xl py-2 px-1 text-center font-mono font-bold text-white bg-slate-900 border border-slate-800 focus:border-cyan-500">
+                                <input type="number" id="ageInput" class="w-full rounded-xl py-2 px-1 text-center font-mono font-bold text-white bg-slate-900 border border-slate-800 focus:border-cyan-500 tabular-nums">
                             </div>
                             <div class="bg-slate-900/30 border border-slate-800 rounded-xl p-1 flex flex-col items-center justify-center shadow-sm">
                                 <span class="text-[9px] text-slate-500 font-bold">BMI</span>
-                                <span id="bmiValue" class="text-base font-mono font-black text-cyan-400 leading-none">-</span>
+                                <span id="bmiValue" class="text-base font-mono font-black text-cyan-400 leading-none tabular-nums">-</span>
                                 <span id="bmiLabel" class="text-[9px] font-bold text-slate-400">-</span>
                             </div>
                         </div>
@@ -187,12 +187,12 @@ export const healthViewHtml = `
                                 </div>
 
                                 <div class="flex items-center gap-1 bg-slate-900/50 rounded-xl p-1 border border-slate-800">
-                                    <button id="btnPrevMonth" class="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
-                                        <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                                    <button id="btnPrevMonth" class="size-8 flex items-center justify-center hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors" title="Previous Month">
+                                        <i data-lucide="chevron-left" class="size-4"></i>
                                     </button>
-                                    <span id="chartMonthLabel" class="text-[10px] font-mono font-bold text-slate-300 min-w-[70px] text-center">...</span>
-                                    <button id="btnNextMonth" class="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
-                                        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                                    <span id="chartMonthLabel" class="text-[10px] font-mono font-bold text-slate-300 min-w-[70px] text-center tabular-nums">...</span>
+                                    <button id="btnNextMonth" class="size-8 flex items-center justify-center hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors" title="Next Month">
+                                        <i data-lucide="chevron-right" class="size-4"></i>
                                     </button>
                                 </div>
                             </div>
@@ -205,15 +205,15 @@ export const healthViewHtml = `
                         <div class="grid grid-cols-3 gap-2">
                             <div class="p-4 bg-slate-900/30 rounded-2xl border border-slate-800 flex flex-col items-center justify-center text-center">
                                 <span class="text-[10px] text-slate-400 font-bold mb-1">Basal BMR</span>
-                                <div class="whitespace-nowrap"><span id="bmrValue" class="text-xl font-mono font-bold text-white">0</span><span class="text-[9px] text-slate-500 ml-1 font-bold">kcal</span></div>
+                                <div class="whitespace-nowrap"><span id="bmrValue" class="text-xl font-mono font-bold text-white tabular-nums">0</span><span class="text-[9px] text-slate-500 ml-1 font-bold">kcal</span></div>
                             </div>
                             <div class="p-4 bg-slate-900/30 rounded-2xl border border-slate-800 flex flex-col items-center justify-center text-center">
                                 <span class="text-[10px] text-slate-400 font-bold mb-1">Total TDEE</span>
-                                <div class="whitespace-nowrap"><span id="tdeeValue" class="text-xl font-mono font-bold text-white">0</span><span class="text-[9px] text-slate-500 ml-1 font-bold">kcal</span></div>
+                                <div class="whitespace-nowrap"><span id="tdeeValue" class="text-xl font-mono font-bold text-white tabular-nums">0</span><span class="text-[9px] text-slate-500 ml-1 font-bold">kcal</span></div>
                             </div>
                             <div class="p-4 bg-slate-900/30 rounded-2xl border border-slate-800 relative overflow-hidden flex flex-col items-center justify-center text-center">
                                 <span class="text-[10px] text-slate-400 font-bold mb-1">Intake Target</span>
-                                <div class="whitespace-nowrap"><span id="targetCalValue" class="text-xl font-mono font-bold text-cyan-400">0</span><span class="text-[9px] text-slate-500 ml-1 font-bold">kcal</span></div>
+                                <div class="whitespace-nowrap"><span id="targetCalValue" class="text-xl font-mono font-bold text-cyan-400 tabular-nums">0</span><span class="text-[9px] text-slate-500 ml-1 font-bold">kcal</span></div>
                                 <div id="targetIndicator" class="absolute top-1 right-1 text-[8px] px-1.5 py-0.5 rounded-full font-bold hidden"></div>
                             </div>
                         </div>
@@ -224,11 +224,11 @@ export const healthViewHtml = `
                                 <div class="flex justify-between items-end mb-3">
                                     <div>
                                         <span class="text-xs text-slate-400 block mb-1 font-bold">Total Intake Today</span>
-                                        <span id="totalCalToday" class="text-3xl font-mono font-bold text-white">0</span>
+                                        <span id="totalCalToday" class="text-3xl font-mono font-bold text-white tabular-nums">0</span>
                                         <span class="text-xs text-slate-400">kcal</span>
                                     </div>
                                     <div class="text-right">
-                                        <span id="calDeviationText" class="text-lg font-mono font-bold text-cyan-400">0%</span>
+                                        <span id="calDeviationText" class="text-lg font-mono font-bold text-cyan-400 tabular-nums">0%</span>
                                     </div>
                                 </div>
                                 <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden mb-3 border border-slate-800">
@@ -272,15 +272,15 @@ export const healthViewHtml = `
                                 <div class="flex gap-2">
                                     <input type="number" id="foodCal" placeholder="kcal" class="w-24 rounded-lg py-2.5 px-3 text-sm bg-slate-950 border border-slate-800 focus:border-cyan-500 font-mono font-bold text-cyan-400">
                                     
-                                    <div class="flex-1 flex bg-slate-950 rounded-lg p-1 gap-1 border border-slate-800">
-                                        <button id="btn-meal" class="flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all flex items-center justify-center gap-1 bg-cyan-600 text-white shadow-sm" data-type="meal" title="Meal">
-                                            <i data-lucide="utensils" class="w-3.5 h-3.5"></i>
+                                    <div class="flex-1 flex bg-slate-950 rounded-lg p-0.5 gap-0.5 border border-slate-800">
+                                        <button id="btn-meal" class="flex-1 py-2 rounded-md text-[10px] font-bold transition-colors flex items-center justify-center gap-1 bg-cyan-600 text-white shadow-sm" data-type="meal" title="Meal">
+                                            <i data-lucide="utensils" class="size-4"></i>
                                         </button>
-                                        <button id="btn-drink" class="flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all flex items-center justify-center gap-1 text-slate-500 hover:text-slate-300" data-type="drink" title="Drink">
-                                            <i data-lucide="coffee" class="w-3.5 h-3.5"></i>
+                                        <button id="btn-drink" class="flex-1 py-2 rounded-md text-[10px] font-bold transition-colors flex items-center justify-center gap-1 text-slate-400 hover:text-slate-200" data-type="drink" title="Drink">
+                                            <i data-lucide="coffee" class="size-4"></i>
                                         </button>
-                                        <button id="btn-snack" class="flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all flex items-center justify-center gap-1 text-slate-500 hover:text-slate-300" data-type="snack" title="Snack">
-                                            <i data-lucide="cookie" class="w-3.5 h-3.5"></i>
+                                        <button id="btn-snack" class="flex-1 py-2 rounded-md text-[10px] font-bold transition-colors flex items-center justify-center gap-1 text-slate-400 hover:text-slate-200" data-type="snack" title="Snack">
+                                            <i data-lucide="cookie" class="size-4"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -299,7 +299,7 @@ export const healthViewHtml = `
                             <h4 class="text-sm font-mono font-bold text-slate-300">Entries for Selected Date</h4>
                             <span id="foodCount" class="text-xs text-slate-500 font-bold">0 items</span>
                         </div>
-                        <div id="foodListContainer" class="flex-1 overflow-y-auto pr-1 space-y-2 min-h-[250px] md:h-full md:max-h-[500px]"></div>
+                        <div id="foodListContainer" class="flex-1 overflow-y-auto pr-1 space-y-2 min-h-[250px] md:h-full md:max-h-[500px] auto-hide-scrollbar"></div>
                     </div>
                 </div>
             </div>

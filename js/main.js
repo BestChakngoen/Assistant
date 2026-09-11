@@ -97,6 +97,28 @@ export class TradeApp {
                     };
                 }
 
+                // Subscribe to Quick Note & Scratchpad
+                if (this.ui.tools && this.ui.tools.notePadTool) {
+                    const noteTool = this.ui.tools.notePadTool;
+                    noteTool.onSave = (data) => {
+                        this.data.saveQuickNote(user.uid, data).catch(err => console.error("Firestore quickNote save error:", err));
+                    };
+                    this.data.subscribeQuickNote(user.uid, (cloudData) => {
+                        noteTool.syncFromCloud(cloudData);
+                    });
+                }
+
+                // Subscribe to Quick Table Grid
+                if (this.ui.tools && this.ui.tools.tableGridTool) {
+                    const tableTool = this.ui.tools.tableGridTool;
+                    tableTool.onSave = (data) => {
+                        this.data.saveQuickTable(user.uid, data).catch(err => console.error("Firestore quickTable save error:", err));
+                    };
+                    this.data.subscribeQuickTable(user.uid, (cloudData) => {
+                        tableTool.syncFromCloud(cloudData);
+                    });
+                }
+
                 // Initialize Health Track Managers
                 if (!this.healthInitialized) {
                     await this.initHealthTrack();
@@ -111,11 +133,40 @@ export class TradeApp {
                 if (this.data.unsubscribeDiagram) {
                     this.data.unsubscribeDiagram();
                 }
+                if (this.ui.tools && this.ui.tools.notePadTool) {
+                    this.ui.tools.notePadTool.onSave = null;
+                }
+                if (this.data.unsubscribeQuickNote) {
+                    this.data.unsubscribeQuickNote();
+                }
+                if (this.ui.tools && this.ui.tools.tableGridTool) {
+                    this.ui.tools.tableGridTool.onSave = null;
+                }
+                if (this.data.unsubscribeQuickTable) {
+                    this.data.unsubscribeQuickTable();
+                }
             }
         });
 
         // Delegate Risk Calculator Listeners
         this._riskCalc.initListeners();
+
+        // Centralized Auto-hiding Scrollbar Listener (Global Capture)
+        window.addEventListener('scroll', (e) => {
+            const target = e.target;
+            if (!target || !target.classList) return;
+            const scrollContainer = target.classList.contains('auto-hide-scrollbar')
+                ? target
+                : (target.closest ? target.closest('.auto-hide-scrollbar') : null);
+
+            if (scrollContainer) {
+                scrollContainer.classList.add('is-scrolling');
+                clearTimeout(scrollContainer._scrollTimeout);
+                scrollContainer._scrollTimeout = setTimeout(() => {
+                    scrollContainer.classList.remove('is-scrolling');
+                }, 800);
+            }
+        }, { capture: true, passive: true });
 
         // Button Click Handlers
         const btnLogin = document.getElementById('btn-login');
@@ -258,36 +309,56 @@ export class TradeApp {
             marketAssets.forEach(m => {
                 const isSelected = (m.s === savedSymbol);
                 const b = document.createElement('button');
-                b.className = `asset-btn btn-press shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-lg font-mono text-xs border transition-all ${
-                    isSelected ? 'border-cyan-500 text-cyan-400 font-bold bg-cyan-500/10 shadow-[0_0_10px_rgba(6,182,212,0.15)]' : 'border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                b.className = `asset-btn btn-press shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-lg font-mono text-xs transition-all ${
+                    isSelected ? 'bg-cyan-500/20 text-cyan-300 font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)]' : 'bg-slate-900/40 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
                 }`;
                 b.innerText = m.n;
                 b.onclick = () => {
                     document.querySelectorAll('.asset-btn').forEach(x => {
-                        x.classList.remove('border-cyan-500', 'text-cyan-400', 'font-bold', 'bg-cyan-500/10', 'shadow-[0_0_10px_rgba(6,182,212,0.15)]');
-                        x.classList.add('border-slate-800', 'text-slate-400');
+                        x.classList.remove('bg-cyan-500/20', 'text-cyan-300', 'font-bold', 'shadow-[0_0_10px_rgba(6,182,212,0.2)]');
+                        x.classList.add('bg-slate-900/40', 'text-slate-400');
                     });
-                    b.classList.remove('border-slate-800', 'text-slate-400');
-                    b.classList.add('border-cyan-500', 'text-cyan-400', 'font-bold', 'bg-cyan-500/10', 'shadow-[0_0_10px_rgba(6,182,212,0.15)]');
+                    b.classList.remove('bg-slate-900/40', 'text-slate-400');
+                    b.classList.add('bg-cyan-500/20', 'text-cyan-300', 'font-bold', 'shadow-[0_0_10px_rgba(6,182,212,0.2)]');
                     this.saveMarketSymbol(m.s);
                     this.initTradingView(m.s);
                 };
                 container.appendChild(b);
             });
 
-            // Enable smooth horizontal scrolling with mouse wheel
-            container.addEventListener('wheel', (e) => {
-                if (e.deltaY !== 0) {
-                    e.preventDefault();
-                    container.scrollLeft += e.deltaY;
-                }
-            }, { passive: false });
+            // Setup universal horizontal slide bar (Wheel scroll + Auto-hide)
+            this.setupCustomSlideBar(container);
         }
 
         // Initial UI Date & Market Rates
         const inputDate = document.getElementById('input-date');
         if (inputDate) inputDate.value = this.getThaiDateString();
         this.updateTHB();
+    }
+
+    /**
+     * Initializes universal horizontal slide bars (.custom-slide-bar)
+     * Handles horizontal mouse wheel scrolling and auto-hiding scrollbar
+     */
+    setupCustomSlideBar(element) {
+        if (!element || element.dataset.hasSlideBarInit) return;
+        element.dataset.hasSlideBarInit = 'true';
+
+        element.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                element.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+
+        let scrollTimer;
+        element.addEventListener('scroll', () => {
+            element.classList.add('is-scrolling');
+            clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(() => {
+                element.classList.remove('is-scrolling');
+            }, 800);
+        }, { passive: true });
     }
 
     // --- Delegation Handlers ---

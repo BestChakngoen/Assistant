@@ -12,7 +12,7 @@
     --bg-app: #080b11;
     --bg-sidebar: #0d121f;
     --bg-header: rgba(13, 18, 31, 0.8);
-    --border-color: rgba(255, 255, 255, 0.1);
+    --border-color: transparent;
     --border-sidebar: rgba(148, 163, 184, 0.08); /* slate-800/60 */
     --text-primary: #e2e8f0; /* slate-200 */
     --text-muted: #64748b; /* slate-500 */
@@ -42,7 +42,7 @@
     --bg-app: #080b11;
     --bg-sidebar: #0d121f;
     --bg-header: rgba(13, 18, 31, 0.8);
-    --border-color: rgba(255, 255, 255, 0.1);
+    --border-color: transparent;
     --border-sidebar: rgba(148, 163, 184, 0.08);
     --text-primary: #e2e8f0;
     --text-muted: #64748b;
@@ -104,9 +104,9 @@ body {
 .glass-panel {
     background: var(--panel-bg);
     backdrop-filter: blur(10px);
-    border: 1px solid var(--border-color);
+    border: none;
     box-shadow: var(--panel-shadow);
-    transition: all 0.3s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .theme-minimalist .glass-panel {
@@ -119,7 +119,7 @@ body {
 }
 
 .btn-press {
-    transition: all 0.1s;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-press:active {
@@ -168,15 +168,15 @@ input:focus, select:focus {
 
 /* Market Center Full Viewport Chart */
 #market-chart-section {
-    height: calc(100vh - 112px);
-    min-height: calc(100vh - 112px);
+    height: calc(100dvh - 112px);
+    min-height: calc(100dvh - 112px);
     width: 100%;
 }
 
 @media (max-width: 767px) {
     #market-chart-section {
-        height: calc(100vh - 96px);
-        min-height: calc(100vh - 96px);
+        height: calc(100dvh - 96px);
+        min-height: calc(100dvh - 96px);
     }
 }
 
@@ -215,12 +215,24 @@ input:focus, select:focus {
     transition: color 0.3s ease;
 }
 
-/* Horizontal slide bar styling for asset toolbar */
+/* Utility to completely hide scrollbars */
+.no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Horizontal slide bar styling (Hidden by default, shows only on scroll) */
 .custom-slide-bar {
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
 }
 
 .custom-slide-bar::-webkit-scrollbar {
@@ -228,15 +240,105 @@ input:focus, select:focus {
 }
 
 .custom-slide-bar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 9999px;
+    transition: background 0.3s ease;
+}
+
+.custom-slide-bar::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 9999px;
+    transition: background 0.3s ease;
+}
+
+.custom-slide-bar.is-scrolling::-webkit-scrollbar-thumb {
+    background: rgba(6, 182, 212, 0.45);
+}
+
+.custom-slide-bar.is-scrolling::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.75);
+}
+
+.custom-slide-bar.is-scrolling::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.custom-slide-bar.is-scrolling {
+    scrollbar-color: rgba(6, 182, 212, 0.45) rgba(15, 23, 42, 0.6);
+}
+
+/* Universal Auto-hiding Scrollbar (Hidden by default, shows only while scrolling) */
+.auto-hide-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 9999px;
+    transition: background 0.3s ease;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 9999px;
+    transition: background 0.3s ease;
+}
+
+.auto-hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
+    background: rgba(6, 182, 212, 0.45);
+}
+
+.auto-hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.8);
+}
+
+.auto-hide-scrollbar.is-scrolling::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.auto-hide-scrollbar.is-scrolling {
+    scrollbar-color: rgba(6, 182, 212, 0.45) rgba(15, 23, 42, 0.6);
+}
+
+/* Table Permanent Scrollbar (Always visible, easy to grab and scroll in X and Y directions) */
+.table-scroll-permanent {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 185, 129, 0.45) rgba(15, 23, 42, 0.6);
+}
+
+.table-scroll-permanent::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-scroll-permanent::-webkit-scrollbar-track {
     background: rgba(15, 23, 42, 0.6);
     border-radius: 9999px;
 }
 
-.custom-slide-bar::-webkit-scrollbar-thumb {
-    background: rgba(6, 182, 212, 0.25);
+.table-scroll-permanent::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.45);
     border-radius: 9999px;
+    transition: background 0.2s ease;
 }
 
-.custom-slide-bar::-webkit-scrollbar-thumb:hover {
-    background: rgba(6, 182, 212, 0.5);
+.table-scroll-permanent::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.8);
+}
+
+/* Accessibility: Respect Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

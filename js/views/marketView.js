@@ -4,7 +4,7 @@
 export const marketViewHtml = `
     <div id="market-panel" class="hidden flex flex-col gap-6 pb-20">
         <!-- SCREEN 1: Full-height viewport containing Toolbar and Chart (Fills 100% of window down to exact pixel) -->
-        <div id="market-chart-section" style="height: calc(100vh - 112px); min-height: calc(100vh - 112px);" class="h-[calc(100vh-96px)] md:h-[calc(100vh-112px)] min-h-[calc(100vh-96px)] md:min-h-[calc(100vh-112px)] flex flex-col gap-3 shrink-0">
+        <div id="market-chart-section" style="height: calc(100dvh - 112px); min-height: calc(100dvh - 112px);" class="h-[calc(100dvh-96px)] md:h-[calc(100dvh-112px)] min-h-[calc(100dvh-96px)] md:min-h-[calc(100dvh-112px)] flex flex-col gap-3 shrink-0">
             <!-- Asset Slide Bar Toolbar -->
             <div class="flex items-center gap-2 shrink-0">
                 <div class="flex-1 min-w-0 flex items-center gap-2 glass-panel p-2.5 rounded-xl custom-slide-bar whitespace-nowrap" id="market-assets-container">
@@ -12,13 +12,13 @@ export const marketViewHtml = `
                     <!-- Buttons injected by MarketWidgetManager -->
                 </div>
                 <button onclick="window.toggleChartFullscreen && window.toggleChartFullscreen()" title="ขยายกราฟเต็มจอ (Fullscreen)" class="btn-press hidden sm:flex items-center gap-1.5 px-3 py-2.5 rounded-xl glass-panel bg-slate-900/60 hover:bg-slate-800 text-slate-300 hover:text-cyan-400 border border-slate-800 text-xs font-mono shrink-0 transition-all">
-                    <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="maximize" class="size-3.5"></i>
                     <span class="font-bold">FULLSCREEN</span>
                 </button>
-                <button onclick="document.getElementById('market-asset-info-section')?.scrollIntoView({ behavior: 'smooth' })" title="เลื่อนลงดูข้อมูลสินทรัพย์" class="btn-press hidden sm:flex items-center gap-1.5 px-3 py-2.5 rounded-xl glass-panel bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-mono shrink-0 transition-all shadow-[0_0_10px_rgba(6,182,212,0.1)]">
-                    <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                <button onclick="document.getElementById('market-asset-info-section')?.scrollIntoView({ behavior: 'smooth' })" title="เลื่อนลงดูข้อมูลสินทรัพย์" class="btn-press hidden sm:flex items-center gap-1.5 px-3 py-2.5 rounded-xl glass-panel bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-mono shrink-0 transition-all">
+                    <i data-lucide="book-open" class="size-3.5"></i>
                     <span class="font-bold">INTEL</span>
-                    <i data-lucide="arrow-down" class="w-3 h-3"></i>
+                    <i data-lucide="arrow-down" class="size-3"></i>
                 </button>
             </div>
 

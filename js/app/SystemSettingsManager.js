@@ -206,12 +206,12 @@ export class SystemSettingsManager {
 
         const overlay = document.createElement('div');
         overlay.id = 'quota-exceeded-modal';
-        overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md animate-fade-in p-4';
+        overlay.className = 'fixed inset-0 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-md animate-fade-in p-4';
         overlay.innerHTML = `
             <div class="bg-slate-900 p-6 rounded-3xl shadow-2xl max-w-md w-full text-center font-mono relative overflow-hidden">
                 <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-4 text-red-400 shadow-lg shadow-red-500/10">
-                    <i data-lucide="shield-alert" class="w-9 h-9"></i>
+                    <i data-lucide="shield-alert" class="size-9"></i>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-2 tracking-wide uppercase">Cloud Quota Exceeded</h3>
                 <p class="text-xs text-red-400/90 font-semibold mb-3">Service: <span class="text-white">${serviceName}</span></p>

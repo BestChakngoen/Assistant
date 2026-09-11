@@ -57,7 +57,7 @@ export class ShareUI {
         if (!container) {
             container = document.createElement('div');
             container.id = 'toast-container';
-            container.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2.5 max-w-md w-full pointer-events-none px-4';
+            container.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2.5 max-w-md w-full pointer-events-none px-4';
             document.body.appendChild(container);
         }
 
@@ -85,14 +85,14 @@ export class ShareUI {
 
         toast.innerHTML = `
             <div class="p-2 rounded-xl ${bgIcon} ${iconColor} shrink-0">
-                <i data-lucide="${icon}" class="w-4 h-4"></i>
+                <i data-lucide="${icon}" class="size-4"></i>
             </div>
             <div class="flex-1 min-w-0 pt-0.5">
                 <h4 class="text-xs font-mono font-bold text-white uppercase tracking-wider">${title}</h4>
                 <p class="text-xs text-slate-300 mt-0.5 leading-relaxed font-sans">${message}</p>
             </div>
-            <button class="text-slate-500 hover:text-slate-300 transition-colors p-1 shrink-0" title="Close">
-                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            <button class="text-slate-500 hover:text-slate-300 transition-colors size-8 flex items-center justify-center rounded-lg hover:bg-slate-800/60 shrink-0" title="Close">
+                <i data-lucide="x" class="size-4"></i>
             </button>
         `;
 

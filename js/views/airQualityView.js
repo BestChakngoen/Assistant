@@ -74,18 +74,18 @@ export const airQualityViewHtml = `
                 <!-- Temperature & Stats -->
                 <div class="flex flex-wrap items-baseline gap-6 relative z-10 pt-2">
                     <div class="flex items-baseline">
-                        <span id="air-hero-temp" class="text-5xl sm:text-7xl font-mono font-bold text-white tracking-tighter">31</span>
+                        <span id="air-hero-temp" class="text-5xl sm:text-7xl font-mono font-bold text-white tracking-tighter tabular-nums">31</span>
                         <span class="text-2xl sm:text-3xl font-mono text-cyan-400 ml-1">°C</span>
                     </div>
 
                     <div class="space-y-1 text-xs font-mono text-slate-400">
                         <div class="flex items-center gap-2">
                             <span class="text-slate-500">Feels Like:</span>
-                            <span id="air-hero-feels-like" class="text-slate-200 font-bold">35°C</span>
+                            <span id="air-hero-feels-like" class="text-slate-200 font-bold tabular-nums">35°C</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-slate-500">High / Low:</span>
-                            <span id="air-hero-high-low" class="text-slate-200 font-bold">34°C / 26°C</span>
+                            <span id="air-hero-high-low" class="text-slate-200 font-bold tabular-nums">34°C / 26°C</span>
                         </div>
                     </div>
                 </div>
@@ -94,15 +94,15 @@ export const airQualityViewHtml = `
                 <div class="grid grid-cols-3 gap-3 pt-2 relative z-10">
                     <div class="p-3 rounded-2xl bg-slate-950/60 flex flex-col items-center justify-center text-center">
                         <span class="text-[10px] font-mono text-slate-500 uppercase tracking-wider">PM2.5 DUST</span>
-                        <span id="air-quick-pm25" class="text-sm font-mono font-bold text-emerald-400 mt-0.5">18 µg/m³</span>
+                        <span id="air-quick-pm25" class="text-sm font-mono font-bold text-emerald-400 mt-0.5 tabular-nums">18 µg/m³</span>
                     </div>
                     <div class="p-3 rounded-2xl bg-slate-950/60 flex flex-col items-center justify-center text-center">
                         <span class="text-[10px] font-mono text-slate-500 uppercase tracking-wider">UV INDEX</span>
-                        <span id="air-quick-uv" class="text-sm font-mono font-bold text-amber-400 mt-0.5">6 (High)</span>
+                        <span id="air-quick-uv" class="text-sm font-mono font-bold text-amber-400 mt-0.5 tabular-nums">6 (High)</span>
                     </div>
                     <div class="p-3 rounded-2xl bg-slate-950/60 flex flex-col items-center justify-center text-center">
                         <span class="text-[10px] font-mono text-slate-500 uppercase tracking-wider">HUMIDITY</span>
-                        <span id="air-quick-humidity" class="text-sm font-mono font-bold text-cyan-400 mt-0.5">65%</span>
+                        <span id="air-quick-humidity" class="text-sm font-mono font-bold text-cyan-400 mt-0.5 tabular-nums">65%</span>
                     </div>
                 </div>
             </div>
@@ -130,7 +130,7 @@ export const airQualityViewHtml = `
 
                     <!-- Center Score Display -->
                     <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <span id="air-score-number" class="text-5xl font-mono font-bold text-white tracking-tighter">80</span>
+                        <span id="air-score-number" class="text-5xl font-mono font-bold text-white tracking-tighter tabular-nums">80</span>
                         <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest mt-0.5">OUT OF 100</span>
                     </div>
                 </div>
@@ -232,11 +232,14 @@ export const airQualityViewHtml = `
                     <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
                     <h4 class="text-xs font-mono font-bold text-white uppercase tracking-wider">24-Hour Weather & PM2.5 Forecast</h4>
                 </div>
-                <span class="text-[11px] font-mono text-slate-500">Hourly Timeline</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-mono text-slate-500 hidden sm:inline">Click & drag to scroll</span>
+                    <span class="text-[11px] font-mono text-slate-500">Hourly Timeline</span>
+                </div>
             </div>
 
-            <!-- Horizontal Scrollable Strip -->
-            <div id="air-hourly-strip" class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
+            <!-- Horizontal Scrollable Strip (Hidden Scrollbar + Drag-to-Scroll) -->
+            <div id="air-hourly-strip" class="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar select-none cursor-grab active:cursor-grabbing">
                 <!-- Dynamically Populated -->
             </div>
         </div>

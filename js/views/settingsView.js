@@ -3,9 +3,9 @@
  */
 export const settingsViewHtml = `
     <div id="settings-panel" class="hidden flex-col gap-6 animate-fade-in pb-10">
-        <div class="glass-panel p-6 rounded-2xl border border-slate-700 bg-slate-900/50">
+        <div class="glass-panel p-6 rounded-2xl bg-slate-900/50">
             <h2 class="text-xl font-mono font-bold text-white mb-6 flex items-center gap-2">
-                <svg class="w-5 h-5 text-slate-400" viewBox="0 0 16 16" fill="currentColor">
+                <svg class="size-5 text-slate-400" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path>
                     <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
                 </svg>
@@ -14,17 +14,17 @@ export const settingsViewHtml = `
             
             <div class="flex flex-col gap-6 mb-6">
                 <!-- Quota Dashboard Card (Full Width) -->
-                <div class="w-full bg-[#161b22] p-6 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-5">
+                <div class="w-full bg-[#161b22] p-6 rounded-2xl border border-slate-800/80 flex flex-col justify-between space-y-5">
                     <div>
                         <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
                             <div class="flex items-center gap-2">
-                                <i data-lucide="activity" class="w-5 h-5 text-cyan-400"></i>
+                                <i data-lucide="activity" class="size-5 text-cyan-400"></i>
                                 <h3 class="font-mono text-sm font-bold text-white uppercase tracking-wider">Cloud Quota & Storage Usage</h3>
                             </div>
                             <!-- Countdown timer to daily reset -->
-                            <div class="flex items-center gap-1.5 px-3 py-1 bg-slate-900/80 border border-slate-800 rounded-full text-[11px] font-mono text-amber-400">
-                                <i data-lucide="clock" class="w-3.5 h-3.5 animate-pulse"></i>
-                                <span>Reset In: <strong id="quota-reset-timer" class="text-amber-300">--h --m --s</strong></span>
+                            <div class="flex items-center gap-1.5 px-3 py-1 bg-slate-900/80 border border-slate-800/60 rounded-full text-[11px] font-mono text-amber-400">
+                                <i data-lucide="clock" class="size-3.5 animate-pulse"></i>
+                                <span>Reset In: <strong id="quota-reset-timer" class="text-amber-300 tabular-nums">--h --m --s</strong></span>
                             </div>
                         </div>
 
@@ -144,14 +144,14 @@ export const settingsViewHtml = `
     </div>
 
     <!-- Health Data Management Modal -->
-    <div id="dataManageModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+    <div id="dataManageModal" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
         <div class="glass-panel p-6 rounded-3xl shadow-xl max-w-sm w-full border border-slate-800">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-bold text-white font-mono flex items-center gap-2">
-                    <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i> Manage Health Data
+                    <i data-lucide="database" class="size-5 text-cyan-400"></i> Manage Health Data
                 </h3>
-                <button id="btnCloseDataManage" class="text-slate-400 hover:text-white transition">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                <button id="btnCloseDataManage" class="size-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors" title="Close">
+                    <i data-lucide="x" class="size-5"></i>
                 </button>
             </div>
             <div class="space-y-4 font-mono">
@@ -163,15 +163,15 @@ export const settingsViewHtml = `
                     <label class="block text-xs font-bold text-slate-400 mb-2">Select Data Types to Wipe</label>
                     <div class="space-y-2 bg-slate-900/30 p-3 rounded-xl border border-slate-800/50">
                         <label class="flex items-center gap-3 cursor-pointer select-none">
-                            <input type="checkbox" id="chkDeleteSleep" class="rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500" checked>
+                            <input type="checkbox" id="chkDeleteSleep" class="rounded border-slate-800 bg-slate-800 text-cyan-500 focus:ring-cyan-500" checked>
                             <span class="text-sm text-slate-300 font-bold">Sleep Analysis</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer select-none">
-                            <input type="checkbox" id="chkDeleteBody" class="rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500" checked>
+                            <input type="checkbox" id="chkDeleteBody" class="rounded border-slate-800 bg-slate-800 text-cyan-500 focus:ring-cyan-500" checked>
                             <span class="text-sm text-slate-300 font-bold">Body & Trends</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer select-none">
-                            <input type="checkbox" id="chkDeleteDiet" class="rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500" checked>
+                            <input type="checkbox" id="chkDeleteDiet" class="rounded border-slate-800 bg-slate-800 text-cyan-500 focus:ring-cyan-500" checked>
                             <span class="text-sm text-slate-300 font-bold">Food Journal</span>
                         </label>
                     </div>

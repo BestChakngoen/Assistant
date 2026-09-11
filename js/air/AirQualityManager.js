@@ -97,6 +97,45 @@ export class AirQualityManager {
         if (this.dom.btnRefresh) {
             this.dom.btnRefresh.addEventListener('click', () => this.loadData(true));
         }
+
+        // Mouse click-and-drag horizontal scroll for 24-hour timeline on Desktop
+        if (this.dom.hourlyStrip) {
+            const strip = this.dom.hourlyStrip;
+            let isDown = false;
+            let startX = 0;
+            let scrollLeft = 0;
+
+            strip.addEventListener('mousedown', (e) => {
+                isDown = true;
+                strip.classList.add('cursor-grabbing');
+                strip.classList.remove('cursor-grab');
+                startX = e.pageX - strip.offsetLeft;
+                scrollLeft = strip.scrollLeft;
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (!isDown) return;
+                isDown = false;
+                strip.classList.remove('cursor-grabbing');
+                strip.classList.add('cursor-grab');
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - strip.offsetLeft;
+                const walk = (x - startX) * 1.5;
+                strip.scrollLeft = scrollLeft - walk;
+            });
+
+            // Smooth horizontal scroll with mouse wheel
+            strip.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    strip.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        }
     }
 
     detectGpsLocation() {

@@ -65,8 +65,8 @@ export class ShareFeedRenderer {
             card.dataset.itemId = item.id;
             if (isStarred) card.dataset.starred = 'true';
 
-            card.className = `glass-panel p-4 rounded-xl border flex flex-col gap-3 relative group transition-all cursor-pointer select-none ${
-                isSelected ? 'share-card-selected border-cyan-500/50 bg-cyan-950/20' : 'border-slate-800/80 bg-slate-950/20 hover:border-slate-700/80 hover:bg-slate-900/30'
+            card.className = `glass-panel p-4 rounded-xl flex flex-col gap-3 relative group transition-all cursor-pointer select-none ${
+                isSelected ? 'share-card-selected ring-1 ring-cyan-500/50 bg-cyan-950/25 shadow-lg shadow-cyan-950/30' : 'bg-slate-950/30 hover:bg-slate-900/50'
             }`;
 
             card.onclick = (e) => {
@@ -143,7 +143,7 @@ export class ShareFeedRenderer {
             }
 
             const timeSpan = document.createElement('span');
-            timeSpan.className = 'text-slate-500/80 shrink-0';
+            timeSpan.className = 'text-slate-500/80 shrink-0 tabular-nums';
             timeSpan.innerText = ShareUI.formatTime(item.timestamp);
             titleTimeGroup.appendChild(timeSpan);
 
@@ -281,7 +281,7 @@ export class ShareFeedRenderer {
                 fileDetails.appendChild(fileNameP);
 
                 const fileSizeP = document.createElement('p');
-                fileSizeP.className = 'text-[10px] text-slate-500 font-mono mt-0.5';
+                fileSizeP.className = 'text-[10px] text-slate-500 font-mono mt-0.5 tabular-nums';
                 fileSizeP.innerText = ShareUI.formatSize(item.size);
                 fileDetails.appendChild(fileSizeP);
 
