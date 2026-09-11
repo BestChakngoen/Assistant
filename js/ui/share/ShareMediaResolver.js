@@ -21,6 +21,21 @@ export class ShareMediaResolver {
                 fileUrl = item.url;
             }
         }
+
+        // Defensive guard: reject invalid or corrupted URL strings
+        if (fileUrl) {
+            const trimmed = fileUrl.trim().toLowerCase();
+            if (
+                trimmed === 'invalid' ||
+                trimmed === 'invalid/' ||
+                trimmed.startsWith('invalid/') ||
+                trimmed === 'undefined' ||
+                trimmed === 'null'
+            ) {
+                return '';
+            }
+        }
+
         return fileUrl;
     }
 
