@@ -54,7 +54,7 @@ export class UINavigation {
         }
 
         const previousTab = uiManager.currentTab || 'code';
-        if (tabName !== 'game') {
+        if (uiManager.currentTab !== 'game') {
             uiManager.previousTab = previousTab;
         }
         uiManager.currentTab = tabName;
@@ -109,11 +109,16 @@ export class UINavigation {
                     uiManager.updateStrategyLabTime();
                 } else if (key === 'air') {
                     if (uiManager.airQuality) {
-                        uiManager.airQuality.refreshIfStale();
+                        uiManager.airQuality.autoLocateAndRefresh(true);
                     }
                 } else if (key === 'notifications') {
                     if (window.notificationManager) {
                         window.notificationManager.render();
+                    }
+                } else if (key === 'networth') {
+                    if (window.netWorthManager) {
+                        window.netWorthManager.autoRefreshOnLoad();
+                        requestAnimationFrame(() => window.netWorthManager.syncCardsHeight());
                     }
                 } else if (key === 'game') {
                     if (window.__phonkEngineInstance && typeof window.__phonkEngineInstance.loop === 'function') {
@@ -132,7 +137,7 @@ export class UINavigation {
                         window.__phonkStopEngine();
                     }
                     if (window.__phonkMobileAdapter && window.__phonkMobileAdapter.isActive) {
-                        window.__phonkMobileAdapter.exitGame(false);
+                        window.__phonkMobileAdapter.exitGame(false, false);
                     }
                 }
                 if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air' || key === 'notifications') {

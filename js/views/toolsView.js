@@ -622,7 +622,7 @@ export const toolsViewHtml = `
                             <div class="flex items-center gap-2">
                                 <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono text-slate-500">
                                     <i data-lucide="grip-vertical" class="size-3 text-slate-500"></i>
-                                    <span>Drag 6 dots to reorder</span>
+                                    <span>Drag 6 dots or hold card to reorder</span>
                                 </span>
                                 <span id="pdf-img-count-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800/60 text-slate-400 tabular-nums">
                                     0 images selected

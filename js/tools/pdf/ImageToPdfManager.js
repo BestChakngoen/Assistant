@@ -38,6 +38,7 @@ export class ImageToPdfManager {
             previewPageIndex: 0,
             previewDebounceTimer: null
         };
+        this.draggedIndex = null;
     }
 
     init() {
@@ -155,7 +156,7 @@ export class ImageToPdfManager {
         this.dom.imgListMount.innerHTML = this.state.images.map((img, idx) => `
             <div class="pdf-queue-card relative flex items-center justify-between p-3.5 bg-slate-950/60 rounded-2xl gap-3 border border-transparent hover:border-slate-800/80 transition-all select-none" data-index="${idx}">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
-                    <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-500 hover:text-cyan-400 cursor-grab active:cursor-grabbing pdf-drag-handle shrink-0 transition" title="Press & drag 6 dots to reorder"></i>
+                    <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-500 hover:text-cyan-400 cursor-grab active:cursor-grabbing pdf-drag-handle shrink-0 transition" title="Press & drag 6 dots or hold card to reorder"></i>
                     <span class="size-7 rounded-xl bg-slate-900 flex items-center justify-center font-mono font-bold text-xs text-cyan-400 tabular-nums shrink-0">
                         ${idx + 1}
                     </span>
@@ -207,68 +208,259 @@ export class ImageToPdfManager {
     }
 
     attachQueueDragListeners(card, index) {
-        const onPointerStart = (e) => {
-            if (!e.target.closest('.pdf-drag-handle')) return;
-            e.preventDefault();
+        let longPressTimer = null;
+        let isDraggingActive = false;
+        let wasDragged = false;
+        let startClientY = 0;
+        let startClientX = 0;
+        let currentClientY = 0;
+        let startScrollTop = 0;
+        let currentTargetIdx = index;
+        let autoScrollRaf = null;
+        let scrollVelocity = 0;
+        let containerRect = null;
+        const container = this.dom.imgListMount;
+        const total = this.state.images.length;
+        let itemHeight = (card.offsetHeight || 76) + 12;
 
-            const startY = e.touches ? e.touches[0].clientY : e.clientY;
-            let draggedIndex = index;
-            let currentTargetIdx = index;
-            const itemHeight = (card.offsetHeight || 76) + 12;
-            const total = this.state.images.length;
+        const isInteractiveTarget = (target) => {
+            return !!target.closest('button, .img-queue-thumb, a, input, select');
+        };
+
+        const updateDragPosition = () => {
+            if (!isDraggingActive || this.draggedIndex === null || !container) return;
+
+            const scrollDelta = container.scrollTop - startScrollTop;
+            const pointerDeltaY = currentClientY - startClientY;
+            const totalDeltaY = pointerDeltaY + scrollDelta;
+
+            // 1. Move card to follow finger/cursor smoothly in scrollable context
+            card.style.transform = `translateY(${totalDeltaY}px) scale(0.95)`;
+
+            // 2. Calculate target slot index & shift other cards
+            const slotOffset = Math.round(totalDeltaY / itemHeight);
+            const newTargetIdx = Math.max(0, Math.min(total - 1, index + slotOffset));
+
+            if (newTargetIdx !== currentTargetIdx) {
+                currentTargetIdx = newTargetIdx;
+            }
+            this.updateOtherQueueCardsShift(index, currentTargetIdx, itemHeight);
+        };
+
+        const startAutoScroll = () => {
+            if (autoScrollRaf) return;
+
+            const autoScrollLoop = () => {
+                if (!isDraggingActive || scrollVelocity === 0 || !container) {
+                    autoScrollRaf = null;
+                    return;
+                }
+
+                const maxScroll = container.scrollHeight - container.clientHeight;
+                if (maxScroll > 0) {
+                    const prevScroll = container.scrollTop;
+                    const nextScroll = Math.max(0, Math.min(maxScroll, prevScroll + scrollVelocity));
+
+                    if (nextScroll !== prevScroll) {
+                        container.scrollTop = nextScroll;
+                        container.classList.add('is-scrolling');
+                        updateDragPosition();
+                    }
+                }
+
+                autoScrollRaf = requestAnimationFrame(autoScrollLoop);
+            };
+
+            autoScrollRaf = requestAnimationFrame(autoScrollLoop);
+        };
+
+        const stopAutoScroll = () => {
+            if (autoScrollRaf) {
+                cancelAnimationFrame(autoScrollRaf);
+                autoScrollRaf = null;
+            }
+            scrollVelocity = 0;
+        };
+
+        const onPointerMove = (moveEvt) => {
+            if (!isDraggingActive || this.draggedIndex === null) return;
+            if (moveEvt.cancelable) {
+                moveEvt.preventDefault();
+            }
+
+            currentClientY = moveEvt.touches ? moveEvt.touches[0].clientY : moveEvt.clientY;
+
+            if (container) {
+                containerRect = container.getBoundingClientRect();
+                const edgeThreshold = 55;
+                const maxSpeed = 10;
+                const topEdge = containerRect.top + edgeThreshold;
+                const bottomEdge = containerRect.bottom - edgeThreshold;
+
+                if (currentClientY > bottomEdge) {
+                    const overflow = Math.min(1.5, Math.max(0.1, (currentClientY - bottomEdge) / edgeThreshold));
+                    scrollVelocity = overflow * maxSpeed;
+                    startAutoScroll();
+                } else if (currentClientY < topEdge) {
+                    const overflow = Math.min(1.5, Math.max(0.1, (topEdge - currentClientY) / edgeThreshold));
+                    scrollVelocity = -overflow * maxSpeed;
+                    startAutoScroll();
+                } else {
+                    scrollVelocity = 0;
+                    stopAutoScroll();
+                }
+            }
+
+            updateDragPosition();
+        };
+
+        const onPointerEnd = () => {
+            stopAutoScroll();
+
+            window.removeEventListener('mousemove', onPointerMove);
+            window.removeEventListener('mouseup', onPointerEnd);
+            window.removeEventListener('touchmove', onPointerMove);
+            window.removeEventListener('touchend', onPointerEnd);
+            window.removeEventListener('touchcancel', onPointerEnd);
+
+            if (card) {
+                card.style.touchAction = '';
+            }
+
+            if (!isDraggingActive || this.draggedIndex === null) {
+                isDraggingActive = false;
+                return;
+            }
+
+            isDraggingActive = false;
+            wasDragged = true;
+            const sourceIdx = this.draggedIndex;
+            const targetIdx = currentTargetIdx;
+            const preservedScrollTop = container ? container.scrollTop : 0;
+
+            card.classList.remove('is-dragging');
+            card.classList.add('is-dropping');
+
+            const finalDeltaY = (targetIdx - sourceIdx) * itemHeight;
+            card.style.transform = `translateY(${finalDeltaY}px) scale(1)`;
+
+            setTimeout(() => {
+                this.clearQueueDragShiftAnimation();
+                this.draggedIndex = null;
+                if (container) {
+                    container.classList.remove('is-scrolling');
+                }
+                if (sourceIdx !== targetIdx) {
+                    this.reorderImages(sourceIdx, targetIdx, preservedScrollTop);
+                } else if (container) {
+                    container.scrollTop = preservedScrollTop;
+                }
+                setTimeout(() => {
+                    wasDragged = false;
+                }, 100);
+            }, 180);
+        };
+
+        const beginDrag = (clientX, clientY) => {
+            if (this.draggedIndex !== null || !container) return;
+
+            isDraggingActive = true;
+            this.draggedIndex = index;
+            currentTargetIdx = index;
+            startClientX = clientX;
+            startClientY = clientY;
+            currentClientY = clientY;
+            startScrollTop = container.scrollTop;
+            containerRect = container.getBoundingClientRect();
+
+            itemHeight = (card.offsetHeight || 76) + 12;
+            card.style.touchAction = 'none';
 
             card.classList.add('is-dragging');
             card.style.transform = 'translateY(0px) scale(0.95)';
+            container.classList.add('is-scrolling');
 
             ShareUI.playSound('mouse-click');
-            if (navigator.vibrate) navigator.vibrate(30);
-
-            const onPointerMove = (moveEvt) => {
-                if (draggedIndex === null) return;
-                const currentY = moveEvt.touches ? moveEvt.touches[0].clientY : moveEvt.clientY;
-                const deltaY = currentY - startY;
-
-                card.style.transform = `translateY(${deltaY}px) scale(0.95)`;
-
-                const slotOffset = Math.round(deltaY / itemHeight);
-                const newTargetIdx = Math.max(0, Math.min(total - 1, index + slotOffset));
-
-                if (newTargetIdx !== currentTargetIdx) {
-                    currentTargetIdx = newTargetIdx;
-                }
-                this.updateOtherQueueCardsShift(index, currentTargetIdx, itemHeight);
-            };
-
-            const onPointerEnd = () => {
-                window.removeEventListener('mousemove', onPointerMove);
-                window.removeEventListener('mouseup', onPointerEnd);
-                window.removeEventListener('touchmove', onPointerMove);
-                window.removeEventListener('touchend', onPointerEnd);
-
-                if (draggedIndex === null) return;
-
-                const sourceIdx = draggedIndex;
-                const targetIdx = currentTargetIdx;
-
-                card.classList.remove('is-dragging');
-                card.classList.add('is-dropping');
-                const finalDeltaY = (targetIdx - sourceIdx) * itemHeight;
-                card.style.transform = `translateY(${finalDeltaY}px) scale(1)`;
-
-                setTimeout(() => {
-                    this.clearQueueDragShiftAnimation();
-                    draggedIndex = null;
-                    if (sourceIdx !== targetIdx) {
-                        this.reorderImages(sourceIdx, targetIdx);
-                    }
-                }, 180);
-            };
+            if (navigator.vibrate) {
+                try { navigator.vibrate(30); } catch (_) {}
+            }
 
             window.addEventListener('mousemove', onPointerMove, { passive: false });
             window.addEventListener('mouseup', onPointerEnd, { passive: false });
             window.addEventListener('touchmove', onPointerMove, { passive: false });
             window.addEventListener('touchend', onPointerEnd, { passive: false });
+            window.addEventListener('touchcancel', onPointerEnd, { passive: false });
         };
+
+        const onPointerStart = (e) => {
+            if (isInteractiveTarget(e.target)) return;
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            // Scenario A: Clicked on 6-dot grip handle -> Immediate Drag
+            if (e.target.closest('.pdf-drag-handle')) {
+                if (e.cancelable) e.preventDefault();
+                beginDrag(clientX, clientY);
+                return;
+            }
+
+            // Scenario B: Pressed on Card Body -> Long-press detection (~250ms)
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+
+            let movedTooFar = false;
+            const onEarlyMove = (moveEvt) => {
+                const cx = moveEvt.touches ? moveEvt.touches[0].clientX : moveEvt.clientX;
+                const cy = moveEvt.touches ? moveEvt.touches[0].clientY : moveEvt.clientY;
+                if (Math.hypot(cx - clientX, cy - clientY) > 8) {
+                    movedTooFar = true;
+                    cleanupEarly();
+                }
+            };
+
+            const onEarlyEnd = () => {
+                cleanupEarly();
+            };
+
+            const cleanupEarly = () => {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                window.removeEventListener('mousemove', onEarlyMove);
+                window.removeEventListener('mouseup', onEarlyEnd);
+                window.removeEventListener('touchmove', onEarlyMove);
+                window.removeEventListener('touchend', onEarlyEnd);
+                window.removeEventListener('touchcancel', onEarlyEnd);
+            };
+
+            window.addEventListener('mousemove', onEarlyMove, { passive: true });
+            window.addEventListener('mouseup', onEarlyEnd, { passive: true });
+            window.addEventListener('touchmove', onEarlyMove, { passive: true });
+            window.addEventListener('touchend', onEarlyEnd, { passive: true });
+            window.addEventListener('touchcancel', onEarlyEnd, { passive: true });
+
+            longPressTimer = setTimeout(() => {
+                cleanupEarly();
+                if (!movedTooFar && this.draggedIndex === null) {
+                    beginDrag(clientX, clientY);
+                }
+            }, 250);
+        };
+
+        // Suppress accidental click event right after drag release
+        card.addEventListener('click', (clickEvt) => {
+            if (wasDragged) {
+                clickEvt.preventDefault();
+                clickEvt.stopPropagation();
+            }
+        }, true);
+
+        // Prevent native HTML5 ghost drag
+        card.addEventListener('dragstart', (e) => e.preventDefault());
 
         card.addEventListener('mousedown', onPointerStart);
         card.addEventListener('touchstart', onPointerStart, { passive: false });
@@ -311,7 +503,7 @@ export class ImageToPdfManager {
         });
     }
 
-    reorderImages(fromIndex, toIndex) {
+    reorderImages(fromIndex, toIndex, preservedScrollTop) {
         if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
         if (fromIndex >= this.state.images.length || toIndex >= this.state.images.length) return;
 
@@ -328,6 +520,9 @@ export class ImageToPdfManager {
 
         ShareUI.playSound('mouse-click');
         this.renderImagesList();
+        if (this.dom.imgListMount && typeof preservedScrollTop === 'number') {
+            this.dom.imgListMount.scrollTop = preservedScrollTop;
+        }
         this.schedulePreviewUpdate();
     }
 

@@ -15,6 +15,7 @@ export class AirQualityManager {
         this.lastFetchTime = 0;
         this.data = null;
         this.isRefreshing = false;
+        this.isLocating = false;
 
         this.dom = {};
     }
@@ -138,16 +139,28 @@ export class AirQualityManager {
         }
     }
 
-    detectGpsLocation() {
+    getRefreshIcon() {
+        return document.getElementById('air-refresh-icon') || (this.dom.btnRefresh ? this.dom.btnRefresh.querySelector('svg, i') : null);
+    }
+
+    detectGpsLocation(silent = false) {
+        if (this.isLocating || this.isRefreshing) return;
+
         if (!navigator.geolocation) {
-            ShareUI.showToast('GPS Error', 'Geolocation is not supported by your browser', 'error');
+            if (!silent) ShareUI.showToast('GPS Error', 'Geolocation is not supported by your browser', 'error');
+            this.loadData(true);
             return;
         }
 
-        ShareUI.showToast('Locating...', 'Detecting your GPS position...', 'info');
+        this.isLocating = true;
+
+        if (!silent) {
+            ShareUI.showToast('Locating...', 'Detecting your GPS position...', 'info');
+        }
 
         navigator.geolocation.getCurrentPosition(
             (pos) => {
+                this.isLocating = false;
                 this.currentLat = pos.coords.latitude;
                 this.currentLon = pos.coords.longitude;
                 this.currentLocationName = `GPS Location (${this.currentLat.toFixed(2)}, ${this.currentLon.toFixed(2)})`;
@@ -164,14 +177,26 @@ export class AirQualityManager {
                 }
 
                 this.loadData(true);
-                ShareUI.showToast('Location Found', `Updated for ${this.currentLocationName}`, 'success');
+                if (!silent) {
+                    ShareUI.showToast('Location Found', `Updated for ${this.currentLocationName}`, 'success');
+                }
             },
             (err) => {
+                this.isLocating = false;
                 console.warn('Geolocation failed:', err);
-                ShareUI.showToast('GPS Error', 'Could not obtain GPS coordinates. Using preset city.', 'error');
+                if (!silent) {
+                    ShareUI.showToast('GPS Error', 'Could not obtain GPS coordinates. Using preset city.', 'error');
+                }
+                // Fallback to refresh current city even if GPS fails or permission denied
+                this.loadData(true);
             },
             { timeout: 10000, maximumAge: 60000 }
         );
+    }
+
+    autoLocateAndRefresh(silent = true) {
+        if (this.isLocating || this.isRefreshing) return;
+        this.detectGpsLocation(silent);
     }
 
     async loadCurrentLocation() {
@@ -189,8 +214,9 @@ export class AirQualityManager {
         if (this.isRefreshing) return;
         this.isRefreshing = true;
 
-        if (this.dom.refreshIcon) {
-            this.dom.refreshIcon.classList.add('animate-spin');
+        const startIcon = this.getRefreshIcon();
+        if (startIcon) {
+            startIcon.classList.add('animate-spin');
         }
 
         try {
@@ -203,8 +229,12 @@ export class AirQualityManager {
             ShareUI.showToast('Error', 'Failed to retrieve environmental data', 'error');
         } finally {
             this.isRefreshing = false;
-            if (this.dom.refreshIcon) {
-                this.dom.refreshIcon.classList.remove('animate-spin');
+            const endIcon = this.getRefreshIcon();
+            if (endIcon) {
+                endIcon.classList.remove('animate-spin');
+            }
+            if (startIcon && startIcon !== endIcon) {
+                startIcon.classList.remove('animate-spin');
             }
         }
     }
