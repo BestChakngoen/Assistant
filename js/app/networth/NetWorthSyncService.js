@@ -45,6 +45,38 @@ export class NetWorthSyncService {
         }
     }
 
+    static applyIncomingData(manager, items, snapshots) {
+        let updated = false;
+
+        let newItems = items;
+        if (typeof newItems === 'string') {
+            try { newItems = JSON.parse(newItems); } catch (_) {}
+        }
+        if (Array.isArray(newItems)) {
+            manager.items = newItems;
+            localStorage.setItem(manager.storageKey, JSON.stringify(manager.items));
+            updated = true;
+        }
+
+        let newSnapshots = snapshots;
+        if (typeof newSnapshots === 'string') {
+            try { newSnapshots = JSON.parse(newSnapshots); } catch (_) {}
+        }
+        if (newSnapshots && typeof newSnapshots === 'object') {
+            manager.snapshots = newSnapshots;
+            localStorage.setItem(manager.snapshotStorageKey, JSON.stringify(manager.snapshots));
+            if (Array.isArray(newSnapshots._customPortfolios)) {
+                NetWorthPortfolioService.setPortfolios(manager, newSnapshots._customPortfolios);
+            }
+            updated = true;
+        }
+
+        if (updated) {
+            manager.populatePortfolioDropdowns();
+            manager.render();
+        }
+    }
+
     static async pullLatestFromCloud(manager) {
         if (typeof window === 'undefined') return;
         const supabase = getSupabaseClient();
@@ -59,35 +91,7 @@ export class NetWorthSyncService {
                 .maybeSingle();
 
             if (!error && data) {
-                let updated = false;
-
-                let cloudItems = data.items;
-                if (typeof cloudItems === 'string') {
-                    try { cloudItems = JSON.parse(cloudItems); } catch (_) {}
-                }
-                if (Array.isArray(cloudItems)) {
-                    manager.items = cloudItems;
-                    localStorage.setItem(manager.storageKey, JSON.stringify(manager.items));
-                    updated = true;
-                }
-
-                let cloudSnapshots = data.snapshots;
-                if (typeof cloudSnapshots === 'string') {
-                    try { cloudSnapshots = JSON.parse(cloudSnapshots); } catch (_) {}
-                }
-                if (cloudSnapshots && typeof cloudSnapshots === 'object') {
-                    manager.snapshots = cloudSnapshots;
-                    localStorage.setItem(manager.snapshotStorageKey, JSON.stringify(manager.snapshots));
-                    if (Array.isArray(cloudSnapshots._customPortfolios)) {
-                        NetWorthPortfolioService.setPortfolios(manager, cloudSnapshots._customPortfolios);
-                    }
-                    updated = true;
-                }
-
-                if (updated) {
-                    manager.populatePortfolioDropdowns();
-                    manager.render();
-                }
+                this.applyIncomingData(manager, data.items, data.snapshots);
                 this.updateCloudStatus(true);
             }
         } catch (err) {
@@ -110,6 +114,7 @@ export class NetWorthSyncService {
             await this.pullLatestFromCloud(manager);
 
             const uid = window.app?.auth?.currentUser?.uid || 'default_user';
+            const channelName = 'networth_room_' + uid;
 
             // Realtime Subscription (Remove existing channel if subscribed)
             if (manager.netWorthChannel) {
@@ -117,33 +122,21 @@ export class NetWorthSyncService {
             }
 
             manager.netWorthChannel = supabase
-                .channel('networth_realtime_' + Date.now())
+                .channel(channelName, {
+                    config: {
+                        broadcast: { self: false }
+                    }
+                })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'net_worth' }, (payload) => {
                     const currentUid = window.app?.auth?.currentUser?.uid || 'default_user';
                     if (payload.new && (payload.new.user_id === currentUid || !payload.new.user_id)) {
-                        let newItems = payload.new.items;
-                        if (typeof newItems === 'string') {
-                            try { newItems = JSON.parse(newItems); } catch (_) {}
-                        }
-                        if (Array.isArray(newItems)) {
-                            manager.items = newItems;
-                            localStorage.setItem(manager.storageKey, JSON.stringify(manager.items));
-                        }
-
-                        let newSnapshots = payload.new.snapshots;
-                        if (typeof newSnapshots === 'string') {
-                            try { newSnapshots = JSON.parse(newSnapshots); } catch (_) {}
-                        }
-                        if (newSnapshots && typeof newSnapshots === 'object') {
-                            manager.snapshots = newSnapshots;
-                            localStorage.setItem(manager.snapshotStorageKey, JSON.stringify(manager.snapshots));
-                            if (Array.isArray(newSnapshots._customPortfolios)) {
-                                NetWorthPortfolioService.setPortfolios(manager, newSnapshots._customPortfolios);
-                            }
-                        }
-
-                        manager.populatePortfolioDropdowns();
-                        manager.render();
+                        this.applyIncomingData(manager, payload.new.items, payload.new.snapshots);
+                    }
+                })
+                .on('broadcast', { event: 'networth_update' }, ({ payload }) => {
+                    const currentUid = window.app?.auth?.currentUser?.uid || 'default_user';
+                    if (payload && (payload.user_id === currentUid || !payload.user_id)) {
+                        this.applyIncomingData(manager, payload.items, payload.snapshots);
                     }
                 })
                 .subscribe((status) => {
@@ -184,6 +177,19 @@ export class NetWorthSyncService {
                     _customPortfolios: portfolios
                 };
                 manager.snapshots = snapshots;
+
+                // Immediate Broadcast to other open devices/tabs in the same channel room
+                if (manager.netWorthChannel) {
+                    manager.netWorthChannel.send({
+                        type: 'broadcast',
+                        event: 'networth_update',
+                        payload: {
+                            user_id: uid,
+                            items: manager.items,
+                            snapshots: snapshots
+                        }
+                    });
+                }
 
                 const { error } = await supabase
                     .from('net_worth')
