@@ -142,6 +142,9 @@ export class TradeApp {
                 this.startMarketLoops();
             } else {
                 this.ui.showLogin(true);
+                if (this._netWorth) {
+                    this._netWorth.initSupabaseSync();
+                }
                 if (this.ui.diagram) {
                     this.ui.diagram.onSaveCallback = null;
                 }

@@ -155,6 +155,9 @@ export class NetWorthManager {
 
             const rawSnap = localStorage.getItem(this.snapshotStorageKey);
             this.snapshots = rawSnap ? JSON.parse(rawSnap) : {};
+            if (this.snapshots && Array.isArray(this.snapshots._customPortfolios)) {
+                NetWorthPortfolioService.setPortfolios(this, this.snapshots._customPortfolios);
+            }
         } catch (e) {
             this.items = [];
             this.snapshots = {};
@@ -363,6 +366,7 @@ export class NetWorthManager {
         if (now - this._lastAutoRefresh < 30000) return;
         this._lastAutoRefresh = now;
 
+        await NetWorthSyncService.pullLatestFromCloud(this);
         await this.fetchExchangeRate(false);
 
         const hasVolatile = (this.items || []).some(i => i.isVolatile && i.symbol);

@@ -43,6 +43,36 @@ export class NetWorthPortfolioService {
     }
 
     /**
+     * Overwrite / synchronize portfolio list from cloud.
+     * @param {Object} manager 
+     * @param {string[]} portfolioList 
+     */
+    static setPortfolios(manager, portfolioList) {
+        if (!Array.isArray(portfolioList)) return;
+        const set = new Set(portfolioList.filter(p => typeof p === 'string' && p.trim()));
+        set.add(this.DEFAULT_PORTFOLIO);
+
+        // Include any portfolio defined on existing items
+        if (manager && Array.isArray(manager.items)) {
+            manager.items.forEach(item => {
+                if (item && item.portfolio && typeof item.portfolio === 'string' && item.portfolio.trim()) {
+                    set.add(item.portfolio.trim());
+                }
+            });
+        }
+
+        const all = Array.from(set);
+        const sorted = [
+            this.DEFAULT_PORTFOLIO,
+            ...all.filter(p => p !== this.DEFAULT_PORTFOLIO).sort((a, b) => a.localeCompare(b))
+        ];
+
+        try {
+            localStorage.setItem(this.STORAGE_KEY_PORTFOLIOS, JSON.stringify(sorted));
+        } catch (_) {}
+    }
+
+    /**
      * Add a new custom portfolio.
      * @param {Object} manager - NetWorthManager instance
      * @param {string} name - Name of new portfolio
@@ -57,6 +87,9 @@ export class NetWorthPortfolioService {
             try {
                 localStorage.setItem(this.STORAGE_KEY_PORTFOLIOS, JSON.stringify(list));
             } catch (_) {}
+            if (manager && typeof manager.saveData === 'function') {
+                manager.saveData();
+            }
             return true;
         }
         return false;
@@ -71,12 +104,10 @@ export class NetWorthPortfolioService {
         if (!name || name === this.DEFAULT_PORTFOLIO) return false;
 
         // Move all items in this portfolio to Main Portfolio
-        let modified = false;
         if (manager && Array.isArray(manager.items)) {
             manager.items.forEach(item => {
                 if (item.portfolio === name) {
                     item.portfolio = this.DEFAULT_PORTFOLIO;
-                    modified = true;
                 }
             });
         }
@@ -88,7 +119,7 @@ export class NetWorthPortfolioService {
             this.removeCollapsed(name);
         } catch (_) {}
 
-        if (modified) {
+        if (manager && typeof manager.saveData === 'function') {
             manager.saveData();
         }
         return true;
