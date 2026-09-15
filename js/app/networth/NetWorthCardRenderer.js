@@ -100,6 +100,14 @@ export class NetWorthCardRenderer {
         } catch (e) {}
     }
 
+    static playSuccessSound() {
+        try {
+            const sound = new Audio('assets/Sounds/success.mp3');
+            sound.currentTime = 0;
+            sound.play().catch(() => {});
+        } catch (e) {}
+    }
+
     static showAppleAlertModal(title, message, icon = 'alert-circle') {
         const existing = document.getElementById('nw-alert-modal');
         if (existing) existing.remove();

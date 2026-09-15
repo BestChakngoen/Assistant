@@ -147,8 +147,7 @@ export const netWorthViewHtml = `
 
                     <!-- CONFIRM BUTTON STANDARD -->
                     <button id="nw-btn-add"
-                        class="w-full mt-2 btn-press bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold font-mono shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 text-xs cursor-pointer">
-                        <i data-lucide="check" class="size-4"></i>
+                        class="w-full mt-2 btn-press bg-cyan-600 hover:bg-cyan-500 text-white py-3 rounded-xl font-bold font-mono shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 text-xs cursor-pointer">
                         <span>Add to Portfolio</span>
                     </button>
                 </div>
@@ -253,7 +252,6 @@ export const netWorthViewHtml = `
                     <!-- CONFIRM BUTTON VOLATILE -->
                     <button id="nw-btn-add-volatile"
                         class="w-full mt-1 btn-press bg-cyan-600 hover:bg-cyan-500 text-white py-3 rounded-xl font-bold font-mono shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 text-xs cursor-pointer">
-                        <i data-lucide="check" class="size-4"></i>
                         <span>Add Volatile Asset</span>
                     </button>
                 </div>

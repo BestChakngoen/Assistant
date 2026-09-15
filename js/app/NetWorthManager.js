@@ -82,6 +82,10 @@ export class NetWorthManager {
         NetWorthCardRenderer.playRemoveSound();
     }
 
+    playSuccessSound() {
+        NetWorthCardRenderer.playSuccessSound();
+    }
+
     showAppleAlertModal(title, message, icon) {
         return NetWorthCardRenderer.showAppleAlertModal(title, message, icon);
     }
@@ -732,9 +736,26 @@ export class NetWorthManager {
             };
         }
 
+        const typeEl = document.getElementById('nw-input-type');
+        const amtEl = document.getElementById('nw-input-amount');
+        if (typeEl && amtEl) {
+            const updateAmountStyle = () => {
+                if (typeEl.value === 'LIABILITY') {
+                    amtEl.classList.remove('text-emerald-400', 'focus:ring-emerald-500');
+                    amtEl.classList.add('text-red-400', 'focus:ring-red-500');
+                } else {
+                    amtEl.classList.remove('text-red-400', 'focus:ring-red-500');
+                    amtEl.classList.add('text-emerald-400', 'focus:ring-emerald-500');
+                }
+            };
+            typeEl.addEventListener('change', updateAmountStyle);
+            updateAmountStyle();
+        }
+
         const btnAddStandard = document.getElementById('nw-btn-add');
         if (btnAddStandard) {
             btnAddStandard.onclick = () => {
+                this.playClickSound();
                 const nameEl = document.getElementById('nw-input-name');
                 const typeEl = document.getElementById('nw-input-type');
                 const catEl = document.getElementById('nw-input-category');
@@ -758,6 +779,7 @@ export class NetWorthManager {
                 }
 
                 if (this.addItem(name, type, category, amount, portfolio)) {
+                    this.playSuccessSound();
                     nameEl.value = '';
                     if (amtEl) amtEl.value = '';
                 }
@@ -767,6 +789,7 @@ export class NetWorthManager {
         const btnAddVolatile = document.getElementById('nw-btn-add-volatile');
         if (btnAddVolatile) {
             btnAddVolatile.onclick = () => {
+                this.playClickSound();
                 const sym = symInput ? symInput.value.trim() : '';
                 const name = (nameVolatile ? nameVolatile.value.trim() : '') || sym;
                 const category = this.activeVolatileCategory || 'Stocks / ETFs';
@@ -794,6 +817,7 @@ export class NetWorthManager {
                 }
 
                 if (this.addVolatileItem(name, 'ASSET', category, sym, qty, avgCost, mktPrice, portfolio)) {
+                    this.playSuccessSound();
                     if (nameVolatile) nameVolatile.value = '';
                     if (symInput) symInput.value = '';
                     if (qtyInput) qtyInput.value = '';

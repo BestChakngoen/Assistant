@@ -5216,6 +5216,18 @@ input:focus, select:focus {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   transition: scrollbar-color 0.3s ease;
+  cursor: grab;
+  -moz-user-select: none;
+       user-select: none;
+  -webkit-user-select: none;
+}
+
+.custom-slide-bar.is-dragging,
+.custom-slide-bar.is-dragging * {
+  cursor: grabbing !important;
+  -moz-user-select: none !important;
+       user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 .custom-slide-bar::-webkit-scrollbar {

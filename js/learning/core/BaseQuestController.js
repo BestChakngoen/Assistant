@@ -329,7 +329,7 @@ export class BaseQuestController {
 
     /**
      * Initializes universal horizontal slide bars (.custom-slide-bar)
-     * Handles horizontal mouse wheel scrolling and auto-hiding scrollbar
+     * Handles horizontal mouse wheel scrolling, click-and-drag scrolling, and auto-hiding scrollbar
      */
     initSlideBars(container = document) {
         const slideBars = container.querySelectorAll ? container.querySelectorAll('.custom-slide-bar') : [];
@@ -337,6 +337,7 @@ export class BaseQuestController {
             if (bar.dataset.hasSlideBarInit) return;
             bar.dataset.hasSlideBarInit = 'true';
 
+            // Mouse Wheel Horizontal Scroll
             bar.addEventListener('wheel', (e) => {
                 if (e.deltaY !== 0) {
                     e.preventDefault();
@@ -344,6 +345,7 @@ export class BaseQuestController {
                 }
             }, { passive: false });
 
+            // Auto-hiding Scrollbar Indicator
             let timer;
             bar.addEventListener('scroll', () => {
                 bar.classList.add('is-scrolling');
@@ -352,6 +354,63 @@ export class BaseQuestController {
                     bar.classList.remove('is-scrolling');
                 }, 800);
             }, { passive: true });
+
+            // Click-and-Drag Horizontal Scrolling (Mouse Drag)
+            let isDown = false;
+            let startX = 0;
+            let scrollStart = 0;
+            let hasMoved = false;
+
+            const onMouseMove = (e) => {
+                if (!isDown) return;
+                const walk = e.clientX - startX;
+
+                if (Math.abs(walk) > 5) {
+                    hasMoved = true;
+                    e.preventDefault();
+                    bar.scrollLeft = scrollStart - walk;
+                }
+            };
+
+            const onMouseUp = () => {
+                if (!isDown) return;
+                isDown = false;
+
+                bar.style.scrollBehavior = '';
+                bar.classList.remove('is-dragging');
+
+                window.removeEventListener('mousemove', onMouseMove);
+
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    bar.classList.remove('is-scrolling');
+                }, 800);
+
+                // Prevent accidental button clicks when dragging
+                if (hasMoved) {
+                    const captureClick = (e) => {
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                    };
+                    bar.addEventListener('click', captureClick, { capture: true, once: true });
+                }
+            };
+
+            const onMouseDown = (e) => {
+                if (e.button !== 0) return;
+                isDown = true;
+                hasMoved = false;
+                startX = e.clientX;
+                scrollStart = bar.scrollLeft;
+
+                bar.style.scrollBehavior = 'auto';
+                bar.classList.add('is-dragging', 'is-scrolling');
+
+                window.addEventListener('mousemove', onMouseMove, { passive: false });
+                window.addEventListener('mouseup', onMouseUp, { once: true });
+            };
+
+            bar.addEventListener('mousedown', onMouseDown);
         });
     }
 }
