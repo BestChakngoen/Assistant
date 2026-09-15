@@ -18,8 +18,8 @@ export class HttpClient {
         const timeoutMs = options.timeout || API_TIMEOUTS.default;
         const cacheTtlMs = options.cacheTtlMs || 0;
 
-        // Check in-memory cache if TTL is specified
-        if (cacheTtlMs > 0) {
+        // Check in-memory cache if TTL is specified (and not forced refresh)
+        if (cacheTtlMs > 0 && !options.forceRefresh) {
             const cached = this._getCached(url);
             if (cached !== null) {
                 return cached;

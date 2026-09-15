@@ -28,7 +28,8 @@ export const netWorthViewHtml = `
             <!-- Net Worth (Top Hero Card - Centered, No Icon) -->
             <div class="glass-panel p-6 sm:p-8 rounded-2xl border-0 bg-gradient-to-r from-cyan-950/40 via-slate-900/80 to-cyan-950/40 flex flex-col items-center justify-center text-center shadow-xl shadow-cyan-500/10 relative">
                 <!-- Currency Toggle Button at Top-Right -->
-                <div class="absolute top-3 right-3 sm:top-4 sm:right-4">
+                <div class="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-2">
+                    <span id="nw-rate-display" class="text-[10px] font-mono text-slate-400 hidden xs:inline-block bg-slate-900/60 px-2.5 py-1 rounded-xl border-0 select-none" title="Live USD/THB Exchange Rate">1$ ≈ ฿35.50</span>
                     <button id="nw-currency-toggle" title="Toggle Currency (THB / USD)" class="flex items-center gap-1.5 bg-slate-900/80 hover:bg-slate-800/90 px-3 py-1 rounded-xl text-[10px] font-mono font-bold transition cursor-pointer select-none">
                         <span id="nw-curr-thb" class="text-cyan-400 font-extrabold">THB</span>
                         <span class="text-slate-600 font-normal">|</span>

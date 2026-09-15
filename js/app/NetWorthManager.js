@@ -34,6 +34,7 @@ export class NetWorthManager {
         await this.fetchExchangeRate();
         await this.initSupabaseSync();
         this.render();
+        this.startExchangeRateLoop();
         this.autoRefreshOnLoad();
     }
 
@@ -41,9 +42,32 @@ export class NetWorthManager {
         return NetWorthSyncService.initSupabaseSync(this);
     }
 
-    async fetchExchangeRate() {
-        this.exchangeRate = await NetWorthSyncService.fetchExchangeRate();
+    async fetchExchangeRate(forceRefresh = false) {
+        const oldRate = this.exchangeRate;
+        this.exchangeRate = await NetWorthSyncService.fetchExchangeRate(forceRefresh);
+        this.updateRateDisplayUI();
+        if (oldRate && this.exchangeRate && Math.abs(oldRate - this.exchangeRate) > 0.001) {
+            this.renderSummary();
+            this.renderList();
+        }
         return this.exchangeRate;
+    }
+
+    updateRateDisplayUI() {
+        const el = document.getElementById('nw-rate-display');
+        if (el && this.exchangeRate > 0) {
+            el.innerText = `1$ ≈ ฿${this.exchangeRate.toFixed(2)}`;
+        }
+    }
+
+    startExchangeRateLoop() {
+        if (this._exchangeRateInterval) {
+            clearInterval(this._exchangeRateInterval);
+        }
+        // Poll exchange rate every 5 minutes, matching MarketWidgetManager loop
+        this._exchangeRateInterval = setInterval(async () => {
+            await this.fetchExchangeRate(false);
+        }, 300000);
     }
 
     updateCloudStatus(isConnected) {
@@ -313,14 +337,17 @@ export class NetWorthManager {
         if (icon) icon.classList.add('animate-spin');
 
         try {
+            // Force refresh live exchange rate on manual refresh
+            await this.fetchExchangeRate(true);
+
             const { updatedCount, failedCount } = await NetWorthVolatileAssetService.refreshAllVolatileItems(this);
             if (window.ShareUI && window.ShareUI.showToast) {
                 if (updatedCount > 0) {
-                    window.ShareUI.showToast('Prices Refreshed', `Updated ${updatedCount} volatile assets${failedCount > 0 ? ` (${failedCount} failed)` : ''}`, 'success');
+                    window.ShareUI.showToast('Prices Refreshed', `Updated ${updatedCount} volatile assets & exchange rate (฿${this.exchangeRate.toFixed(2)})${failedCount > 0 ? ` (${failedCount} failed)` : ''}`, 'success');
                 } else if (failedCount > 0) {
                     window.ShareUI.showToast('Notice', `Could not update ${failedCount} assets. Check connection or symbols.`, 'error');
                 } else {
-                    window.ShareUI.showToast('Notice', 'No volatile assets with symbols found in portfolio.', 'info');
+                    window.ShareUI.showToast('Notice', `USD/THB rate refreshed: ฿${this.exchangeRate.toFixed(2)}`, 'info');
                 }
             }
         } finally {
@@ -331,15 +358,17 @@ export class NetWorthManager {
     }
 
     async autoRefreshOnLoad() {
-        const hasVolatile = (this.items || []).some(i => i.isVolatile && i.symbol);
-        if (!hasVolatile) return;
-
         const now = Date.now();
         // 30-second cooldown to avoid rate-limiting on rapid tab switching
         if (now - this._lastAutoRefresh < 30000) return;
         this._lastAutoRefresh = now;
 
-        await this.refreshAllVolatilePrices();
+        await this.fetchExchangeRate(false);
+
+        const hasVolatile = (this.items || []).some(i => i.isVolatile && i.symbol);
+        if (hasVolatile) {
+            await this.refreshAllVolatilePrices();
+        }
     }
 
     getItemConvertedAmount(item) {
@@ -988,6 +1017,7 @@ export class NetWorthManager {
 
     render() {
         this.updateToggleUI();
+        this.updateRateDisplayUI();
         this.populatePortfolioDropdowns();
         this.checkWeeklyUpdateReminder();
         this.renderSummary();

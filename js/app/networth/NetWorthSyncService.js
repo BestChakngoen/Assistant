@@ -7,11 +7,12 @@ import { getSupabaseClient } from '../../services/api/SupabaseClient.js';
  * Manages exchange rate fetching and Supabase synchronization for NetWorthManager.
  */
 export class NetWorthSyncService {
-    static async fetchExchangeRate() {
+    static async fetchExchangeRate(forceRefresh = false) {
         try {
             const data = await HttpClient.getJson(API_ENDPOINTS.exchangeRate.usdLatest, {
                 timeout: API_TIMEOUTS.exchangeRate,
-                cacheTtlMs: 300000 // 5-minute shared cache
+                cacheTtlMs: 300000, // 5-minute shared cache
+                forceRefresh
             });
             if (data && data.rates && data.rates.THB) {
                 return data.rates.THB;
