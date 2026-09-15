@@ -1,4 +1,7 @@
-  // --- FILE 3: MARKET SERVICE ---
+import { API_ENDPOINTS, API_TIMEOUTS } from '../config/apiConfig.js';
+import { HttpClient } from './api/HttpClient.js';
+
+// --- FILE 3: MARKET SERVICE ---
 export class MarketService {
     constructor() {
         this.symbols = {
@@ -16,8 +19,8 @@ export class MarketService {
         if(!this.symbols[asset]) return null;
         // Primary: Binance
         try {
-            const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${this.symbols[asset]}&t=${Date.now()}`);
-            const d = await res.json();
+            const url = `${API_ENDPOINTS.binance.price}?symbol=${this.symbols[asset]}&t=${Date.now()}`;
+            const d = await HttpClient.getJson(url, { timeout: API_TIMEOUTS.market });
             if(d && d.price) return parseFloat(d.price);
         } catch (e) {
             // continue to fallback
@@ -26,20 +29,20 @@ export class MarketService {
         // Fallbacks: CoinGecko for crypto/gold tokens, exchangerate for fiat
         try {
             if(asset === 'BTC/USD') {
-                const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-                const j = await r.json();
+                const url = `${API_ENDPOINTS.coinGecko.price}?ids=bitcoin&vs_currencies=usd`;
+                const j = await HttpClient.getJson(url, { timeout: API_TIMEOUTS.market });
                 return j?.bitcoin?.usd ? parseFloat(j.bitcoin.usd) : null;
             }
             if(asset === 'XAU/USD') {
                 // PAX Gold (pax-gold) price in USD
-                const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd');
-                const j = await r.json();
+                const url = `${API_ENDPOINTS.coinGecko.price}?ids=pax-gold&vs_currencies=usd`;
+                const j = await HttpClient.getJson(url, { timeout: API_TIMEOUTS.market });
                 return j?.['pax-gold']?.usd ? parseFloat(j['pax-gold'].usd) : null;
             }
             if(asset === 'EUR/USD') {
                 // Exchange rate EUR -> USD
-                const r = await fetch('https://api.exchangerate.host/latest?base=EUR&symbols=USD');
-                const j = await r.json();
+                const url = `${API_ENDPOINTS.exchangeRate.fallback}?base=EUR&symbols=USD`;
+                const j = await HttpClient.getJson(url, { timeout: API_TIMEOUTS.market });
                 return j?.rates?.USD ? parseFloat(j.rates.USD) : null;
             }
         } catch (e) {
@@ -49,23 +52,15 @@ export class MarketService {
     }
 
     async fetchTHB() {
-        // Check cache first
-        const now = Date.now();
-        if(this.thbCache && now - this.thbCacheTime < this.thbCacheDuration) {
-            return this.thbCache;
-        }
-
         try {
-            const res = await fetch('https://open.er-api.com/v6/latest/USD', {
-                signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : null
+            const d = await HttpClient.getJson(API_ENDPOINTS.exchangeRate.usdLatest, {
+                timeout: API_TIMEOUTS.exchangeRate,
+                cacheTtlMs: this.thbCacheDuration
             });
-            if(res.ok) {
-                const d = await res.json();
-                const rate = d?.rates?.THB || null;
-                if(rate) {
-                    this.thbCache = rate;
-                    this.thbCacheTime = now;
-                }
+            const rate = d?.rates?.THB || null;
+            if(rate) {
+                this.thbCache = rate;
+                this.thbCacheTime = Date.now();
                 return rate;
             }
         } catch (e) {

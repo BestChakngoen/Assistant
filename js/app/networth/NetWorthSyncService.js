@@ -1,3 +1,7 @@
+import { API_ENDPOINTS, API_TIMEOUTS } from '../../config/apiConfig.js';
+import { HttpClient } from '../../services/api/HttpClient.js';
+import { getSupabaseClient } from '../../services/api/SupabaseClient.js';
+
 /**
  * NetWorthSyncService.js - Network, Live Currency & Supabase Realtime Sync
  * Manages exchange rate fetching and Supabase synchronization for NetWorthManager.
@@ -5,12 +9,12 @@
 export class NetWorthSyncService {
     static async fetchExchangeRate() {
         try {
-            const res = await fetch('https://open.er-api.com/v6/latest/USD');
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.rates && data.rates.THB) {
-                    return data.rates.THB;
-                }
+            const data = await HttpClient.getJson(API_ENDPOINTS.exchangeRate.usdLatest, {
+                timeout: API_TIMEOUTS.exchangeRate,
+                cacheTtlMs: 300000 // 5-minute shared cache
+            });
+            if (data && data.rates && data.rates.THB) {
+                return data.rates.THB;
             }
         } catch (e) {
             console.warn('Could not fetch live exchange rate, using fallback 35.5:', e);
@@ -21,17 +25,7 @@ export class NetWorthSyncService {
     static async initSupabaseSync(manager) {
         if (typeof window === 'undefined') return;
 
-        const getSupabase = () => {
-            if (window.shareManager?.supabase) return window.shareManager.supabase;
-            if (!window.supabaseClient && window.supabase) {
-                window.supabaseClient = window.supabase.createClient(
-                    'https://ujjwaxdwemrdszyatgxw.supabase.co',
-                    'sb_publishable_Zov-pzfGxNS9yUAGwfhMEg_9PxBeYG3'
-                );
-            }
-            return window.supabaseClient || null;
-        };
-        const supabase = getSupabase();
+        const supabase = getSupabaseClient();
 
         if (!supabase) {
             this.updateCloudStatus(false);
@@ -95,17 +89,7 @@ export class NetWorthSyncService {
     static async saveToSupabase(manager) {
         if (typeof window === 'undefined') return;
         try {
-            const getSupabase = () => {
-                if (window.shareManager?.supabase) return window.shareManager.supabase;
-                if (!window.supabaseClient && window.supabase) {
-                    window.supabaseClient = window.supabase.createClient(
-                        'https://ujjwaxdwemrdszyatgxw.supabase.co',
-                        'sb_publishable_Zov-pzfGxNS9yUAGwfhMEg_9PxBeYG3'
-                    );
-                }
-                return window.supabaseClient || null;
-            };
-            const supabase = getSupabase();
+            const supabase = getSupabaseClient();
             if (supabase) {
                 const uid = window.app?.auth?.currentUser?.uid || 'default_user';
                 await supabase

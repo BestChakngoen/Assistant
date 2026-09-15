@@ -1,4 +1,5 @@
 import { MARKET_ASSET_INTEL } from '../data/marketAssetIntel.js';
+import { API_ENDPOINTS } from '../config/apiConfig.js';
 
 /**
  * MarketWidgetManager - Controls TradingView charts, Economic Calendar news feeds, and THB loops.
@@ -115,7 +116,7 @@ export class MarketWidgetManager {
             createWidget();
         } else {
             const sc = document.createElement('script');
-            sc.src = 'https://s3.tradingview.com/tv.js';
+            sc.src = API_ENDPOINTS.tradingView.chartScript;
             sc.async = true;
             sc.onload = createWidget;
             document.head.appendChild(sc);
@@ -252,7 +253,7 @@ export class MarketWidgetManager {
         }
 
         const script = document.createElement("script");
-        script.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
+        script.src = API_ENDPOINTS.tradingView.eventsScript;
         script.async = true;
         script.type = "text/javascript";
         script.text = JSON.stringify(widgetConfig);

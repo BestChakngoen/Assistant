@@ -1,3 +1,6 @@
+import { API_ENDPOINTS, API_TIMEOUTS } from '../config/apiConfig.js';
+import { HttpClient } from '../services/api/HttpClient.js';
+
 /**
  * WeatherService.js - Handles Open-Meteo Weather & Air Quality API requests, caching, and geolocation.
  * Free, non-commercial, zero-API-key required.
@@ -32,20 +35,17 @@ export class WeatherService {
         }
 
         try {
-            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,pressure_msl,surface_pressure,uv_index,is_day&hourly=temperature_2m,weather_code,precipitation_probability,uv_index,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`;
-            const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm10,pm2_5,european_aqi,us_aqi&hourly=pm2_5,us_aqi&timezone=auto`;
+            const weatherUrl = `${API_ENDPOINTS.openMeteo.weather}?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,pressure_msl,surface_pressure,uv_index,is_day&hourly=temperature_2m,weather_code,precipitation_probability,uv_index,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`;
+            const airQualityUrl = `${API_ENDPOINTS.openMeteo.airQuality}?latitude=${lat}&longitude=${lon}&current=pm10,pm2_5,european_aqi,us_aqi&hourly=pm2_5,us_aqi&timezone=auto`;
 
-            const [weatherRes, airRes] = await Promise.all([
-                fetch(weatherUrl),
-                fetch(airQualityUrl)
+            const [weatherData, airData] = await Promise.all([
+                HttpClient.getJson(weatherUrl, { timeout: API_TIMEOUTS.weather }),
+                HttpClient.getJson(airQualityUrl, { timeout: API_TIMEOUTS.weather })
             ]);
 
-            if (!weatherRes.ok || !airRes.ok) {
-                throw new Error(`API HTTP Error: Weather ${weatherRes.status}, Air ${airRes.status}`);
+            if (!weatherData || !airData) {
+                throw new Error('API HTTP Error: Weather or Air quality response failed');
             }
-
-            const weatherData = await weatherRes.json();
-            const airData = await airRes.json();
 
             const combined = this.normalizeData(weatherData, airData, lat, lon);
             this.saveToCache(cacheKey, combined);

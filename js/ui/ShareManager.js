@@ -3,6 +3,8 @@ import { ShareCloud } from './share/ShareCloud.js';
 import { ShareUI } from './share/ShareUI.js';
 import { ShareFeedRenderer } from './share/ShareFeedRenderer.js';
 import { ShareActions } from './share/ShareActions.js';
+import { SUPABASE_CONFIG } from '../config/apiConfig.js';
+import { getSupabaseClient } from '../services/api/SupabaseClient.js';
 
 /**
  * ShareManager - File Sharing & Cloud Sync Coordinator
@@ -11,8 +13,8 @@ import { ShareActions } from './share/ShareActions.js';
  */
 export class ShareManager {
     constructor() {
-        this.supabaseUrl = 'https://ujjwaxdwemrdszyatgxw.supabase.co';
-        this.supabaseKey = 'sb_publishable_Zov-pzfGxNS9yUAGwfhMEg_9PxBeYG3';
+        this.supabaseUrl = SUPABASE_CONFIG.url;
+        this.supabaseKey = SUPABASE_CONFIG.publishableKey;
         this.supabase = null;
         this.mode = 'standalone'; // 'standalone' (IndexedDB) or 'online' (Cloud Sync)
         this.hostUrl = (typeof window !== 'undefined' && window.location) ? window.location.href : 'http://localhost:8888';
@@ -71,17 +73,9 @@ export class ShareManager {
         }
 
         // Initialize Supabase Client if available (Singleton pattern)
-        if (typeof window !== 'undefined' && window.supabase) {
-            try {
-                if (!window.supabaseClient) {
-                    window.supabaseClient = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
-                }
-                this.supabase = window.supabaseClient;
-            } catch (err) {
-                console.error('Failed to initialize Supabase client:', err);
-            }
-        } else {
-            console.warn('Supabase JS library not loaded. Falling back to local offline storage.');
+        this.supabase = getSupabaseClient();
+        if (!this.supabase) {
+            console.warn('Supabase JS library not loaded or unavailable. Falling back to local offline storage.');
         }
 
         // 2. Initialize database for standalone mode fallback

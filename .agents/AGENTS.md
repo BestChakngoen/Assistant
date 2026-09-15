@@ -29,6 +29,15 @@
 - **Clean Code & Zero Regression:** ทุกการเขียนโค้ด ปรับปรุง หรือทำ Clean Code ต้องเขียนโค้ดให้สะอาด มีระเบียบ อ่านง่าย อ่านเข้าใจได้ทันที (Readable & Maintainable) โดย **ห้ามกระทบต่อพฤติกรรมเดิม (Behavior Preservation), ฟังก์ชันเดิม หรือทำให้การทำงานใดๆ ของระบบเดิมเปลี่ยนแปลงหรือผิดเพี้ยนไปโดยเด็ดขาด**
 - **รักษาความถูกต้องของการทำงาน (Preserve Existing Functionality):** การลบส่วนที่ไม่จำเป็น (Unused Code) หรือจัดระเบียบโครงสร้างใหม่ ต้องได้รับการตรวจสอบและทดสอบอย่างถี่ถ้วน ให้มั่นใจว่าระบบยังคงทำงานได้ถูกต้องตรงตามข้อกำหนดเดิมทุกประการ
 
+## 🌐 4. กฎการจัดการ API และการเชื่อมต่อเครือข่าย (API & Network Management Rules)
+- **Centralized Configuration:** ห้าม Hardcode URL Endpoints, Base URLs หรือ API Keys กระจายไว้ตามไฟล์คอมโพเนนต์หรือ View ต่างๆ โดยเด็ดขาด ข้อมูลการตั้งค่า API ทั้งหมดต้องจัดเก็บและเรียกใช้งานผ่าน `js/config/apiConfig.js` เท่านั้น เพื่อเป็น Single Source of Truth
+- **Strict No God Object for APIs:** การรวมศูนย์ API ต้องทำในระดับ Configuration (`apiConfig.js`) และ Shared Helper (`HttpClient.js`, `SupabaseClient.js`) เท่านั้น **ห้ามสร้าง God Class เดียวที่รวมการเรียก API ข้ามทุกโดเมนไว้ด้วยกัน** โดยต้องคงการแยก Domain Services ตามหลัก Single Responsibility Principle (SRP) เช่น แยกการเงิน (Market), สภาพอากาศ (Weather), ฐานข้อมูล/ยืนยันตัวตน (Data/Auth) ออกจากกันอย่างชัดเจน
+- **Standardized HTTP Client & Timeouts:** การส่ง Network Request ทุกครั้งต้องกำหนด Network Timeout กำกับเสมอ เพื่อป้องกันระบบค้างเมื่อการเชื่อมต่อมีปัญหา และใช้โมดูลกลาง (`HttpClient`) ในการจัดการ Fetch, Headers, AbortSignal และ Response Validation
+- **Shared Caching Strategy:** ข้อมูลที่มีการเรียกใช้ซ้ำข้ามโมดูลและไม่ต้องดึงสดทุกวินาที (เช่น อัตราแลกเปลี่ยนค่าเงิน USD/THB หรือข้อมูลสภาพอากาศ) ต้องใช้กลไก In-Memory Cache (TTL) ที่แชร์ร่วมกัน เพื่อป้องกันการยิง Request ซ้ำซ้อนและประหยัด Quota ของ API ภายนอก
+- **Resilience & Fallback Strategy:** Service ที่เรียกใช้งาน Third-Party API ภายนอก ต้องมีกลไกรับมือข้อผิดพลาด (Graceful Degradation / Fallback) เช่น การสลับไปใช้บริการสำรอง หรือใช้ค่าแคชเดิม เพื่อให้หน้าเว็บทำงานต่อไปได้อย่างราบรื่น
+- **Singleton Client Providers:** การเชื่อมต่อ BaaS / Client SDK ภายนอก เช่น Supabase ต้องสร้างและส่งมอบผ่าน Singleton Provider (`SupabaseClient.js`) เพียงชุดเดียว ห้ามประกาศสร้าง Instance ซ้ำซ้อนข้ามหลายโมดูล
+
+
 
 
 

@@ -1,3 +1,6 @@
+import { API_ENDPOINTS, API_TIMEOUTS } from '../../config/apiConfig.js';
+import { HttpClient } from '../../services/api/HttpClient.js';
+
 /**
  * NetWorthVolatileAssetService.js - Market Pricing & PnL Engine for Volatile Assets
  * Handles:
@@ -114,23 +117,21 @@ export class NetWorthVolatileAssetService {
         const apiKey = this.getFinnhubApiKey();
         if (apiKey && q.length >= 2) {
             try {
-                const res = await fetch(`https://finnhub.io/api/v1/search?q=${encodeURIComponent(query.trim())}&token=${apiKey}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && Array.isArray(data.result)) {
-                        for (const r of data.result.slice(0, 8)) {
-                            const sym = (r.displaySymbol || r.symbol || '').toUpperCase();
-                            if (sym && !seenSymbols.has(sym) && !sym.includes('.')) {
-                                seenSymbols.add(sym);
-                                results.push({
-                                    symbol: sym,
-                                    name: r.description || sym,
-                                    type: r.type === 'ETP' ? 'ETF' : (r.type || 'Stock'),
-                                    category: 'Stocks / ETFs',
-                                    currency: 'USD',
-                                    source: 'Finnhub'
-                                });
-                            }
+                const url = `${API_ENDPOINTS.finnhub.search}?q=${encodeURIComponent(query.trim())}&token=${apiKey}`;
+                const data = await HttpClient.getJson(url, { timeout: API_TIMEOUTS.finnhub });
+                if (data && Array.isArray(data.result)) {
+                    for (const r of data.result.slice(0, 8)) {
+                        const sym = (r.displaySymbol || r.symbol || '').toUpperCase();
+                        if (sym && !seenSymbols.has(sym) && !sym.includes('.')) {
+                            seenSymbols.add(sym);
+                            results.push({
+                                symbol: sym,
+                                name: r.description || sym,
+                                type: r.type === 'ETP' ? 'ETF' : (r.type || 'Stock'),
+                                category: 'Stocks / ETFs',
+                                currency: 'USD',
+                                source: 'Finnhub'
+                            });
                         }
                     }
                 }
@@ -194,18 +195,16 @@ export class NetWorthVolatileAssetService {
         }
 
         try {
-            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${cleanSymbol}&token=${apiKey}`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data && typeof data.c === 'number' && data.c > 0) {
-                    return {
-                        success: true,
-                        symbol: cleanSymbol,
-                        price: data.c,
-                        currency: 'USD',
-                        source: 'Finnhub'
-                    };
-                }
+            const url = `${API_ENDPOINTS.finnhub.quote}?symbol=${cleanSymbol}&token=${apiKey}`;
+            const data = await HttpClient.getJson(url, { timeout: API_TIMEOUTS.finnhub });
+            if (data && typeof data.c === 'number' && data.c > 0) {
+                return {
+                    success: true,
+                    symbol: cleanSymbol,
+                    price: data.c,
+                    currency: 'USD',
+                    source: 'Finnhub'
+                };
             }
         } catch (e) {
             // Failed fetch
@@ -228,20 +227,18 @@ export class NetWorthVolatileAssetService {
     static async fetchCoinbasePrice(symbol) {
         const cleanSymbol = symbol.trim().toUpperCase();
         try {
-            const res = await fetch(`https://api.coinbase.com/v2/prices/${cleanSymbol}-USD/spot`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.data && data.data.amount) {
-                    const price = parseFloat(data.data.amount);
-                    if (!isNaN(price) && price > 0) {
-                        return {
-                            success: true,
-                            symbol: cleanSymbol,
-                            price,
-                            currency: 'USD',
-                            source: 'Coinbase'
-                        };
-                    }
+            const url = `${API_ENDPOINTS.coinbase.spotPrice}/${cleanSymbol}-USD/spot`;
+            const data = await HttpClient.getJson(url, { timeout: API_TIMEOUTS.market });
+            if (data && data.data && data.data.amount) {
+                const price = parseFloat(data.data.amount);
+                if (!isNaN(price) && price > 0) {
+                    return {
+                        success: true,
+                        symbol: cleanSymbol,
+                        price,
+                        currency: 'USD',
+                        source: 'Coinbase'
+                    };
                 }
             }
         } catch (_) {}
@@ -257,20 +254,18 @@ export class NetWorthVolatileAssetService {
         const cleanSymbol = symbol.trim().toUpperCase();
         try {
             const geckoId = this.COINGECKO_MAP[cleanSymbol] || cleanSymbol.toLowerCase();
-            const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${geckoId}&vs_currencies=usd`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data[geckoId] && data[geckoId].usd) {
-                    const price = parseFloat(data[geckoId].usd);
-                    if (!isNaN(price) && price > 0) {
-                        return {
-                            success: true,
-                            symbol: cleanSymbol,
-                            price,
-                            currency: 'USD',
-                            source: 'CoinGecko'
-                        };
-                    }
+            const url = `${API_ENDPOINTS.coinGecko.price}?ids=${geckoId}&vs_currencies=usd`;
+            const data = await HttpClient.getJson(url, { timeout: API_TIMEOUTS.market });
+            if (data && data[geckoId] && data[geckoId].usd) {
+                const price = parseFloat(data[geckoId].usd);
+                if (!isNaN(price) && price > 0) {
+                    return {
+                        success: true,
+                        symbol: cleanSymbol,
+                        price,
+                        currency: 'USD',
+                        source: 'CoinGecko'
+                    };
                 }
             }
         } catch (_) {}
