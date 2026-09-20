@@ -1475,6 +1475,10 @@ video {
   top: 100%;
 }
 
+.isolate {
+  isolation: isolate;
+}
+
 .z-0 {
   z-index: 0;
 }
@@ -1513,6 +1517,11 @@ video {
 
 .-m-1 {
   margin: -0.25rem;
+}
+
+.mx-0\.5 {
+  margin-left: 0.125rem;
+  margin-right: 0.125rem;
 }
 
 .mx-1 {
@@ -2600,6 +2609,10 @@ video {
   flex-wrap: wrap;
 }
 
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
 .items-start {
   align-items: flex-start;
 }
@@ -2750,6 +2763,10 @@ video {
 
 .self-start {
   align-self: flex-start;
+}
+
+.self-center {
+  align-self: center;
 }
 
 .self-stretch {
@@ -5502,6 +5519,10 @@ input:focus, select:focus {
   background-color: rgb(245 158 11 / 0.1);
 }
 
+.hover\:bg-amber-500\/20:hover {
+  background-color: rgb(245 158 11 / 0.2);
+}
+
 .hover\:bg-blue-400:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(96 165 250 / var(--tw-bg-opacity, 1));
@@ -6150,6 +6171,11 @@ input:focus, select:focus {
   color: rgb(226 232 240 / var(--tw-text-opacity, 1));
 }
 
+.group:hover .group-hover\:text-slate-400 {
+  --tw-text-opacity: 1;
+  color: rgb(148 163 184 / var(--tw-text-opacity, 1));
+}
+
 .group\/flow:hover .group-hover\/flow\:opacity-100 {
   opacity: 1;
 }
@@ -6357,6 +6383,10 @@ input:focus, select:focus {
 
   .sm\:w-auto {
     width: auto;
+  }
+
+  .sm\:max-w-\[150px\] {
+    max-width: 150px;
   }
 
   .sm\:max-w-\[220px\] {

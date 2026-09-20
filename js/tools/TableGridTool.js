@@ -4,16 +4,20 @@ import { TableStorage } from './table/TableStorage.js';
 import { TableExporter } from './table/TableExporter.js';
 import { TableClipboard } from './table/TableClipboard.js';
 import { TableGridRenderer } from './table/TableGridRenderer.js';
+import { TableSheetManager } from './table/TableSheetManager.js';
+import { TableHistoryManager } from './table/TableHistoryManager.js';
 
 /**
  * TableGridTool - Freeform Dynamic Data Grid Tool (Refactored Controller)
- * Orchestrates Storage, Exporter, Clipboard, and Renderer modules.
+ * Orchestrates Storage, Exporter, Clipboard, Renderer, SheetManager, and History modules.
  * Adheres strictly to SOLID, Clean Code, and Zero Regression standards.
  */
 export class TableGridTool {
     constructor() {
         this.storageKey = 'assistant_quick_table_grid';
         this.storage = new TableStorage(this.storageKey);
+        this.sheetManager = new TableSheetManager();
+        this.historyManager = new TableHistoryManager();
 
         // Default blank state: 3 cols x 3 rows
         this.data = {
@@ -38,14 +42,14 @@ export class TableGridTool {
             tableEl: null,
             tableHead: null,
             tableBody: null,
-            btnAddRow: null,
-            btnAddCol: null,
             btnQuickAddCol: null,
-            btnPaste: null,
-            btnCopy: null,
+            btnUndo: null,
+            btnRedo: null,
             btnExportCsv: null,
             btnExportMd: null,
-            btnClear: null
+            btnClear: null,
+            sheetsTabs: null,
+            btnAddSheet: null
         };
     }
 
@@ -71,14 +75,44 @@ export class TableGridTool {
         this.dom.tableHead = document.getElementById('table-grid-head');
         this.dom.tableBody = document.getElementById('table-grid-body');
 
-        this.dom.btnAddRow = document.getElementById('btn-table-add-row');
-        this.dom.btnAddCol = document.getElementById('btn-table-add-col');
         this.dom.btnQuickAddCol = document.getElementById('btn-table-quick-add-col');
-        this.dom.btnPaste = document.getElementById('btn-table-paste');
-        this.dom.btnCopy = document.getElementById('btn-table-copy');
+        this.dom.btnUndo = document.getElementById('btn-table-undo');
+        this.dom.btnRedo = document.getElementById('btn-table-redo');
         this.dom.btnExportCsv = document.getElementById('btn-table-export-csv');
         this.dom.btnExportMd = document.getElementById('btn-table-export-md');
         this.dom.btnClear = document.getElementById('btn-table-clear');
+        this.dom.sheetsTabs = document.getElementById('table-sheets-tabs');
+        this.dom.btnAddSheet = document.getElementById('btn-table-add-sheet');
+
+        this.sheetManager.init({
+            tabsContainer: this.dom.sheetsTabs,
+            btnAddSheet: this.dom.btnAddSheet,
+            onSwitch: (targetSheet, previousSheet) => {
+                if (previousSheet) {
+                    this.historyManager.flushPendingTyping();
+                    previousSheet.title = this.data.title;
+                    previousSheet.headers = this.data.headers;
+                    previousSheet.rows = this.data.rows;
+                    previousSheet.updatedAt = Date.now();
+                }
+                this.data.title = targetSheet.title || '';
+                this.data.headers = Array.isArray(targetSheet.headers) && targetSheet.headers.length > 0 ? targetSheet.headers : ['Column 1', 'Column 2', 'Column 3'];
+                this.data.rows = Array.isArray(targetSheet.rows) && targetSheet.rows.length > 0 ? targetSheet.rows : [['', '', ''], ['', '', ''], ['', '', '']];
+                if (this.dom.titleInput) {
+                    this.dom.titleInput.value = this.data.title;
+                }
+                this.historyManager.setSheet(targetSheet.id, this.data);
+                this.renderTable();
+                this.saveToStorage();
+                this.updateUndoRedoButtons();
+            },
+            onDataChange: () => {
+                this.saveToStorage();
+            },
+            onDelete: (deletedSheetId) => {
+                this.historyManager.deleteSheet(deletedSheetId);
+            }
+        });
 
         this.loadFromStorage();
         this.renderTable();
@@ -99,21 +133,15 @@ export class TableGridTool {
         }
 
         // Toolbar Buttons
-        if (this.dom.btnAddRow) {
-            this.dom.btnAddRow.addEventListener('click', () => this.addRow());
-        }
         const quickAddRowBtn = document.getElementById('btn-table-quick-add-row');
         if (quickAddRowBtn) {
             quickAddRowBtn.addEventListener('click', () => this.addRow());
         }
-        if (this.dom.btnAddCol) {
-            this.dom.btnAddCol.addEventListener('click', () => this.addColumn());
+        if (this.dom.btnUndo) {
+            this.dom.btnUndo.addEventListener('click', () => this.undo());
         }
-        if (this.dom.btnPaste) {
-            this.dom.btnPaste.addEventListener('click', () => this.pasteFromClipboard());
-        }
-        if (this.dom.btnCopy) {
-            this.dom.btnCopy.addEventListener('click', () => this.copyToClipboard());
+        if (this.dom.btnRedo) {
+            this.dom.btnRedo.addEventListener('click', () => this.redo());
         }
         if (this.dom.btnExportCsv) {
             this.dom.btnExportCsv.addEventListener('click', () => this.exportCsv());
@@ -123,6 +151,36 @@ export class TableGridTool {
         }
         if (this.dom.btnClear) {
             this.dom.btnClear.addEventListener('click', () => this.clearTable());
+        }
+
+        // Keyboard Shortcuts (Universal layout support for English & Thai)
+        if (this.dom.section) {
+            this.dom.section.addEventListener('keydown', (e) => {
+                const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+                if (!isCtrlOrCmd) return;
+
+                const code = e.code;
+                const key = e.key.toLowerCase();
+
+                // Undo: Ctrl+Z (without Shift)
+                // Physical KeyZ, or key 'z', or Thai 'ผ'
+                if ((code === 'KeyZ' || key === 'z' || key === 'ผ') && !e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    this.undo();
+                    return;
+                }
+
+                // Redo: Ctrl+Y or Ctrl+Shift+Z
+                // Physical KeyY, or key 'y', or Thai 'ั'
+                // Physical KeyZ + Shift, or Thai 'ฉ'/'ผ' + Shift
+                const isRedoZ = (code === 'KeyZ' || key === 'z' || key === 'ผ' || key === 'ฉ') && e.shiftKey;
+                const isRedoY = (code === 'KeyY' || key === 'y' || key === 'ั') && !e.shiftKey;
+                if ((isRedoZ || isRedoY) && !e.altKey) {
+                    e.preventDefault();
+                    this.redo();
+                    return;
+                }
+            });
         }
 
         // Table Event Delegation (Input, Keydown, Click, DblClick, FocusOut, Paste)
@@ -420,7 +478,7 @@ export class TableGridTool {
         const success = TableClipboard.insertParsedData(this.data, text, startRow, startCol);
         if (success) {
             this.renderTable();
-            this.handleDataChange();
+            this.handleDataChange({ immediate: true });
         }
     }
 
@@ -428,7 +486,7 @@ export class TableGridTool {
         const newRow = new Array(this.data.headers.length).fill('');
         this.data.rows.push(newRow);
         this.renderTable();
-        this.handleDataChange();
+        this.handleDataChange({ immediate: true });
 
         // Focus first cell of newly created row
         setTimeout(() => this.focusCell(this.data.rows.length - 1, 0), 10);
@@ -441,7 +499,7 @@ export class TableGridTool {
             this.data.rows.splice(rowIdx, 1);
         }
         this.renderTable();
-        this.handleDataChange();
+        this.handleDataChange({ immediate: true });
     }
 
     addColumn() {
@@ -449,7 +507,7 @@ export class TableGridTool {
         this.data.headers.push(newColName);
         this.data.rows.forEach(row => row.push(''));
         this.renderTable();
-        this.handleDataChange();
+        this.handleDataChange({ immediate: true });
     }
 
     deleteColumn(colIdx) {
@@ -470,7 +528,7 @@ export class TableGridTool {
         });
 
         this.renderTable();
-        this.handleDataChange();
+        this.handleDataChange({ immediate: true });
     }
 
     async pasteFromClipboard() {
@@ -512,6 +570,9 @@ export class TableGridTool {
 
         if (!confirmed) return;
 
+        // Record snapshot before clearing so user can undo clear
+        this.historyManager.recordImmediate(this.data);
+
         this.data = {
             title: '',
             headers: ['Column 1', 'Column 2', 'Column 3'],
@@ -525,29 +586,205 @@ export class TableGridTool {
 
         if (this.dom.titleInput) this.dom.titleInput.value = '';
         this.renderTable();
-        this.saveToStorage();
+        this.handleDataChange({ immediate: true });
+    }
+
+    undo() {
+        const previousData = {
+            title: this.data.title || '',
+            headers: Array.isArray(this.data.headers) ? [...this.data.headers] : [],
+            rows: Array.isArray(this.data.rows) ? this.data.rows.map(r => [...r]) : []
+        };
+
+        const restored = this.historyManager.undo(this.data);
+        if (!restored) return;
+
+        const diff = this.findTableDiff(previousData, restored);
+
+        this.data.title = restored.title || '';
+        this.data.headers = Array.isArray(restored.headers) ? [...restored.headers] : [];
+        this.data.rows = Array.isArray(restored.rows) ? restored.rows.map(r => [...r]) : [];
+
+        if (this.dom.titleInput) {
+            this.dom.titleInput.value = this.data.title;
+        }
+
+        this.renderTable();
+        this.updateStats();
+        this.updateUndoRedoButtons();
+        this.sheetManager.updateActiveSheet(this.data.title, this.data.headers, this.data.rows);
+        const payload = this.sheetManager.getStatePayload();
+        this.storage.scheduleSave(payload, (status, ts) => this.setSaveStatus(status, ts));
+
+        if (diff) {
+            this.navigateToDiff(diff);
+        }
+    }
+
+    redo() {
+        const previousData = {
+            title: this.data.title || '',
+            headers: Array.isArray(this.data.headers) ? [...this.data.headers] : [],
+            rows: Array.isArray(this.data.rows) ? this.data.rows.map(r => [...r]) : []
+        };
+
+        const restored = this.historyManager.redo(this.data);
+        if (!restored) return;
+
+        const diff = this.findTableDiff(previousData, restored);
+
+        this.data.title = restored.title || '';
+        this.data.headers = Array.isArray(restored.headers) ? [...restored.headers] : [];
+        this.data.rows = Array.isArray(restored.rows) ? restored.rows.map(r => [...r]) : [];
+
+        if (this.dom.titleInput) {
+            this.dom.titleInput.value = this.data.title;
+        }
+
+        this.renderTable();
+        this.updateStats();
+        this.updateUndoRedoButtons();
+        this.sheetManager.updateActiveSheet(this.data.title, this.data.headers, this.data.rows);
+        const payload = this.sheetManager.getStatePayload();
+        this.storage.scheduleSave(payload, (status, ts) => this.setSaveStatus(status, ts));
+
+        if (diff) {
+            this.navigateToDiff(diff);
+        }
+    }
+
+    findTableDiff(prev, next) {
+        if (!prev || !next) return null;
+
+        // 1. Check title difference
+        if ((prev.title || '') !== (next.title || '')) {
+            return { type: 'title' };
+        }
+
+        // 2. Check header changes
+        const prevHeaders = prev.headers || [];
+        const nextHeaders = next.headers || [];
+        const maxHeaders = Math.max(prevHeaders.length, nextHeaders.length);
+        for (let c = 0; c < maxHeaders; c++) {
+            if (prevHeaders[c] !== nextHeaders[c]) {
+                return { type: 'header', col: Math.min(c, nextHeaders.length - 1) };
+            }
+        }
+
+        // 3. Check cells in rows
+        const prevRows = prev.rows || [];
+        const nextRows = next.rows || [];
+        for (let r = 0; r < nextRows.length; r++) {
+            const nextRow = nextRows[r] || [];
+            const prevRow = prevRows[r] || [];
+            for (let c = 0; c < nextHeaders.length; c++) {
+                if ((prevRow[c] || '') !== (nextRow[c] || '')) {
+                    return { type: 'cell', row: r, col: c };
+                }
+            }
+        }
+
+        // 4. Check row addition or deletion
+        if (prevRows.length !== nextRows.length) {
+            const r = Math.min(prevRows.length, nextRows.length);
+            return { type: 'row', row: Math.max(0, Math.min(r, nextRows.length - 1)), col: 0 };
+        }
+
+        // 5. Check column addition or deletion
+        if (prevHeaders.length !== nextHeaders.length) {
+            const c = Math.min(prevHeaders.length, nextHeaders.length);
+            return { type: 'column', col: Math.max(0, Math.min(c, nextHeaders.length - 1)) };
+        }
+
+        return null;
+    }
+
+    navigateToDiff(diff) {
+        if (!diff) return;
+
+        if (diff.type === 'title') {
+            if (this.dom.titleInput) {
+                this.dom.titleInput.focus();
+                this.dom.titleInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            return;
+        }
+
+        if (diff.type === 'header' || diff.type === 'column') {
+            const col = diff.col !== undefined ? diff.col : 0;
+            const headerEditor = this.dom.tableHead?.querySelector(`.table-header-editor[data-col="${col}"]`);
+            if (headerEditor) {
+                headerEditor.focus();
+                headerEditor.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
+            return;
+        }
+
+        if (diff.type === 'cell' || diff.type === 'row') {
+            const row = diff.row !== undefined ? diff.row : 0;
+            const col = diff.col !== undefined ? diff.col : 0;
+            this.focusCell(row, col);
+            const td = this.dom.tableBody?.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+            if (td) {
+                td.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
+        }
+    }
+
+    updateUndoRedoButtons() {
+        if (this.dom.btnUndo) {
+            const canUndo = this.historyManager.canUndo();
+            this.dom.btnUndo.disabled = !canUndo;
+            this.dom.btnUndo.classList.toggle('opacity-40', !canUndo);
+            this.dom.btnUndo.classList.toggle('cursor-not-allowed', !canUndo);
+        }
+        if (this.dom.btnRedo) {
+            const canRedo = this.historyManager.canRedo();
+            this.dom.btnRedo.disabled = !canRedo;
+            this.dom.btnRedo.classList.toggle('opacity-40', !canRedo);
+            this.dom.btnRedo.classList.toggle('cursor-not-allowed', !canRedo);
+        }
     }
 
     updateStats() {
         TableGridRenderer.updateStats(this.dom, this.data);
     }
 
-    handleDataChange() {
+    handleDataChange({ immediate = false } = {}) {
         this.updateStats();
-        this.storage.scheduleSave(this.data, (status, ts) => this.setSaveStatus(status, ts));
+        if (immediate) {
+            this.historyManager.recordImmediate(this.data);
+        } else {
+            this.historyManager.recordTyping(this.data);
+        }
+        this.updateUndoRedoButtons();
+        this.sheetManager.updateActiveSheet(this.data.title, this.data.headers, this.data.rows);
+        const payload = this.sheetManager.getStatePayload();
+        this.storage.scheduleSave(payload, (status, ts) => this.setSaveStatus(status, ts));
     }
 
     saveToStorage() {
-        this.storage.save(this.data, (status, ts) => this.setSaveStatus(status, ts));
+        this.sheetManager.updateActiveSheet(this.data.title, this.data.headers, this.data.rows);
+        const payload = this.sheetManager.getStatePayload();
+        this.storage.save(payload, (status, ts) => this.setSaveStatus(status, ts));
     }
 
     loadFromStorage() {
         const loaded = this.storage.load();
+        this.sheetManager.loadState(loaded);
+        const active = this.sheetManager.getActiveSheet();
+        this.data = {
+            title: active.title || '',
+            headers: active.headers && active.headers.length > 0 ? active.headers : ['Column 1', 'Column 2', 'Column 3'],
+            rows: active.rows && active.rows.length > 0 ? active.rows : [['', '', ''], ['', '', ''], ['', '', '']],
+            updatedAt: (loaded && loaded.updatedAt) || active.updatedAt || Date.now()
+        };
+        if (this.dom.titleInput) {
+            this.dom.titleInput.value = this.data.title;
+        }
+        this.historyManager.setSheet(active.id, this.data);
+        this.updateUndoRedoButtons();
         if (loaded) {
-            this.data = loaded;
-            if (this.dom.titleInput) {
-                this.dom.titleInput.value = this.data.title;
-            }
             this.setSaveStatus('saved', this.storage.lastSavedTimestamp);
         } else {
             this.setSaveStatus('ready');
@@ -556,13 +793,23 @@ export class TableGridTool {
 
     syncFromCloud(cloudData) {
         const isEditing = this.dom.section && this.dom.section.contains(document.activeElement);
-        const merged = this.storage.mergeCloudData(this.data, cloudData, isEditing);
+        const currentPayload = this.sheetManager.getStatePayload();
+        const merged = this.storage.mergeCloudData(currentPayload, cloudData, isEditing);
         if (merged) {
-            this.data = merged;
+            this.sheetManager.loadState(merged);
+            const active = this.sheetManager.getActiveSheet();
+            this.data = {
+                title: active.title || '',
+                headers: active.headers && active.headers.length > 0 ? active.headers : ['Column 1', 'Column 2', 'Column 3'],
+                rows: active.rows && active.rows.length > 0 ? active.rows : [['', '', ''], ['', '', ''], ['', '', '']],
+                updatedAt: merged.updatedAt
+            };
             if (this.dom.titleInput) {
                 this.dom.titleInput.value = this.data.title;
             }
+            this.historyManager.setSheet(active.id, this.data);
             this.renderTable();
+            this.updateUndoRedoButtons();
             this.setSaveStatus('saved', merged.updatedAt);
         }
     }

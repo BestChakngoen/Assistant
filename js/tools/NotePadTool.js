@@ -1,9 +1,13 @@
 import { ShareUI } from '../ui/share/ShareUI.js';
 import { NoteSmartDetector } from './notepad/NoteSmartDetector.js';
+import { NoteSheetManager } from './notepad/NoteSheetManager.js';
+import { NoteFormatter } from './notepad/NoteFormatter.js';
+import { NoteHistoryManager } from './notepad/NoteHistoryManager.js';
 
 /**
  * NotePadTool - Instant Digital Scratchpad Tool with Realtime Auto-Save & Smart Detection
  * Provides a clean, stable digital sheet for writing, with automatic media & link detection.
+ * Supports multiple sheets/tabs, rich formatting tools, and robust multi-language undo/redo.
  * Adheres strictly to SOLID, Single Responsibility Principle (SRP), and Zero Regression.
  */
 export class NotePadTool {
@@ -13,6 +17,8 @@ export class NotePadTool {
         this.onSave = null;
         this.lastSavedTimestamp = 0;
         this.detector = new NoteSmartDetector();
+        this.sheetManager = new NoteSheetManager();
+        this.historyManager = new NoteHistoryManager();
         this.dom = {
             titleInput: null,
             contentInput: null,
@@ -24,7 +30,13 @@ export class NotePadTool {
             btnClear: null,
             btnCopy: null,
             btnExportTxt: null,
-            btnExportMd: null
+            btnExportMd: null,
+            sheetsTabs: null,
+            btnAddSheet: null,
+            btnFormatBold: null,
+            btnFormatDivider: null,
+            btnUndo: null,
+            btnRedo: null
         };
     }
 
@@ -40,12 +52,49 @@ export class NotePadTool {
         this.dom.btnCopy = document.getElementById('btn-note-copy');
         this.dom.btnExportTxt = document.getElementById('btn-note-export-txt');
         this.dom.btnExportMd = document.getElementById('btn-note-export-md');
+        this.dom.sheetsTabs = document.getElementById('note-sheets-tabs');
+        this.dom.btnAddSheet = document.getElementById('btn-note-add-sheet');
+        this.dom.btnFormatBold = document.getElementById('btn-note-format-bold');
+        this.dom.btnFormatDivider = document.getElementById('btn-note-format-divider');
+        this.dom.btnUndo = document.getElementById('btn-note-undo');
+        this.dom.btnRedo = document.getElementById('btn-note-redo');
 
         if (!this.dom.contentInput) return;
+
+        this.sheetManager.init({
+            tabsContainer: this.dom.sheetsTabs,
+            btnAddSheet: this.dom.btnAddSheet,
+            onSwitch: (targetSheet, previousSheet) => {
+                if (previousSheet && this.dom.contentInput) {
+                    this.historyManager.flushPendingTyping();
+                    previousSheet.title = (this.dom.titleInput?.value || '').trim();
+                    previousSheet.content = this.dom.contentInput?.value || '';
+                    previousSheet.updatedAt = Date.now();
+                }
+                if (this.dom.titleInput) {
+                    this.dom.titleInput.value = targetSheet.title || '';
+                }
+                if (this.dom.contentInput) {
+                    this.dom.contentInput.value = targetSheet.content || '';
+                }
+                this.historyManager.setSheet(targetSheet.id, targetSheet.content || '', 0, 0, targetSheet.title || '');
+                this.updateStats();
+                this.detector.scan();
+                this.saveToStorage();
+                this.updateUndoRedoButtons();
+            },
+            onDataChange: () => {
+                this.saveToStorage();
+            },
+            onDelete: (deletedSheetId) => {
+                this.historyManager.deleteSheet(deletedSheetId);
+            }
+        });
 
         this.detector.init();
         this.loadFromStorage();
         this.bindEvents();
+        this.updateUndoRedoButtons();
 
         if (window.lucide && typeof window.lucide.createIcons === 'function') {
             window.lucide.createIcons();
@@ -83,9 +132,220 @@ export class NotePadTool {
         if (this.dom.btnExportMd) {
             this.dom.btnExportMd.addEventListener('click', () => this.exportFile('md'));
         }
+
+        // Undo Action
+        if (this.dom.btnUndo) {
+            this.dom.btnUndo.addEventListener('click', () => this.undo());
+        }
+
+        // Redo Action
+        if (this.dom.btnRedo) {
+            this.dom.btnRedo.addEventListener('click', () => this.redo());
+        }
+
+        // Formatting Tool: Bold
+        if (this.dom.btnFormatBold) {
+            this.dom.btnFormatBold.addEventListener('click', () => this.applyFormatBold());
+        }
+
+        // Formatting Tool: Divider Line
+        if (this.dom.btnFormatDivider) {
+            this.dom.btnFormatDivider.addEventListener('click', () => this.applyFormatDivider());
+        }
+
+        // Keyboard Shortcuts (Universal layout support for English & Thai)
+        if (this.dom.contentInput) {
+            this.dom.contentInput.addEventListener('keydown', (e) => {
+                const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+                if (!isCtrlOrCmd) return;
+
+                const code = e.code;
+                const key = e.key.toLowerCase();
+
+                // Undo: Ctrl+Z (without Shift)
+                // Physical KeyZ, or key 'z', or Thai 'ผ'
+                if ((code === 'KeyZ' || key === 'z' || key === 'ผ') && !e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    this.undo();
+                    return;
+                }
+
+                // Redo: Ctrl+Y or Ctrl+Shift+Z
+                // Physical KeyY, or key 'y', or Thai 'ั'
+                // Physical KeyZ + Shift, or Thai 'ฉ'/'ผ' + Shift
+                const isRedoZ = (code === 'KeyZ' || key === 'z' || key === 'ผ' || key === 'ฉ') && e.shiftKey;
+                const isRedoY = (code === 'KeyY' || key === 'y' || key === 'ั') && !e.shiftKey;
+                if ((isRedoZ || isRedoY) && !e.altKey) {
+                    e.preventDefault();
+                    this.redo();
+                    return;
+                }
+
+                // Bold: Ctrl+B
+                // Physical KeyB, or key 'b', or Thai 'ิ'
+                if ((code === 'KeyB' || key === 'b' || key === 'ิ') && !e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    this.applyFormatBold();
+                    return;
+                }
+
+                // Divider Line: Ctrl+Shift+H
+                // Physical KeyH, or key 'h', or Thai '้'
+                if ((code === 'KeyH' || key === 'h' || key === '้') && e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    this.applyFormatDivider();
+                    return;
+                }
+            });
+        }
     }
 
-    handleInput() {
+    undo() {
+        if (!this.dom.contentInput) return;
+        const currentTitle = (this.dom.titleInput?.value || '').trim();
+        const snapshot = this.historyManager.undo(
+            this.dom.contentInput.value,
+            this.dom.contentInput.selectionStart,
+            this.dom.contentInput.selectionEnd,
+            currentTitle
+        );
+        if (snapshot) {
+            this.applyNoteSnapshot(snapshot, currentTitle);
+        }
+    }
+
+    redo() {
+        if (!this.dom.contentInput) return;
+        const currentTitle = (this.dom.titleInput?.value || '').trim();
+        const snapshot = this.historyManager.redo(
+            this.dom.contentInput.value,
+            this.dom.contentInput.selectionStart,
+            this.dom.contentInput.selectionEnd,
+            currentTitle
+        );
+        if (snapshot) {
+            this.applyNoteSnapshot(snapshot, currentTitle);
+        }
+    }
+
+    applyNoteSnapshot(snapshot, currentTitle) {
+        const titleChanged = snapshot.title !== undefined && snapshot.title !== currentTitle;
+        const contentChanged = snapshot.value !== this.dom.contentInput.value;
+
+        if (titleChanged && this.dom.titleInput) {
+            this.dom.titleInput.value = snapshot.title;
+        }
+
+        this.dom.contentInput.value = snapshot.value;
+        const cursorStart = snapshot.selectionStart ?? snapshot.value.length;
+        const cursorEnd = snapshot.selectionEnd ?? snapshot.value.length;
+        this.dom.contentInput.selectionStart = cursorStart;
+        this.dom.contentInput.selectionEnd = cursorEnd;
+
+        this.handleInput(false);
+        this.detector.scan();
+        this.updateUndoRedoButtons();
+
+        // Move to and view changed data without temporary highlight effects
+        if (titleChanged && !contentChanged && this.dom.titleInput) {
+            this.dom.titleInput.focus();
+            this.dom.titleInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            this.dom.contentInput.focus();
+            this.scrollToCursorPosition(this.dom.contentInput, cursorStart);
+        }
+    }
+
+    updateUndoRedoButtons() {
+        if (this.dom.btnUndo) {
+            const canUndo = this.historyManager.canUndo();
+            this.dom.btnUndo.disabled = !canUndo;
+            this.dom.btnUndo.classList.toggle('opacity-40', !canUndo);
+            this.dom.btnUndo.classList.toggle('cursor-not-allowed', !canUndo);
+        }
+        if (this.dom.btnRedo) {
+            const canRedo = this.historyManager.canRedo();
+            this.dom.btnRedo.disabled = !canRedo;
+            this.dom.btnRedo.classList.toggle('opacity-40', !canRedo);
+            this.dom.btnRedo.classList.toggle('cursor-not-allowed', !canRedo);
+        }
+    }
+
+    scrollToCursorPosition(textarea, cursorIndex) {
+        if (!textarea) return;
+        const textBefore = textarea.value.substring(0, cursorIndex);
+        const lineIndex = (textBefore.match(/\n/g) || []).length;
+        const computedLineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight) || 20;
+
+        // Position inside textarea with contextual headroom
+        const targetScrollTop = Math.max(0, (lineIndex - 2) * computedLineHeight);
+        textarea.scrollTop = targetScrollTop;
+
+        // Ensure textarea element is visible within viewport
+        textarea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    applyFormatBold() {
+        if (!this.dom.contentInput) return;
+        const title = (this.dom.titleInput?.value || '').trim();
+        this.historyManager.recordImmediate(
+            this.dom.contentInput.value,
+            this.dom.contentInput.selectionStart,
+            this.dom.contentInput.selectionEnd,
+            title
+        );
+        const changed = NoteFormatter.applyBold(this.dom.contentInput);
+        if (changed) {
+            this.historyManager.recordImmediate(
+                this.dom.contentInput.value,
+                this.dom.contentInput.selectionStart,
+                this.dom.contentInput.selectionEnd,
+                title
+            );
+            this.handleInput(false);
+            this.detector.scan();
+            this.updateUndoRedoButtons();
+        }
+    }
+
+    applyFormatDivider() {
+        if (!this.dom.contentInput) return;
+        const title = (this.dom.titleInput?.value || '').trim();
+        this.historyManager.recordImmediate(
+            this.dom.contentInput.value,
+            this.dom.contentInput.selectionStart,
+            this.dom.contentInput.selectionEnd,
+            title
+        );
+        const changed = NoteFormatter.insertDivider(this.dom.contentInput);
+        if (changed) {
+            this.historyManager.recordImmediate(
+                this.dom.contentInput.value,
+                this.dom.contentInput.selectionStart,
+                this.dom.contentInput.selectionEnd,
+                title
+            );
+            this.handleInput(false);
+            this.detector.scan();
+            this.updateUndoRedoButtons();
+        }
+    }
+
+    handleInput(recordHistory = true) {
+        const title = (this.dom.titleInput?.value || '').trim();
+        const content = this.dom.contentInput?.value || '';
+        this.sheetManager.updateActiveSheet(title, content);
+
+        if (recordHistory && this.dom.contentInput) {
+            this.historyManager.recordTyping(
+                content,
+                this.dom.contentInput.selectionStart,
+                this.dom.contentInput.selectionEnd,
+                title
+            );
+        }
+
+        this.updateUndoRedoButtons();
         this.updateStats();
         this.setSaveStatus('saving');
 
@@ -129,11 +389,12 @@ export class NotePadTool {
 
     saveToStorage() {
         try {
-            const data = {
-                title: (this.dom.titleInput?.value || '').trim(),
-                content: this.dom.contentInput?.value || '',
-                updatedAt: Date.now()
-            };
+            const active = this.sheetManager.getActiveSheet();
+            active.title = (this.dom.titleInput?.value || '').trim();
+            active.content = this.dom.contentInput?.value || '';
+            active.updatedAt = Date.now();
+
+            const data = this.sheetManager.getStatePayload();
             this.lastSavedTimestamp = data.updatedAt;
             localStorage.setItem(this.storageKey, JSON.stringify(data));
             this.setSaveStatus('saved', data.updatedAt);
@@ -150,32 +411,35 @@ export class NotePadTool {
     loadFromStorage() {
         try {
             const data = this.getLocalData();
-            if (data) {
-                if (this.dom.titleInput && data.title !== undefined) {
-                    this.dom.titleInput.value = data.title;
-                }
-                if (this.dom.contentInput && data.content !== undefined) {
-                    this.dom.contentInput.value = data.content;
-                }
-                this.lastSavedTimestamp = data.updatedAt || Date.now();
-                this.updateStats();
-                this.detector.scan();
-                this.setSaveStatus('saved', this.lastSavedTimestamp);
-                return;
+            this.sheetManager.loadState(data);
+            const active = this.sheetManager.getActiveSheet();
+            if (this.dom.titleInput) {
+                this.dom.titleInput.value = active.title || '';
             }
+            if (this.dom.contentInput) {
+                this.dom.contentInput.value = active.content || '';
+            }
+            this.lastSavedTimestamp = (data && data.updatedAt) ? data.updatedAt : 0;
+            this.historyManager.setSheet(active.id, active.content || '', 0, 0, active.title || '');
+            this.updateStats();
+            this.detector.scan();
+            this.updateUndoRedoButtons();
+            this.setSaveStatus('saved', this.lastSavedTimestamp);
+            return;
         } catch (e) {
             console.error('Failed to load note from localStorage:', e);
         }
 
         this.updateStats();
         this.detector.scan();
+        this.updateUndoRedoButtons();
         this.setSaveStatus('ready');
     }
 
     syncFromCloud(cloudData) {
         if (!cloudData) {
             const local = this.getLocalData();
-            if (local && (local.title || local.content) && typeof this.onSave === 'function') {
+            if (local && (local.title || local.content || (local.sheets && local.sheets.length > 0)) && typeof this.onSave === 'function') {
                 this.onSave(local);
             }
             return;
@@ -196,26 +460,40 @@ export class NotePadTool {
             return;
         }
 
-        // If cloud is newer, pull cloud changes
-        if (cloudTime > localTime) {
-            if (this.dom.titleInput && cloudData.title !== undefined) {
-                this.dom.titleInput.value = cloudData.title;
+        const localHasContent = local && (
+            (Array.isArray(local.sheets) && local.sheets.some(s => (s.title && s.title.trim()) || (s.content && s.content.trim()))) ||
+            (local.title && local.title.trim()) ||
+            (local.content && local.content.trim())
+        );
+
+        const cloudHasContent = cloudData && (
+            (Array.isArray(cloudData.sheets) && cloudData.sheets.some(s => (s.title && s.title.trim()) || (s.content && s.content.trim()))) ||
+            (cloudData.title && cloudData.title.trim()) ||
+            (cloudData.content && cloudData.content.trim())
+        );
+
+        // If cloud is newer OR local has no actual notes yet while cloud does
+        if (cloudTime > localTime || (!localHasContent && cloudHasContent)) {
+            this.sheetManager.loadState(cloudData);
+            const active = this.sheetManager.getActiveSheet();
+            if (this.dom.titleInput) {
+                this.dom.titleInput.value = active.title || '';
             }
-            if (this.dom.contentInput && cloudData.content !== undefined) {
-                this.dom.contentInput.value = cloudData.content;
+            if (this.dom.contentInput) {
+                this.dom.contentInput.value = active.content || '';
             }
+            this.historyManager.setSheet(active.id, active.content || '', 0, 0, active.title || '');
             this.lastSavedTimestamp = cloudTime;
             try {
-                localStorage.setItem(this.storageKey, JSON.stringify({
-                    title: cloudData.title || '',
-                    content: cloudData.content || '',
-                    updatedAt: cloudTime
-                }));
+                const payload = this.sheetManager.getStatePayload();
+                payload.updatedAt = cloudTime;
+                localStorage.setItem(this.storageKey, JSON.stringify(payload));
             } catch (e) {
                 console.error('Failed to cache cloud note to localStorage:', e);
             }
             this.updateStats();
             this.detector.scan();
+            this.updateUndoRedoButtons();
             this.setSaveStatus('saved', cloudTime);
         } else if (localTime > cloudTime && typeof this.onSave === 'function') {
             if (local) {
@@ -358,12 +636,23 @@ export class NotePadTool {
 
         if (!confirmed) return;
 
+        // Record snapshot before clearing so user can undo clear
+        this.historyManager.recordImmediate(
+            content,
+            this.dom.contentInput?.selectionStart || 0,
+            this.dom.contentInput?.selectionEnd || 0,
+            title
+        );
+
         if (this.dom.titleInput) this.dom.titleInput.value = '';
         if (this.dom.contentInput) this.dom.contentInput.value = '';
 
+        this.sheetManager.updateActiveSheet('', '');
         this.saveToStorage();
         this.updateStats();
         this.detector.scan();
+        this.historyManager.recordImmediate('', 0, 0, '');
+        this.updateUndoRedoButtons();
         if (this.dom.contentInput) this.dom.contentInput.focus();
     }
 }

@@ -32,7 +32,6 @@ export const toolsViewHtml = `
                                     <span>Ready</span>
                                 </span>
                             </h3>
-                            <p class="text-[11px] font-mono text-slate-400">Instant blank sheet for quick notes, code snippets, and thoughts with auto-sync.</p>
                         </div>
                     </div>
 
@@ -58,9 +57,45 @@ export const toolsViewHtml = `
                     </div>
                 </div>
 
+                <!-- Sheet Tabs Navigation Bar -->
+                <div class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                    <div id="note-sheets-tabs" class="flex items-center gap-1.5 flex-nowrap shrink-0">
+                        <!-- Dynamic sheet tabs injected here -->
+                    </div>
+                    <button id="btn-note-add-sheet" type="button" title="Add new sheet" class="btn-press shrink-0 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 transition-all flex items-center gap-1.5 text-xs font-mono font-medium">
+                        <i data-lucide="plus" class="size-3.5"></i>
+                        <span>New Sheet</span>
+                    </button>
+                </div>
+
                 <!-- Note Title Input -->
                 <div class="w-full">
                     <input id="note-title-input" type="text" placeholder="Note Title (Optional)..." maxlength="120" class="w-full px-4 py-2.5 rounded-xl bg-slate-950/70 text-slate-100 placeholder:text-slate-600 outline-none focus:bg-slate-950 focus:ring-2 focus:ring-amber-500/30 text-xs sm:text-sm font-mono font-semibold transition-all">
+                </div>
+
+                <!-- Note Formatting Toolbar -->
+                <div class="w-full flex items-center justify-between gap-2 px-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <button id="btn-note-undo" type="button" title="Undo (Ctrl+Z)" class="btn-press px-2 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1 text-xs font-mono">
+                            <i data-lucide="undo-2" class="size-3.5"></i>
+                            <span class="hidden sm:inline">Undo</span>
+                        </button>
+                        <button id="btn-note-redo" type="button" title="Redo (Ctrl+Y / Ctrl+Shift+Z)" class="btn-press px-2 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1 text-xs font-mono">
+                            <i data-lucide="redo-2" class="size-3.5"></i>
+                            <span class="hidden sm:inline">Redo</span>
+                        </button>
+                        <span class="w-px h-4 bg-slate-800 self-center mx-0.5"></span>
+                        <button id="btn-note-format-bold" type="button" title="Bold (Ctrl+B)" class="btn-press px-2.5 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
+                            <i data-lucide="bold" class="size-3.5"></i>
+                            <span class="font-bold">Bold</span>
+                            <span class="text-[10px] text-slate-500 font-mono hidden sm:inline">Ctrl+B</span>
+                        </button>
+                        <button id="btn-note-format-divider" type="button" title="Insert Divider Line (Ctrl+Shift+H)" class="btn-press px-2.5 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
+                            <i data-lucide="minus" class="size-3.5"></i>
+                            <span>Divider</span>
+                            <span class="text-[10px] text-slate-500 font-mono hidden sm:inline">Ctrl+Shift+H</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Note Content Textarea -->
@@ -134,29 +169,12 @@ export const toolsViewHtml = `
                                     <span>Ready</span>
                                 </span>
                             </h3>
-                            <p class="text-[11px] font-mono text-slate-400">Flexible grid with dynamic rows & columns, content-fit cells, and auto-sync.</p>
                         </div>
                     </div>
 
                     <!-- Right Controls / Actions -->
                     <div class="flex items-center flex-wrap gap-2">
                         <span id="table-last-updated" class="text-[10px] font-mono text-slate-400 mr-1 hidden sm:inline-block"></span>
-                        <button id="btn-table-add-row" type="button" title="Add new row" class="btn-press p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
-                            <i data-lucide="plus" class="size-3.5 text-emerald-400"></i>
-                            <span>Add Row</span>
-                        </button>
-                        <button id="btn-table-add-col" type="button" title="Add new column" class="btn-press p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
-                            <i data-lucide="columns" class="size-3.5 text-emerald-400"></i>
-                            <span>Add Col</span>
-                        </button>
-                        <button id="btn-table-paste" type="button" title="Paste table from clipboard (Excel / Sheets)" class="btn-press p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
-                            <i data-lucide="clipboard-paste" class="size-3.5"></i>
-                            <span class="hidden md:inline">Paste</span>
-                        </button>
-                        <button id="btn-table-copy" type="button" title="Copy table as TSV / Markdown" class="btn-press p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
-                            <i data-lucide="copy" class="size-3.5"></i>
-                            <span class="hidden md:inline">Copy</span>
-                        </button>
                         <button id="btn-table-export-csv" type="button" title="Export as CSV (.csv)" class="btn-press p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
                             <i data-lucide="file-spreadsheet" class="size-3.5"></i>
                             <span class="hidden md:inline">.CSV</span>
@@ -172,9 +190,34 @@ export const toolsViewHtml = `
                     </div>
                 </div>
 
+                <!-- Table Sheets Tabs Navigation Bar -->
+                <div class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                    <div id="table-sheets-tabs" class="flex items-center gap-1.5 flex-nowrap shrink-0">
+                        <!-- Dynamic table sheet tabs injected here -->
+                    </div>
+                    <button id="btn-table-add-sheet" type="button" title="Add new sheet" class="btn-press shrink-0 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-all flex items-center gap-1.5 text-xs font-mono font-medium">
+                        <i data-lucide="plus" class="size-3.5"></i>
+                        <span>New Sheet</span>
+                    </button>
+                </div>
+
                 <!-- Table Title Input -->
                 <div class="w-full">
                     <input id="table-title-input" type="text" placeholder="Table Title (Optional)..." maxlength="120" class="w-full px-4 py-2.5 rounded-xl bg-slate-950/70 text-slate-100 placeholder:text-slate-600 outline-none focus:bg-slate-950 focus:ring-2 focus:ring-emerald-500/30 text-xs sm:text-sm font-mono font-semibold transition-all">
+                </div>
+
+                <!-- Table Toolbar (Under Title) -->
+                <div class="w-full flex items-center justify-between gap-2 px-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <button id="btn-table-undo" type="button" title="Undo (Ctrl+Z / Ctrl+ผ)" class="btn-press px-2 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1 text-xs font-mono">
+                            <i data-lucide="undo-2" class="size-3.5"></i>
+                            <span class="hidden sm:inline">Undo</span>
+                        </button>
+                        <button id="btn-table-redo" type="button" title="Redo (Ctrl+Y / Ctrl+Shift+Z / Ctrl+ั)" class="btn-press px-2 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1 text-xs font-mono">
+                            <i data-lucide="redo-2" class="size-3.5"></i>
+                            <span class="hidden sm:inline">Redo</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Table Wrapper (Horizontal & Vertical Permanent Scrollbar for Large Data) -->

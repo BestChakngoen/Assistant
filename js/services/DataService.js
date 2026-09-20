@@ -193,7 +193,21 @@ export class DataService {
         const docRef = this.getQuickNoteDoc(uid);
         this.unsubscribeQuickNote = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
-                callback(docSnap.data());
+                const cloudData = docSnap.data();
+                let sheets = null;
+                if (typeof cloudData.sheetsJson === 'string') {
+                    try {
+                        sheets = JSON.parse(cloudData.sheetsJson);
+                    } catch (e) {
+                        console.error("Failed to parse quickNote sheetsJson:", e);
+                    }
+                } else if (Array.isArray(cloudData.sheets)) {
+                    sheets = cloudData.sheets;
+                }
+                callback({
+                    ...cloudData,
+                    sheets
+                });
             } else {
                 callback(null);
             }
@@ -205,12 +219,19 @@ export class DataService {
 
     async saveQuickNote(uid, data) {
         const docRef = this.getQuickNoteDoc(uid);
-        await setDoc(docRef, {
+        const payload = {
             title: data.title || '',
             content: data.content || '',
             attachments: data.attachments || { links: [], images: [], files: [] },
             updatedAt: data.updatedAt || Date.now()
-        }, { merge: true });
+        };
+        if (Array.isArray(data.sheets)) {
+            payload.sheetsJson = JSON.stringify(data.sheets);
+        }
+        if (data.activeSheetId) {
+            payload.activeSheetId = data.activeSheetId;
+        }
+        await setDoc(docRef, payload, { merge: true });
     }
 
     // --- QUICK TABLE GRID METHODS ---
@@ -231,9 +252,22 @@ export class DataService {
                 } else if (Array.isArray(cloudData.rows)) {
                     rows = cloudData.rows;
                 }
+                let sheets = null;
+                if (typeof cloudData.sheetsJson === 'string') {
+                    try {
+                        sheets = JSON.parse(cloudData.sheetsJson);
+                    } catch (e) {
+                        console.error("Failed to parse quickTable sheetsJson:", e);
+                        sheets = null;
+                    }
+                } else if (Array.isArray(cloudData.sheets)) {
+                    sheets = cloudData.sheets;
+                }
+
                 callback({
                     ...cloudData,
-                    rows
+                    rows,
+                    sheets
                 });
             } else {
                 callback(null);
@@ -246,12 +280,19 @@ export class DataService {
 
     async saveQuickTable(uid, data) {
         const docRef = this.getQuickTableDoc(uid);
-        await setDoc(docRef, {
+        const payload = {
             title: data.title || '',
             headers: data.headers || [],
             rowsJson: JSON.stringify(data.rows || []),
             updatedAt: data.updatedAt || Date.now()
-        }, { merge: true });
+        };
+        if (Array.isArray(data.sheets)) {
+            payload.sheetsJson = JSON.stringify(data.sheets);
+        }
+        if (data.activeSheetId) {
+            payload.activeSheetId = data.activeSheetId;
+        }
+        await setDoc(docRef, payload, { merge: true });
     }
 
     // --- NOTIFICATIONS & REMINDERS METHODS ---

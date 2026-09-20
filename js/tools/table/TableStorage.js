@@ -17,14 +17,9 @@ export class TableStorage {
             const raw = localStorage.getItem(this.storageKey);
             if (raw) {
                 const parsed = JSON.parse(raw);
-                if (parsed && Array.isArray(parsed.headers) && Array.isArray(parsed.rows)) {
-                    this.lastSavedTimestamp = parsed.updatedAt || Date.now();
-                    return {
-                        title: parsed.title || '',
-                        headers: parsed.headers.length > 0 ? parsed.headers : ['Column 1', 'Column 2', 'Column 3'],
-                        rows: parsed.rows.length > 0 ? parsed.rows : [['', '', ''], ['', '', ''], ['', '', '']],
-                        updatedAt: this.lastSavedTimestamp
-                    };
+                if (parsed) {
+                    this.lastSavedTimestamp = parsed.updatedAt || 0;
+                    return parsed;
                 }
             }
         } catch (e) {
@@ -68,7 +63,8 @@ export class TableStorage {
     mergeCloudData(currentData, cloudData, isEditing = false) {
         if (!cloudData) {
             // Push local data as initial seed if local exists and has content
-            const hasContent = currentData.rows.some(r => r.some(c => c.trim() !== '')) || currentData.title;
+            const hasContent = (currentData.sheets && currentData.sheets.length > 0) ||
+                (currentData.rows && currentData.rows.some(r => r.some(c => c.trim() !== ''))) || currentData.title;
             if (hasContent && typeof this.onSave === 'function') {
                 this.onSave(currentData);
             }
@@ -85,7 +81,19 @@ export class TableStorage {
             return null;
         }
 
-        if (cloudTime > localTime && Array.isArray(cloudData.headers)) {
+        const localHasContent = currentData && (
+            (Array.isArray(currentData.sheets) && currentData.sheets.some(s => s.title?.trim() || (s.rows && s.rows.some(r => r.some(c => c.trim() !== ''))))) ||
+            currentData.title?.trim() ||
+            (currentData.rows && currentData.rows.some(r => r.some(c => c.trim() !== '')))
+        );
+
+        const cloudHasContent = cloudData && (
+            (Array.isArray(cloudData.sheets) && cloudData.sheets.some(s => s.title?.trim() || (s.rows && s.rows.some(r => r.some(c => c.trim() !== ''))))) ||
+            cloudData.title?.trim() ||
+            (cloudData.rows && cloudData.rows.some(r => r.some(c => c.trim() !== '')))
+        );
+
+        if (cloudTime > localTime || (!localHasContent && cloudHasContent)) {
             let cloudRows = [];
             if (Array.isArray(cloudData.rows)) {
                 cloudRows = cloudData.rows;
@@ -99,8 +107,9 @@ export class TableStorage {
 
             this.lastSavedTimestamp = cloudTime;
             return {
+                ...cloudData,
                 title: cloudData.title || '',
-                headers: cloudData.headers.length > 0 ? cloudData.headers : ['Column 1', 'Column 2', 'Column 3'],
+                headers: cloudData.headers && cloudData.headers.length > 0 ? cloudData.headers : ['Column 1', 'Column 2', 'Column 3'],
                 rows: cloudRows.length > 0 ? cloudRows : [['', '', ''], ['', '', ''], ['', '', '']],
                 updatedAt: cloudTime
             };
