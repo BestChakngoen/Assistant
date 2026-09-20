@@ -1443,6 +1443,10 @@ video {
   right: 0.75rem;
 }
 
+.right-4 {
+  right: 1rem;
+}
+
 .right-\[2\%\] {
   right: 2%;
 }
@@ -1465,6 +1469,10 @@ video {
 
 .top-3 {
   top: 0.75rem;
+}
+
+.top-4 {
+  top: 1rem;
 }
 
 .top-6 {
@@ -2374,6 +2382,16 @@ video {
   border-collapse: collapse;
 }
 
+.border-separate {
+  border-collapse: separate;
+}
+
+.border-spacing-0 {
+  --tw-border-spacing-x: 0px;
+  --tw-border-spacing-y: 0px;
+  border-spacing: var(--tw-border-spacing-x) var(--tw-border-spacing-y);
+}
+
 .origin-bottom {
   transform-origin: bottom;
 }
@@ -2400,6 +2418,11 @@ video {
 
 .translate-y-0 {
   --tw-translate-y: 0px;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.translate-y-1 {
+  --tw-translate-y: 0.25rem;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
@@ -2527,6 +2550,10 @@ video {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.cursor-text {
+  cursor: text;
 }
 
 .cursor-zoom-in {
@@ -5324,32 +5351,98 @@ input:focus, select:focus {
   scrollbar-color: rgba(6, 182, 212, 0.45) rgba(15, 23, 42, 0.6);
 }
 
-/* Table Permanent Scrollbar (Always visible, easy to grab and scroll in X and Y directions) */
+/* Table Auto-hiding Scrollbar (Hidden by default for clean look, shows Emerald during scroll or hover) */
 
-.table-scroll-permanent {
+.table-auto-hide-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.45) rgba(15, 23, 42, 0.6);
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
 }
 
-.table-scroll-permanent::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.table-auto-hide-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.table-scroll-permanent::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+.table-auto-hide-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
   border-radius: 9999px;
+  -webkit-transition: background 0.3s ease;
+  transition: background 0.3s ease;
 }
 
-.table-scroll-permanent::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.45);
+.table-auto-hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
   border-radius: 9999px;
-  -webkit-transition: background 0.2s ease;
-  transition: background 0.2s ease;
+  -webkit-transition: background 0.3s ease;
+  transition: background 0.3s ease;
 }
 
-.table-scroll-permanent::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.8);
+/* Active Scrolling State: Reveal Emerald Scrollbar ONLY when actively scrolling */
+
+.table-auto-hide-scrollbar.is-scrolling {
+  scrollbar-color: rgba(16, 185, 129, 0.5) rgba(15, 23, 42, 0.4);
+}
+
+.table-auto-hide-scrollbar.is-scrolling::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.table-auto-hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+.table-auto-hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.85);
+}
+
+/* Freeform Data Table Drag-to-Scroll (Pan) Active State */
+
+.table-auto-hide-scrollbar.is-panning,
+.table-auto-hide-scrollbar.is-panning *,
+.table-scroll-permanent.is-panning,
+.table-scroll-permanent.is-panning * {
+  cursor: grabbing !important;
+  -moz-user-select: none !important;
+       user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* Freeform Data Table Sticky Column Header */
+
+#table-grid-head {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #020617;
+}
+
+#table-grid-head th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #020617;
+}
+
+/* Freeform Data Table Sticky First Column (# Index) */
+
+#table-grid-head th:first-child {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  background-color: #020617;
+}
+
+#table-grid-body td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background-color: #020617;
+}
+
+#table-grid-body tr:hover td:first-child {
+  background-color: #0f172a;
 }
 
 /* Accessibility: Respect Reduced Motion Preference */
@@ -6154,6 +6247,11 @@ input:focus, select:focus {
 
 .group:hover .group-hover\:border-cyan-500\/30 {
   border-color: rgb(6 182 212 / 0.3);
+}
+
+.group:hover .group-hover\:bg-slate-900 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(15 23 42 / var(--tw-bg-opacity, 1));
 }
 
 .group\/file:hover .group-hover\/file\:text-emerald-400 {

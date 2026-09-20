@@ -6,10 +6,12 @@ import { TableClipboard } from './table/TableClipboard.js';
 import { TableGridRenderer } from './table/TableGridRenderer.js';
 import { TableSheetManager } from './table/TableSheetManager.js';
 import { TableHistoryManager } from './table/TableHistoryManager.js';
+import { TablePanManager } from './table/TablePanManager.js';
+import { ToolZoomManager } from './common/ToolZoomManager.js';
 
 /**
  * TableGridTool - Freeform Dynamic Data Grid Tool (Refactored Controller)
- * Orchestrates Storage, Exporter, Clipboard, Renderer, SheetManager, and History modules.
+ * Orchestrates Storage, Exporter, Clipboard, Renderer, SheetManager, History, Pan, and Zoom modules.
  * Adheres strictly to SOLID, Clean Code, and Zero Regression standards.
  */
 export class TableGridTool {
@@ -18,6 +20,8 @@ export class TableGridTool {
         this.storage = new TableStorage(this.storageKey);
         this.sheetManager = new TableSheetManager();
         this.historyManager = new TableHistoryManager();
+        this.panManager = null;
+        this.zoomManager = null;
 
         // Default blank state: 3 cols x 3 rows
         this.data = {
@@ -49,7 +53,8 @@ export class TableGridTool {
             btnExportMd: null,
             btnClear: null,
             sheetsTabs: null,
-            btnAddSheet: null
+            btnAddSheet: null,
+            scrollWrapper: null
         };
     }
 
@@ -74,6 +79,29 @@ export class TableGridTool {
         this.dom.tableEl = document.getElementById('table-grid-element');
         this.dom.tableHead = document.getElementById('table-grid-head');
         this.dom.tableBody = document.getElementById('table-grid-body');
+        this.dom.scrollWrapper = document.getElementById('table-scroll-wrapper');
+
+        if (this.dom.scrollWrapper) {
+            this.panManager = new TablePanManager(this.dom.scrollWrapper);
+            this.panManager.init();
+        }
+
+        if (this.dom.section && this.dom.tableEl) {
+            const cardEl = this.dom.section.querySelector('.rounded-3xl') || this.dom.section;
+            this.zoomManager = new ToolZoomManager({
+                container: cardEl,
+                storageKey: 'assistant_quick_table_zoom',
+                minZoom: 0.7,
+                maxZoom: 2.0,
+                step: 0.1,
+                defaultZoom: 1.0,
+                accentColor: 'text-emerald-400',
+                onZoomChange: (zoomLevel) => {
+                    this.dom.tableEl.style.zoom = zoomLevel;
+                }
+            });
+            this.zoomManager.init();
+        }
 
         this.dom.btnQuickAddCol = document.getElementById('btn-table-quick-add-col');
         this.dom.btnUndo = document.getElementById('btn-table-undo');

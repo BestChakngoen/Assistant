@@ -17,7 +17,7 @@ export const toolsViewHtml = `
         <!-- TOP SECTION: QUICK NOTE & SCRATCHPAD       -->
         <!-- ========================================== -->
         <div id="tools-note-section" class="w-full">
-            <div class="w-full p-6 sm:p-7 rounded-3xl bg-slate-900/40 flex flex-col space-y-4">
+            <div class="w-full p-6 sm:p-7 rounded-3xl bg-slate-900/40 flex flex-col space-y-4 relative">
                 <!-- Header -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex items-center gap-2.5">
@@ -154,7 +154,7 @@ export const toolsViewHtml = `
         <!-- SECTION: FREEFORM DATA GRID & TABLE TOOL   -->
         <!-- ========================================== -->
         <div id="tools-table-section" class="w-full">
-            <div class="w-full p-6 sm:p-7 rounded-3xl bg-slate-900/40 flex flex-col space-y-4">
+            <div class="w-full p-6 sm:p-7 rounded-3xl bg-slate-900/40 flex flex-col space-y-4 relative">
                 <!-- Header -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex items-center gap-2.5">
@@ -220,18 +220,20 @@ export const toolsViewHtml = `
                     </div>
                 </div>
 
-                <!-- Table Wrapper (Horizontal & Vertical Permanent Scrollbar for Large Data) -->
-                <div id="table-scroll-wrapper" class="w-full max-h-[480px] sm:max-h-[540px] overflow-x-auto overflow-y-auto table-scroll-permanent rounded-2xl bg-slate-950/60 p-2 relative">
-                    <table id="table-grid-element" class="w-auto min-w-full table-auto border-collapse">
+                <!-- Table Wrapper (Horizontal & Vertical Auto-hiding Scrollbar for Large Data) -->
+                <div id="table-scroll-wrapper" class="w-full max-h-[480px] sm:max-h-[540px] overflow-x-auto overflow-y-auto table-auto-hide-scrollbar auto-hide-scrollbar rounded-2xl bg-slate-950/60 relative cursor-grab">
+                    <table id="table-grid-element" class="w-auto min-w-full table-auto border-separate border-spacing-0">
                         <thead id="table-grid-head" class="sticky top-0 z-20 bg-slate-950"></thead>
                         <tbody id="table-grid-body"></tbody>
                     </table>
 
                     <!-- Quick Add Row Bottom Button -->
-                    <button id="btn-table-quick-add-row" type="button" class="w-full py-2 rounded-xl bg-slate-900/30 hover:bg-slate-900/80 text-slate-400 hover:text-emerald-400 text-xs font-mono transition-all flex items-center justify-center gap-2 mt-2">
-                        <i data-lucide="plus" class="size-3.5"></i>
-                        <span>Add Row</span>
-                    </button>
+                    <div class="p-2">
+                        <button id="btn-table-quick-add-row" type="button" class="w-full py-2 rounded-xl bg-slate-900/30 hover:bg-slate-900/80 text-slate-400 hover:text-emerald-400 text-xs font-mono transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="plus" class="size-3.5"></i>
+                            <span>Add Row</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Footer Stats -->

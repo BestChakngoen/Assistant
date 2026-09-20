@@ -150,7 +150,7 @@ export class TableCellParser {
         // If no rich media, render directly as standard inline contenteditable cell for maximum performance & simplicity
         if (!this.hasRichMedia(val)) {
             return `
-                <div contenteditable="plaintext-only" spellcheck="false" role="textbox" class="table-cell-editor outline-none min-w-[90px] whitespace-pre-wrap break-words px-3 py-2 text-xs font-mono text-slate-100 rounded-xl transition-all focus:bg-slate-900/90 focus:ring-1 focus:ring-emerald-500/40" data-row="${rowIdx}" data-col="${colIdx}">${this.escapeHtml(val)}</div>
+                <div contenteditable="plaintext-only" spellcheck="false" role="textbox" class="table-cell-editor outline-none min-w-[90px] whitespace-pre-wrap break-words px-3 py-2 text-xs font-mono text-slate-100 rounded-xl transition-all focus:bg-slate-900/90 focus:ring-1 focus:ring-emerald-500/40 cursor-text" data-row="${rowIdx}" data-col="${colIdx}">${this.escapeHtml(val)}</div>
             `;
         }
 

@@ -3,11 +3,12 @@ import { NoteSmartDetector } from './notepad/NoteSmartDetector.js';
 import { NoteSheetManager } from './notepad/NoteSheetManager.js';
 import { NoteFormatter } from './notepad/NoteFormatter.js';
 import { NoteHistoryManager } from './notepad/NoteHistoryManager.js';
+import { ToolZoomManager } from './common/ToolZoomManager.js';
 
 /**
  * NotePadTool - Instant Digital Scratchpad Tool with Realtime Auto-Save & Smart Detection
  * Provides a clean, stable digital sheet for writing, with automatic media & link detection.
- * Supports multiple sheets/tabs, rich formatting tools, and robust multi-language undo/redo.
+ * Supports multiple sheets/tabs, rich formatting tools, robust multi-language undo/redo, and zoom controls.
  * Adheres strictly to SOLID, Single Responsibility Principle (SRP), and Zero Regression.
  */
 export class NotePadTool {
@@ -19,6 +20,7 @@ export class NotePadTool {
         this.detector = new NoteSmartDetector();
         this.sheetManager = new NoteSheetManager();
         this.historyManager = new NoteHistoryManager();
+        this.zoomManager = null;
         this.dom = {
             titleInput: null,
             contentInput: null,
@@ -36,11 +38,13 @@ export class NotePadTool {
             btnFormatBold: null,
             btnFormatDivider: null,
             btnUndo: null,
-            btnRedo: null
+            btnRedo: null,
+            section: null
         };
     }
 
     init() {
+        this.dom.section = document.getElementById('tools-note-section');
         this.dom.titleInput = document.getElementById('note-title-input');
         this.dom.contentInput = document.getElementById('note-content-input');
         this.dom.saveBadge = document.getElementById('note-save-badge');
@@ -60,6 +64,26 @@ export class NotePadTool {
         this.dom.btnRedo = document.getElementById('btn-note-redo');
 
         if (!this.dom.contentInput) return;
+
+        if (this.dom.section) {
+            const cardEl = this.dom.section.querySelector('.rounded-3xl') || this.dom.section;
+            this.zoomManager = new ToolZoomManager({
+                container: cardEl,
+                storageKey: 'assistant_quick_note_zoom',
+                minZoom: 0.7,
+                maxZoom: 2.0,
+                step: 0.1,
+                defaultZoom: 1.0,
+                accentColor: 'text-amber-400',
+                onZoomChange: (zoomLevel) => {
+                    const baseFontSize = 14;
+                    const baseLineHeight = 22;
+                    this.dom.contentInput.style.fontSize = `${Math.round(baseFontSize * zoomLevel)}px`;
+                    this.dom.contentInput.style.lineHeight = `${Math.round(baseLineHeight * zoomLevel)}px`;
+                }
+            });
+            this.zoomManager.init();
+        }
 
         this.sheetManager.init({
             tabsContainer: this.dom.sheetsTabs,

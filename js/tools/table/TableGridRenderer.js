@@ -23,15 +23,15 @@ export class TableGridRenderer {
         if (!tableHead) return;
         const colCount = Math.max(1, headers.length);
         let headHtml = `
-            <tr class="sticky top-0 z-20 bg-slate-950 text-slate-300 text-xs font-mono border-b border-slate-800/40 shadow-sm">
-                <th class="w-10 py-2.5 px-3 text-center text-slate-500 font-normal select-none sticky top-0 z-20 bg-slate-950">#</th>
+            <tr class="bg-slate-950 text-slate-300 text-xs font-mono">
+                <th class="w-10 py-2.5 px-3 text-center text-slate-500 font-normal select-none sticky top-0 left-0 z-30 bg-slate-950 border-b border-r border-slate-800/40">#</th>
         `;
 
         headers.forEach((header, colIdx) => {
             headHtml += `
-                <th class="py-2 px-2 text-left font-normal align-middle sticky top-0 z-20 bg-slate-950" data-col="${colIdx}">
+                <th class="py-2 px-2 text-left font-normal align-middle sticky top-0 z-20 bg-slate-950 border-b border-slate-800/40" data-col="${colIdx}">
                     <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 transition-colors">
-                        <span contenteditable="plaintext-only" spellcheck="false" class="table-header-editor outline-none min-w-[70px] font-bold text-slate-200 text-xs font-mono whitespace-nowrap block" data-col="${colIdx}" title="Click to rename header">${this.escapeHtml(header)}</span>
+                        <span contenteditable="plaintext-only" spellcheck="false" class="table-header-editor outline-none min-w-[70px] font-bold text-slate-200 text-xs font-mono whitespace-nowrap block cursor-text" data-col="${colIdx}" title="Click to rename header">${this.escapeHtml(header)}</span>
                         ${colCount > 1 ? `
                             <button type="button" class="btn-del-col p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all shrink-0" data-col="${colIdx}" title="Delete Column">
                                 <i data-lucide="x" class="size-3"></i>
@@ -43,7 +43,7 @@ export class TableGridRenderer {
         });
 
         headHtml += `
-                <th class="w-10 py-2 px-2 text-center align-middle select-none sticky top-0 z-20 bg-slate-950">
+                <th class="w-10 py-2 px-2 text-center align-middle select-none sticky top-0 z-20 bg-slate-950 border-b border-slate-800/40">
                     <button id="btn-table-quick-add-col" type="button" class="p-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-all flex items-center justify-center mx-auto" title="Add New Column">
                         <i data-lucide="plus" class="size-3.5"></i>
                     </button>
@@ -59,20 +59,20 @@ export class TableGridRenderer {
         let bodyHtml = '';
         rows.forEach((row, rowIdx) => {
             bodyHtml += `
-                <tr class="group hover:bg-slate-800/20 transition-colors border-b border-slate-800/20" data-row="${rowIdx}">
-                    <td class="w-10 py-2.5 px-3 text-center text-slate-500 text-xs font-mono select-none">${rowIdx + 1}</td>
+                <tr class="group hover:bg-slate-800/20 transition-colors" data-row="${rowIdx}">
+                    <td class="w-10 py-2.5 px-3 text-center text-slate-500 text-xs font-mono select-none sticky left-0 z-10 bg-slate-950 group-hover:bg-slate-900 border-b border-r border-slate-800/40 transition-colors">${rowIdx + 1}</td>
             `;
 
             row.forEach((cell, colIdx) => {
                 bodyHtml += `
-                    <td class="py-1.5 px-2 align-top" data-row="${rowIdx}" data-col="${colIdx}">
+                    <td class="py-1.5 px-2 align-top border-b border-slate-800/20" data-row="${rowIdx}" data-col="${colIdx}">
                         ${TableCellParser.renderCellContent(cell, rowIdx, colIdx)}
                     </td>
                 `;
             });
 
             bodyHtml += `
-                    <td class="w-10 py-2 px-2 text-center align-middle select-none">
+                    <td class="w-10 py-2 px-2 text-center align-middle select-none border-b border-slate-800/20">
                         <button type="button" class="btn-del-row p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-40 group-hover:opacity-100" data-row="${rowIdx}" title="Delete Row">
                             <i data-lucide="trash-2" class="size-3.5"></i>
                         </button>
@@ -87,7 +87,7 @@ export class TableGridRenderer {
     static switchToEditor(td, rowIdx, colIdx, currentVal) {
         if (!td) return;
         td.innerHTML = `
-            <div contenteditable="plaintext-only" spellcheck="false" role="textbox" class="table-cell-editor outline-none min-w-[90px] whitespace-pre-wrap break-words px-3 py-2 text-xs font-mono text-slate-100 rounded-xl transition-all focus:bg-slate-900/90 focus:ring-1 focus:ring-emerald-500/40" data-row="${rowIdx}" data-col="${colIdx}">${this.escapeHtml(currentVal)}</div>
+            <div contenteditable="plaintext-only" spellcheck="false" role="textbox" class="table-cell-editor outline-none min-w-[90px] whitespace-pre-wrap break-words px-3 py-2 text-xs font-mono text-slate-100 rounded-xl transition-all focus:bg-slate-900/90 focus:ring-1 focus:ring-emerald-500/40 cursor-text" data-row="${rowIdx}" data-col="${colIdx}">${this.escapeHtml(currentVal)}</div>
         `;
         const editor = td.querySelector('.table-cell-editor');
         if (editor) {
