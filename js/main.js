@@ -87,8 +87,16 @@ export class TradeApp {
                 }, (err) => console.error(err));
 
                 // Subscribe to Strategy Diagram
+                // Sync Hydration Flags
+                let isDiagramHydrated = false;
+                let isNoteHydrated = false;
+                let isTableHydrated = false;
+                let isNotificationsHydrated = false;
+
+                // Subscribe to Diagram
                 if (this.ui.diagram) {
                     this.data.subscribeDiagram(user.uid, (shapes) => {
+                        isDiagramHydrated = true;
                         if (shapes && shapes.length > 0) {
                             this.ui.diagram.shapes = shapes;
                             this.ui.diagram.draw();
@@ -98,6 +106,12 @@ export class TradeApp {
                     });
 
                     this.ui.diagram.onSaveCallback = (shapes) => {
+                        if (!isDiagramHydrated) return; // Layer 1: Hydration Lock
+                        
+                        const isCleared = this.ui.diagram.isExplicitlyCleared;
+                        this.ui.diagram.isExplicitlyCleared = false; // Reset immediately
+
+                        if (!shapes || (shapes.length === 0 && !isCleared)) return; // Layer 2: Content Guard
                         this.data.saveDiagram(user.uid, shapes).catch(err => console.error("Firestore diagram save error:", err));
                     };
                 }
@@ -105,31 +119,98 @@ export class TradeApp {
                 // Subscribe to Quick Note & Scratchpad
                 if (this.ui.tools && this.ui.tools.notePadTool) {
                     const noteTool = this.ui.tools.notePadTool;
+                    
+                    const hasRealNoteContent = (data) => {
+                        if (!data) return false;
+                        if (data.isExplicitlyCleared) return true;
+                        const content = typeof data.content === 'string' ? data.content.trim() : '';
+                        const title = typeof data.title === 'string' ? data.title.trim() : '';
+                        const hasSheets = Array.isArray(data.sheets) && data.sheets.some(s => s.title?.trim() || (typeof s.content === 'string' && s.content.trim() !== ''));
+                        return content !== '' || title !== '' || hasSheets;
+                    };
+
                     noteTool.onSave = (data) => {
+                        if (!isNoteHydrated) return; // Layer 1: Hydration Lock
+                        if (!hasRealNoteContent(data)) return; // Layer 2: Content Guard
                         this.data.saveQuickNote(user.uid, data).catch(err => console.error("Firestore quickNote save error:", err));
                     };
-                    this.data.subscribeQuickNote(user.uid, (cloudData) => {
-                        noteTool.syncFromCloud(cloudData);
-                    });
+                    const fetchNote = async () => {
+                        const btn = document.getElementById('btn-note-refresh');
+                        if (btn) btn.innerHTML = `<i data-lucide="loader-2" class="size-3.5 animate-spin"></i><span class="hidden md:inline">Syncing</span>`;
+                        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                        
+                        const cloudData = await this.data.fetchQuickNote(user.uid);
+                        isNoteHydrated = true;
+                        if (cloudData) noteTool.syncFromCloud(cloudData);
+                        else noteTool.syncFromCloud(null);
+                        
+                        if (btn) btn.innerHTML = `<i data-lucide="refresh-cw" class="size-3.5"></i><span class="hidden md:inline">Sync</span>`;
+                        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                    };
+
+                    const btnNoteRefresh = document.getElementById('btn-note-refresh');
+                    if (btnNoteRefresh) btnNoteRefresh.addEventListener('click', fetchNote);
+                    
+                    // Initial load
+                    fetchNote();
                 }
 
                 // Subscribe to Quick Table Grid
                 if (this.ui.tools && this.ui.tools.tableGridTool) {
                     const tableTool = this.ui.tools.tableGridTool;
+                    
+                    const hasRealTableContent = (data) => {
+                        if (!data) return false;
+                        if (data.isExplicitlyCleared) return true;
+                        const title = typeof data.title === 'string' ? data.title.trim() : '';
+                        const hasRows = data.rows && data.rows.some(r => Array.isArray(r) && r.some(c => c && c.trim() !== ''));
+                        const hasSheets = Array.isArray(data.sheets) && data.sheets.some(s => s.title?.trim() || (s.rows && s.rows.some(r => Array.isArray(r) && r.some(c => c && c.trim() !== ''))));
+                        return title !== '' || hasRows || hasSheets;
+                    };
+
                     tableTool.onSave = (data) => {
+                        if (!isTableHydrated) return; // Layer 1: Hydration Lock
+                        if (!hasRealTableContent(data)) return; // Layer 2: Content Guard
                         this.data.saveQuickTable(user.uid, data).catch(err => console.error("Firestore quickTable save error:", err));
                     };
-                    this.data.subscribeQuickTable(user.uid, (cloudData) => {
-                        tableTool.syncFromCloud(cloudData);
-                    });
+                    const fetchTable = async () => {
+                        const btn = document.getElementById('btn-table-refresh');
+                        if (btn) btn.innerHTML = `<i data-lucide="loader-2" class="size-3.5 animate-spin"></i><span class="hidden md:inline">Syncing</span>`;
+                        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                        
+                        const cloudData = await this.data.fetchQuickTable(user.uid);
+                        isTableHydrated = true;
+                        if (cloudData) tableTool.syncFromCloud(cloudData);
+                        else tableTool.syncFromCloud(null);
+                        
+                        if (btn) btn.innerHTML = `<i data-lucide="refresh-cw" class="size-3.5"></i><span class="hidden md:inline">Sync</span>`;
+                        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                    };
+
+                    const btnTableRefresh = document.getElementById('btn-table-refresh');
+                    if (btnTableRefresh) btnTableRefresh.addEventListener('click', fetchTable);
+                    
+                    // Initial load
+                    fetchTable();
                 }
 
                 // Subscribe to Notifications & Reminders
                 if (this.notifications) {
+                    const hasRealNotificationContent = (data) => {
+                        if (!data) return false;
+                        if (data.isExplicitlyCleared) return true;
+                        const hasReminders = Array.isArray(data.reminders) && data.reminders.length > 0;
+                        const hasHistory = Array.isArray(data.history) && data.history.length > 0;
+                        return hasReminders || hasHistory;
+                    };
+
                     this.notifications.onSave = (data) => {
+                        if (!isNotificationsHydrated) return; // Layer 1: Hydration Lock
+                        if (!hasRealNotificationContent(data)) return; // Layer 2: Content Guard
                         this.data.saveNotifications(user.uid, data).catch(err => console.error("Firestore notifications save error:", err));
                     };
                     this.data.subscribeNotifications(user.uid, (cloudData) => {
+                        isNotificationsHydrated = true;
                         this.notifications.syncFromCloud(cloudData);
                     });
                 }

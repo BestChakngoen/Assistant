@@ -57,6 +57,7 @@ export class NotePadTool {
         this.dom.btnExportTxt = document.getElementById('btn-note-export-txt');
         this.dom.btnExportMd = document.getElementById('btn-note-export-md');
         this.dom.sheetsTabs = document.getElementById('note-sheets-tabs');
+        this.dom.sheetsScrollContainer = document.getElementById('note-sheets-scroll-container');
         this.dom.btnAddSheet = document.getElementById('btn-note-add-sheet');
         this.dom.btnFormatBold = document.getElementById('btn-note-format-bold');
         this.dom.btnFormatDivider = document.getElementById('btn-note-format-divider');
@@ -86,6 +87,7 @@ export class NotePadTool {
         }
 
         this.sheetManager.init({
+            scrollContainer: this.dom.sheetsScrollContainer,
             tabsContainer: this.dom.sheetsTabs,
             btnAddSheet: this.dom.btnAddSheet,
             onSwitch: (targetSheet, previousSheet) => {
@@ -419,6 +421,11 @@ export class NotePadTool {
             active.updatedAt = Date.now();
 
             const data = this.sheetManager.getStatePayload();
+            if (this.isExplicitlyCleared) {
+                data.isExplicitlyCleared = true;
+                this.isExplicitlyCleared = false; // Reset after injecting
+            }
+
             this.lastSavedTimestamp = data.updatedAt;
             localStorage.setItem(this.storageKey, JSON.stringify(data));
             this.setSaveStatus('saved', data.updatedAt);
@@ -659,6 +666,8 @@ export class NotePadTool {
         });
 
         if (!confirmed) return;
+        
+        this.isExplicitlyCleared = true;
 
         // Record snapshot before clearing so user can undo clear
         this.historyManager.recordImmediate(

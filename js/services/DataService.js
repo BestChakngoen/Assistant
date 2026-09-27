@@ -188,34 +188,27 @@ export class DataService {
     }
 
     // --- QUICK NOTE & SCRATCHPAD METHODS ---
-    subscribeQuickNote(uid, callback) {
-        if (this.unsubscribeQuickNote) this.unsubscribeQuickNote();
+    async fetchQuickNote(uid) {
         const docRef = this.getQuickNoteDoc(uid);
-        this.unsubscribeQuickNote = onSnapshot(docRef, (docSnap) => {
+        try {
+            const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const cloudData = docSnap.data();
                 let sheets = null;
                 if (typeof cloudData.sheetsJson === 'string') {
-                    try {
-                        sheets = JSON.parse(cloudData.sheetsJson);
-                    } catch (e) {
-                        console.error("Failed to parse quickNote sheetsJson:", e);
-                    }
+                    try { sheets = JSON.parse(cloudData.sheetsJson); } catch (e) { console.error(e); }
                 } else if (Array.isArray(cloudData.sheets)) {
                     sheets = cloudData.sheets;
                 }
-                callback({
-                    ...cloudData,
-                    sheets
-                });
-            } else {
-                callback(null);
+                return { ...cloudData, sheets };
             }
-        }, (err) => {
-            console.error("Firestore quickNote subscription error:", err);
-        });
-        return this.unsubscribeQuickNote;
+            return null;
+        } catch (err) {
+            console.error("Firestore quickNote fetch error:", err);
+            return null;
+        }
     }
+
 
     async saveQuickNote(uid, data) {
         const docRef = this.getQuickNoteDoc(uid);
@@ -235,47 +228,33 @@ export class DataService {
     }
 
     // --- QUICK TABLE GRID METHODS ---
-    subscribeQuickTable(uid, callback) {
-        if (this.unsubscribeQuickTable) this.unsubscribeQuickTable();
+    async fetchQuickTable(uid) {
         const docRef = this.getQuickTableDoc(uid);
-        this.unsubscribeQuickTable = onSnapshot(docRef, (docSnap) => {
+        try {
+            const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const cloudData = docSnap.data();
                 let rows = [];
                 if (typeof cloudData.rowsJson === 'string') {
-                    try {
-                        rows = JSON.parse(cloudData.rowsJson);
-                    } catch (e) {
-                        console.error("Failed to parse quickTable rowsJson:", e);
-                        rows = [];
-                    }
+                    try { rows = JSON.parse(cloudData.rowsJson); } catch (e) { rows = []; }
                 } else if (Array.isArray(cloudData.rows)) {
                     rows = cloudData.rows;
                 }
+                
                 let sheets = null;
                 if (typeof cloudData.sheetsJson === 'string') {
-                    try {
-                        sheets = JSON.parse(cloudData.sheetsJson);
-                    } catch (e) {
-                        console.error("Failed to parse quickTable sheetsJson:", e);
-                        sheets = null;
-                    }
+                    try { sheets = JSON.parse(cloudData.sheetsJson); } catch (e) { sheets = null; }
                 } else if (Array.isArray(cloudData.sheets)) {
                     sheets = cloudData.sheets;
                 }
-
-                callback({
-                    ...cloudData,
-                    rows,
-                    sheets
-                });
-            } else {
-                callback(null);
+                
+                return { ...cloudData, rows, sheets };
             }
-        }, (err) => {
-            console.error("Firestore quickTable subscription error:", err);
-        });
-        return this.unsubscribeQuickTable;
+            return null;
+        } catch (err) {
+            console.error("Firestore quickTable fetch error:", err);
+            return null;
+        }
     }
 
     async saveQuickTable(uid, data) {

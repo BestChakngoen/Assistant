@@ -103,6 +103,7 @@ export class DiagramControls {
                     diagram.shapes = [];
                     diagram.selectedShapes = [];
                     diagram.selectedShape = null;
+                    diagram.isExplicitlyCleared = true;
                     diagram.saveToStorage();
                     diagram.draw();
                 }

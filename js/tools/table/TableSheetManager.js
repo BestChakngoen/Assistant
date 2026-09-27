@@ -1,4 +1,5 @@
 import { ShareUI } from '../../ui/share/ShareUI.js';
+import { TabScrollManager } from '../common/TabScrollManager.js';
 
 /**
  * TableSheetManager.js - Multi-sheet Manager for Freeform Data Table Tool.
@@ -11,8 +12,10 @@ export class TableSheetManager {
         this.activeSheetId = null;
         this.dom = {
             tabsContainer: null,
+            scrollContainer: null,
             btnAddSheet: null
         };
+        this.tabScrollManager = null;
         this.callbacks = {
             onSwitch: null,
             onDataChange: null,
@@ -23,12 +26,21 @@ export class TableSheetManager {
     /**
      * Initializes DOM references and events.
      */
-    init({ tabsContainer, btnAddSheet, onSwitch, onDataChange, onDelete }) {
+    init({ scrollContainer, tabsContainer, btnAddSheet, onSwitch, onDataChange, onDelete }) {
         this.dom.tabsContainer = tabsContainer;
+        this.dom.scrollContainer = scrollContainer || (tabsContainer ? tabsContainer.parentElement : null);
         this.dom.btnAddSheet = btnAddSheet;
         this.callbacks.onSwitch = onSwitch;
         this.callbacks.onDataChange = onDataChange;
         this.callbacks.onDelete = onDelete;
+
+        if (this.dom.scrollContainer) {
+            this.tabScrollManager = new TabScrollManager({
+                scrollContainer: this.dom.scrollContainer,
+                tabsContainer: this.dom.tabsContainer
+            });
+            this.tabScrollManager.init();
+        }
 
         if (this.dom.btnAddSheet) {
             this.dom.btnAddSheet.addEventListener('click', () => {
@@ -291,6 +303,17 @@ export class TableSheetManager {
         if (window.lucide && typeof window.lucide.createIcons === 'function') {
             window.lucide.createIcons();
         }
+
+        // Auto-scroll active tab into view smoothly
+        this.scrollToActiveTab();
+    }
+
+    /**
+     * Auto-scrolls the active tab into view horizontally without causing vertical page jump.
+     */
+    scrollToActiveTab() {
+        if (!this.tabScrollManager || !this.activeSheetId) return;
+        this.tabScrollManager.scrollToActiveTab(`[data-table-sheet-id="${this.activeSheetId}"]`);
     }
 
     /**

@@ -38,6 +38,10 @@ export const toolsViewHtml = `
                     <!-- Right Controls / Actions -->
                     <div class="flex items-center flex-wrap gap-2">
                         <span id="note-last-updated" class="text-[10px] font-mono text-slate-400 mr-1 hidden sm:inline-block"></span>
+                        <button id="btn-note-refresh" type="button" title="Sync from Cloud" class="btn-press p-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 transition-all flex items-center gap-1.5 text-xs font-mono">
+                            <i data-lucide="refresh-cw" class="size-3.5"></i>
+                            <span class="hidden md:inline">Sync</span>
+                        </button>
                         <button id="btn-note-copy" type="button" title="Copy note to clipboard" class="btn-press p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
                             <i data-lucide="copy" class="size-3.5"></i>
                             <span class="hidden md:inline">Copy</span>
@@ -58,7 +62,7 @@ export const toolsViewHtml = `
                 </div>
 
                 <!-- Sheet Tabs Navigation Bar -->
-                <div class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                <div id="note-sheets-scroll-container" class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 cursor-grab select-none">
                     <div id="note-sheets-tabs" class="flex items-center gap-1.5 flex-nowrap shrink-0">
                         <!-- Dynamic sheet tabs injected here -->
                     </div>
@@ -175,6 +179,10 @@ export const toolsViewHtml = `
                     <!-- Right Controls / Actions -->
                     <div class="flex items-center flex-wrap gap-2">
                         <span id="table-last-updated" class="text-[10px] font-mono text-slate-400 mr-1 hidden sm:inline-block"></span>
+                        <button id="btn-table-refresh" type="button" title="Sync from Cloud" class="btn-press p-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 transition-all flex items-center gap-1.5 text-xs font-mono">
+                            <i data-lucide="refresh-cw" class="size-3.5"></i>
+                            <span class="hidden md:inline">Sync</span>
+                        </button>
                         <button id="btn-table-export-csv" type="button" title="Export as CSV (.csv)" class="btn-press p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-mono">
                             <i data-lucide="file-spreadsheet" class="size-3.5"></i>
                             <span class="hidden md:inline">.CSV</span>
@@ -191,7 +199,7 @@ export const toolsViewHtml = `
                 </div>
 
                 <!-- Table Sheets Tabs Navigation Bar -->
-                <div class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                <div id="table-sheets-scroll-container" class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 cursor-grab select-none">
                     <div id="table-sheets-tabs" class="flex items-center gap-1.5 flex-nowrap shrink-0">
                         <!-- Dynamic table sheet tabs injected here -->
                     </div>

@@ -58,3 +58,8 @@
 
 
 
+## ☁️ 5. กฎการจัดการข้อมูลซิงก์ข้ามอุปกรณ์ (Safe Sync Architecture)
+- **Hydration Lock (ห้ามเขียนก่อนอ่าน):** เครื่องมือ (Tools) หรือ Service ต่างๆ ห้ามสั่งบันทึกข้อมูลเริ่มต้น (Initial Save/Auto-save) ขึ้น Cloud จนกว่าจะได้รับข้อมูลแรก (First Sync/Hydration) จาก Cloud ก่อนเสมอ เพื่อป้องกัน Localhost ส่งค่าว่างไปทับข้อมูลจริง
+- **Content Validation Guard (ป้องกันการบันทึกค่าว่าง):** ห้ามส่งข้อมูลสถานะเริ่มต้นของแอป (Default/Empty State) ขึ้นไปทับ Cloud ต้องมีการใช้ฟังก์ชันตรวจสอบเนื้อหา (เช่น `hasRealContent`) เพื่อยืนยันว่าข้อมูลนั้นมีการถูกแก้ไข หรือมีเนื้อหาอยู่จริงๆ
+- **Explicit Clear Bypass (การล้างข้อมูลอย่างตั้งใจ):** เมื่อผู้ใช้สั่งล้างข้อมูล (Clear All/Reset) ด้วยตัวเอง ให้แนบ Flag `isExplicitlyCleared: true` เข้าไปใน Payload หรือ Flag ของ Component ชั่วคราว เพื่อเป็นข้อยกเว้นให้ทะลุกฎ Content Guard และอนุญาตให้ลบข้อมูลบน Cloud ได้
+- **Strict Equality & Timestamp:** การอัปเดตค่าเวลา (`updatedAt` = `Date.now()`) และสั่งบันทึก ต้องเกิดขึ้นเมื่อเนื้อหาภายในข้อมูล "มีการเปลี่ยนแปลงจริงๆ" เท่านั้น (Equality Check) ห้ามเตะ Timestamp อัปเดตเพียงเพราะมีการ Focus หรือเบลอช่อง Input โดยไม่ได้เปลี่ยนค่า

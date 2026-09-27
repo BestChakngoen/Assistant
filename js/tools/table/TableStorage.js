@@ -63,8 +63,12 @@ export class TableStorage {
     mergeCloudData(currentData, cloudData, isEditing = false) {
         if (!cloudData) {
             // Push local data as initial seed if local exists and has content
-            const hasContent = (currentData.sheets && currentData.sheets.length > 0) ||
-                (currentData.rows && currentData.rows.some(r => r.some(c => c.trim() !== ''))) || currentData.title;
+            const hasContent = currentData && (
+                currentData.title?.trim() ||
+                (currentData.rows && currentData.rows.some(r => r.some(c => c.trim() !== ''))) ||
+                (Array.isArray(currentData.sheets) && currentData.sheets.some(s => s.title?.trim() || (s.rows && s.rows.some(r => r.some(c => c.trim() !== '')))))
+            );
+            
             if (hasContent && typeof this.onSave === 'function') {
                 this.onSave(currentData);
             }

@@ -110,9 +110,11 @@ export class TableGridTool {
         this.dom.btnExportMd = document.getElementById('btn-table-export-md');
         this.dom.btnClear = document.getElementById('btn-table-clear');
         this.dom.sheetsTabs = document.getElementById('table-sheets-tabs');
+        this.dom.sheetsScrollContainer = document.getElementById('table-sheets-scroll-container');
         this.dom.btnAddSheet = document.getElementById('btn-table-add-sheet');
 
         this.sheetManager.init({
+            scrollContainer: this.dom.sheetsScrollContainer,
             tabsContainer: this.dom.sheetsTabs,
             btnAddSheet: this.dom.btnAddSheet,
             onSwitch: (targetSheet, previousSheet) => {
@@ -297,8 +299,11 @@ export class TableGridTool {
 
         const val = target.innerText;
         if (this.data.rows[row]) {
-            this.data.rows[row][col] = val;
-            this.handleDataChange();
+            const oldVal = this.data.rows[row][col] || '';
+            if (oldVal !== val) {
+                this.data.rows[row][col] = val;
+                this.handleDataChange();
+            }
         }
 
         if (TableCellParser.hasRichMedia(val)) {
@@ -326,8 +331,11 @@ export class TableGridTool {
 
             const currentVal = target.innerText;
             if (this.data.rows[row]) {
-                this.data.rows[row][col] = currentVal;
-                this.handleDataChange();
+                const oldVal = this.data.rows[row][col] || '';
+                if (oldVal !== currentVal) {
+                    this.data.rows[row][col] = currentVal;
+                    this.handleDataChange();
+                }
             }
             if (TableCellParser.hasRichMedia(currentVal)) {
                 const td = target.closest('td');
@@ -354,8 +362,11 @@ export class TableGridTool {
 
             const currentVal = target.innerText;
             if (this.data.rows[row]) {
-                this.data.rows[row][col] = currentVal;
-                this.handleDataChange();
+                const oldVal = this.data.rows[row][col] || '';
+                if (oldVal !== currentVal) {
+                    this.data.rows[row][col] = currentVal;
+                    this.handleDataChange();
+                }
             }
             if (TableCellParser.hasRichMedia(currentVal)) {
                 const td = target.closest('td');
@@ -598,6 +609,8 @@ export class TableGridTool {
 
         if (!confirmed) return;
 
+        this.isExplicitlyCleared = true;
+
         // Record snapshot before clearing so user can undo clear
         this.historyManager.recordImmediate(this.data);
 
@@ -788,12 +801,20 @@ export class TableGridTool {
         this.updateUndoRedoButtons();
         this.sheetManager.updateActiveSheet(this.data.title, this.data.headers, this.data.rows);
         const payload = this.sheetManager.getStatePayload();
+        if (this.isExplicitlyCleared) {
+            payload.isExplicitlyCleared = true;
+            this.isExplicitlyCleared = false;
+        }
         this.storage.scheduleSave(payload, (status, ts) => this.setSaveStatus(status, ts));
     }
 
     saveToStorage() {
         this.sheetManager.updateActiveSheet(this.data.title, this.data.headers, this.data.rows);
         const payload = this.sheetManager.getStatePayload();
+        if (this.isExplicitlyCleared) {
+            payload.isExplicitlyCleared = true;
+            this.isExplicitlyCleared = false;
+        }
         this.storage.save(payload, (status, ts) => this.setSaveStatus(status, ts));
     }
 
