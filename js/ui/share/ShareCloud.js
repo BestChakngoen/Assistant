@@ -73,7 +73,7 @@ export class ShareCloud {
                 }
             )
             .subscribe((status) => {
-                console.log('Realtime subscription status:', status);
+                // Subscription status
             });
     }
 

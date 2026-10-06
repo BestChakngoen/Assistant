@@ -840,6 +840,42 @@ export class TableGridTool {
         }
     }
 
+    setSyncingState(isSyncing) {
+        if (!this.dom.section) return;
+        const card = this.dom.section.querySelector('.rounded-3xl') || this.dom.section;
+        let overlay = card.querySelector('.syncing-overlay');
+        
+        if (isSyncing) {
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'syncing-overlay absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/50 backdrop-blur-sm rounded-3xl pointer-events-auto transition-opacity duration-300 opacity-0';
+                overlay.innerHTML = `
+                    <div class="p-5 rounded-2xl bg-slate-900/90 shadow-2xl border border-slate-700/50 flex flex-col items-center gap-3">
+                        <i data-lucide="cloud-download" class="w-8 h-8 text-sky-400 animate-bounce"></i>
+                        <span class="text-sm font-mono font-bold text-sky-400">Syncing data from Cloud...</span>
+                    </div>
+                `;
+                if (window.getComputedStyle(card).position === 'static') {
+                    card.style.position = 'relative';
+                }
+                card.appendChild(overlay);
+                if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                // trigger reflow
+                void overlay.offsetWidth;
+            }
+            overlay.classList.remove('opacity-0');
+        } else {
+            if (overlay) {
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    if (overlay && overlay.parentNode) {
+                        overlay.parentNode.removeChild(overlay);
+                    }
+                }, 300);
+            }
+        }
+    }
+
     syncFromCloud(cloudData) {
         const isEditing = this.dom.section && this.dom.section.contains(document.activeElement);
         const currentPayload = this.sheetManager.getStatePayload();

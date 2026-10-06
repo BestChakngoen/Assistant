@@ -195,12 +195,18 @@ export class DataService {
             if (docSnap.exists()) {
                 const cloudData = docSnap.data();
                 let sheets = null;
+                let folders = null;
                 if (typeof cloudData.sheetsJson === 'string') {
                     try { sheets = JSON.parse(cloudData.sheetsJson); } catch (e) { console.error(e); }
                 } else if (Array.isArray(cloudData.sheets)) {
                     sheets = cloudData.sheets;
                 }
-                return { ...cloudData, sheets };
+                if (typeof cloudData.foldersJson === 'string') {
+                    try { folders = JSON.parse(cloudData.foldersJson); } catch (e) { console.error(e); }
+                } else if (Array.isArray(cloudData.folders)) {
+                    folders = cloudData.folders;
+                }
+                return { ...cloudData, sheets, folders };
             }
             return null;
         } catch (err) {
@@ -221,8 +227,14 @@ export class DataService {
         if (Array.isArray(data.sheets)) {
             payload.sheetsJson = JSON.stringify(data.sheets);
         }
+        if (Array.isArray(data.folders)) {
+            payload.foldersJson = JSON.stringify(data.folders);
+        }
         if (data.activeSheetId) {
             payload.activeSheetId = data.activeSheetId;
+        }
+        if (data.activeFolderId !== undefined) {
+            payload.activeFolderId = data.activeFolderId;
         }
         await setDoc(docRef, payload, { merge: true });
     }

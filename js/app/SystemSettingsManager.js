@@ -74,6 +74,31 @@ export class SystemSettingsManager {
             this.setBarColor(barWrites, pctWrites);
         }
 
+        // 3. Firebase Firestore Database Storage (1.0 GB limit)
+        const txtFirestoreStorage = document.getElementById('txt-quota-firestore-storage');
+        const barFirestoreStorage = document.getElementById('bar-quota-firestore-storage');
+        if (txtFirestoreStorage && barFirestoreStorage) {
+            // Estimate Firestore storage by summing local storage mirrors of cloud data
+            let estimatedDbBytes = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    // Trades, notes, and health data are synced to Firestore
+                    if (key.includes('trade') || key.includes('note') || key.includes('health')) {
+                        estimatedDbBytes += ((localStorage[key] || '').length + key.length) * 2; // UTF-16 characters to bytes
+                    }
+                }
+            }
+            // Add some base overhead for indexes and metadata (e.g. 50KB)
+            estimatedDbBytes += 50000; 
+
+            const maxDbBytes = 1024 * 1024 * 1024; // 1.0 GB
+            const pctDb = Math.min(100, Math.round((estimatedDbBytes / maxDbBytes) * 100));
+            const formattedDb = this.formatBytes(estimatedDbBytes);
+            txtFirestoreStorage.innerText = `${formattedDb} / 1.0 GB (${pctDb}%)`;
+            barFirestoreStorage.style.width = `${pctDb}%`;
+            this.setBarColor(barFirestoreStorage, pctDb);
+        }
+
         // 3. Supabase File Storage Usage (1.0 GB limit)
         const txtSupabaseStorage = document.getElementById('txt-quota-supabase-storage');
         const barSupabaseStorage = document.getElementById('bar-quota-supabase-storage');

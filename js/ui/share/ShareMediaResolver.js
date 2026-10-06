@@ -95,6 +95,10 @@ export class ShareMediaResolver {
 
         // 2. Fallback: base64
         if (item.base64Data && img.src !== item.base64Data) {
+            const trimmed = String(item.base64Data).trim().toLowerCase();
+            if (trimmed === 'invalid' || trimmed.startsWith('invalid/')) {
+                return; // Prevent setting img.src to 'invalid/' and causing ERR_FAILED
+            }
             img.src = item.base64Data;
             imgWrapper.onclick = (e) => {
                 e.stopPropagation();

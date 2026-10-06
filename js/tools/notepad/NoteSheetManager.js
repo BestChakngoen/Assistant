@@ -9,7 +9,9 @@ import { TabScrollManager } from '../common/TabScrollManager.js';
 export class NoteSheetManager {
     constructor() {
         this.sheets = [];
+        this.folders = []; // Array of { id, name, color }
         this.activeSheetId = null;
+        this.activeFolderId = null; // Currently selected folder filter (null = All)
         this.dom = {
             tabsContainer: null,
             scrollContainer: null,
@@ -54,6 +56,9 @@ export class NoteSheetManager {
      * @param {Object} data 
      */
     loadState(data) {
+        this.folders = (data && Array.isArray(data.folders)) ? data.folders : [];
+        this.activeFolderId = data && data.activeFolderId !== undefined ? data.activeFolderId : null;
+
         let sheetsList = (data && Array.isArray(data.sheets)) ? data.sheets : null;
         if (!sheetsList && data && typeof data.sheetsJson === 'string') {
             try {
@@ -68,6 +73,8 @@ export class NoteSheetManager {
                 id: s.id || `sheet_${Date.now()}_${index}`,
                 title: typeof s.title === 'string' ? s.title : '',
                 content: typeof s.content === 'string' ? s.content : '',
+                folderId: s.folderId || null,
+                stickers: Array.isArray(s.stickers) ? s.stickers : [],
                 createdAt: s.createdAt || Date.now(),
                 updatedAt: s.updatedAt || Date.now()
             }));
@@ -80,6 +87,8 @@ export class NoteSheetManager {
                 id: initialId,
                 title: data.title || '',
                 content: data.content || '',
+                folderId: null,
+                stickers: [],
                 createdAt: data.updatedAt || Date.now(),
                 updatedAt: data.updatedAt || Date.now()
             }];
@@ -91,6 +100,8 @@ export class NoteSheetManager {
                 id: defaultId,
                 title: '',
                 content: '',
+                folderId: null,
+                stickers: [],
                 createdAt: Date.now(),
                 updatedAt: Date.now()
             }];
@@ -116,6 +127,8 @@ export class NoteSheetManager {
             id: `sheet_${Date.now()}`,
             title: '',
             content: '',
+            folderId: null,
+            stickers: [],
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -168,6 +181,8 @@ export class NoteSheetManager {
             id: newId,
             title: title || '',
             content: content || '',
+            folderId: this.activeFolderId || null,
+            stickers: [],
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -263,9 +278,13 @@ export class NoteSheetManager {
 
         this.dom.tabsContainer.innerHTML = '';
 
-        this.sheets.forEach((sheet, index) => {
+        const displaySheets = this.activeFolderId 
+            ? this.sheets.filter(s => s.folderId === this.activeFolderId)
+            : this.sheets;
+
+        displaySheets.forEach((sheet, index) => {
             const isActive = sheet.id === this.activeSheetId;
-            const displayTitle = (sheet.title && sheet.title.trim()) ? sheet.title.trim() : `Sheet ${index + 1}`;
+            const displayTitle = (sheet.title && sheet.title.trim()) ? sheet.title.trim() : `Sheet ${this.sheets.findIndex(s=>s.id===sheet.id) + 1}`;
 
             const tabEl = document.createElement('div');
             tabEl.setAttribute('data-sheet-tab-id', sheet.id);
@@ -323,6 +342,8 @@ export class NoteSheetManager {
     getStatePayload() {
         const active = this.getActiveSheet();
         return {
+            folders: this.folders,
+            activeFolderId: this.activeFolderId,
             sheets: this.sheets,
             activeSheetId: this.activeSheetId,
             // Fallback for legacy single-note readers & cloud sync

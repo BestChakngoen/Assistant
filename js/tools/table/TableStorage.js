@@ -10,6 +10,8 @@ export class TableStorage {
         this.saveTimer = null;
         this.lastSavedTimestamp = 0;
         this.onSave = null;
+        this.isHydrated = false; // Hydration Lock
+        this.startedEmpty = false; // Flag to detect initial fresh state
     }
 
     load() {
@@ -19,12 +21,14 @@ export class TableStorage {
                 const parsed = JSON.parse(raw);
                 if (parsed) {
                     this.lastSavedTimestamp = parsed.updatedAt || 0;
+                    this.startedEmpty = false;
                     return parsed;
                 }
             }
         } catch (e) {
             console.error('Failed to load table data from localStorage:', e);
         }
+        this.startedEmpty = true;
         return null;
     }
 
@@ -38,8 +42,17 @@ export class TableStorage {
                 onStatusChange('saved', data.updatedAt);
             }
 
-            if (typeof this.onSave === 'function') {
-                this.onSave(data);
+            if (this.isHydrated && typeof this.onSave === 'function') {
+                // Content Validation Guard
+                const hasContent = data && (
+                    data.title?.trim() ||
+                    (data.rows && data.rows.some(r => r.some(c => c.trim() !== ''))) ||
+                    (Array.isArray(data.sheets) && data.sheets.some(s => s.title?.trim() || (s.rows && s.rows.some(r => r.some(c => c.trim() !== '')))))
+                );
+                
+                if (hasContent || data.isExplicitlyCleared) {
+                    this.onSave(data);
+                }
             }
         } catch (e) {
             console.error('Failed to save table data to localStorage:', e);
@@ -61,6 +74,8 @@ export class TableStorage {
     }
 
     mergeCloudData(currentData, cloudData, isEditing = false) {
+        this.isHydrated = true; // Mark as hydrated from cloud
+
         if (!cloudData) {
             // Push local data as initial seed if local exists and has content
             const hasContent = currentData && (
@@ -81,7 +96,8 @@ export class TableStorage {
         const localTime = this.lastSavedTimestamp || 0;
 
         // If user is actively editing and local changes are at least as new as cloud, do not overwrite
-        if (isEditing && localTime >= cloudTime) {
+        // UNLESS we started empty (so local changes are just typing on a blank grid before cloud loaded)
+        if (isEditing && localTime >= cloudTime && !this.startedEmpty) {
             return null;
         }
 
@@ -97,7 +113,11 @@ export class TableStorage {
             (cloudData.rows && cloudData.rows.some(r => r.some(c => c.trim() !== '')))
         );
 
-        if (cloudTime > localTime || (!localHasContent && cloudHasContent)) {
+        // If we started with empty local storage in this session, unconditionally accept cloud data.
+        const shouldOverwriteLocal = this.startedEmpty || cloudTime > localTime || (!localHasContent && cloudHasContent);
+
+        if (shouldOverwriteLocal) {
+            this.startedEmpty = false;
             let cloudRows = [];
             if (Array.isArray(cloudData.rows)) {
                 cloudRows = cloudData.rows;

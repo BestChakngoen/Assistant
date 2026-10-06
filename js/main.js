@@ -125,8 +125,9 @@ export class TradeApp {
                         if (data.isExplicitlyCleared) return true;
                         const content = typeof data.content === 'string' ? data.content.trim() : '';
                         const title = typeof data.title === 'string' ? data.title.trim() : '';
-                        const hasSheets = Array.isArray(data.sheets) && data.sheets.some(s => s.title?.trim() || (typeof s.content === 'string' && s.content.trim() !== ''));
-                        return content !== '' || title !== '' || hasSheets;
+                        const hasSheets = Array.isArray(data.sheets) && data.sheets.some(s => s.title?.trim() || (typeof s.content === 'string' && s.content.trim() !== '') || (Array.isArray(s.stickers) && s.stickers.length > 0));
+                        const hasFolders = Array.isArray(data.folders) && data.folders.length > 0;
+                        return content !== '' || title !== '' || hasSheets || hasFolders;
                     };
 
                     noteTool.onSave = (data) => {
@@ -139,10 +140,12 @@ export class TradeApp {
                         if (btn) btn.innerHTML = `<i data-lucide="loader-2" class="size-3.5 animate-spin"></i><span class="hidden md:inline">Syncing</span>`;
                         if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
                         
+                        if (typeof noteTool.setSyncingState === 'function') noteTool.setSyncingState(true);
                         const cloudData = await this.data.fetchQuickNote(user.uid);
                         isNoteHydrated = true;
                         if (cloudData) noteTool.syncFromCloud(cloudData);
                         else noteTool.syncFromCloud(null);
+                        if (typeof noteTool.setSyncingState === 'function') noteTool.setSyncingState(false);
                         
                         if (btn) btn.innerHTML = `<i data-lucide="refresh-cw" class="size-3.5"></i><span class="hidden md:inline">Sync</span>`;
                         if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
@@ -178,10 +181,12 @@ export class TradeApp {
                         if (btn) btn.innerHTML = `<i data-lucide="loader-2" class="size-3.5 animate-spin"></i><span class="hidden md:inline">Syncing</span>`;
                         if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
                         
+                        if (typeof tableTool.setSyncingState === 'function') tableTool.setSyncingState(true);
                         const cloudData = await this.data.fetchQuickTable(user.uid);
                         isTableHydrated = true;
                         if (cloudData) tableTool.syncFromCloud(cloudData);
                         else tableTool.syncFromCloud(null);
+                        if (typeof tableTool.setSyncingState === 'function') tableTool.setSyncingState(false);
                         
                         if (btn) btn.innerHTML = `<i data-lucide="refresh-cw" class="size-3.5"></i><span class="hidden md:inline">Sync</span>`;
                         if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
@@ -209,9 +214,15 @@ export class TradeApp {
                         if (!hasRealNotificationContent(data)) return; // Layer 2: Content Guard
                         this.data.saveNotifications(user.uid, data).catch(err => console.error("Firestore notifications save error:", err));
                     };
+                    if (typeof this.notifications.setSyncingState === 'function') {
+                        this.notifications.setSyncingState(true);
+                    }
                     this.data.subscribeNotifications(user.uid, (cloudData) => {
                         isNotificationsHydrated = true;
                         this.notifications.syncFromCloud(cloudData);
+                        if (typeof this.notifications.setSyncingState === 'function') {
+                            this.notifications.setSyncingState(false);
+                        }
                     });
                 }
 

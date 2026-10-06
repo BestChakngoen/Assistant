@@ -34,7 +34,6 @@ export class ShareManager {
     }
 
     async init() {
-        console.log('Initializing ShareManager with Supabase...');
         
         // 1. Setup DOM Elements
         this.dom = {
@@ -101,7 +100,6 @@ export class ShareManager {
     async initIndexedDB() {
         try {
             await this.dbStore.open();
-            console.log('IndexedDB ShareFilesDB initialized successfully.');
         } catch (e) {
             console.error('Failed to initialize IndexedDB:', e);
         }

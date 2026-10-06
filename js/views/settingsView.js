@@ -53,6 +53,18 @@ export const settingsViewHtml = `
                                 <p class="text-[10px] text-slate-500 mt-1">Used for: <strong>Add/Edit/Delete Trades & Health Logs</strong> (Free Quota: 20,000 Writes/Day)</p>
                             </div>
 
+                            <!-- 3. Firebase Firestore Database Storage -->
+                            <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/60">
+                                <div class="flex justify-between items-center text-xs mb-1.5">
+                                    <span class="font-bold text-slate-200">Firebase Firestore (Database Storage)</span>
+                                    <span id="txt-quota-firestore-storage" class="text-slate-400 text-[11px]">Loading...</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
+                                    <div id="bar-quota-firestore-storage" class="bg-rose-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1">Used for: <strong>Text Data & Compressed Notepad Images</strong> (Free Quota: 1.0 GB)</p>
+                            </div>
+
                             <!-- 3. Supabase File Storage -->
                             <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/60">
                                 <div class="flex justify-between items-center text-xs mb-1.5">
@@ -65,7 +77,7 @@ export const settingsViewHtml = `
                                 <p class="text-[10px] text-slate-500 mt-1">Used for: <strong>Image files & attachments in Share Files Bucket</strong> (Free Quota: 1.0 GB)</p>
                             </div>
 
-                            <!-- 4. Supabase Net Worth Database -->
+                            <!-- 5. Supabase Net Worth Database -->
                             <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/60">
                                 <div class="flex justify-between items-center text-xs mb-1.5">
                                     <span class="font-bold text-slate-200">Supabase Database (Net Worth & Items)</span>

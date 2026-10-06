@@ -10,6 +10,8 @@ export class NotificationStorage {
     constructor(storageKey = 'assistant_notifications_data') {
         this.storageKey = storageKey;
         this.onSave = null;
+        this.startedEmpty = false;
+        this.isHydrated = false;
     }
 
     load() {
@@ -18,6 +20,7 @@ export class NotificationStorage {
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (parsed && Array.isArray(parsed.reminders)) {
+                    this.startedEmpty = false;
                     return {
                         reminders: parsed.reminders,
                         history: parsed.history || [],
@@ -28,13 +31,14 @@ export class NotificationStorage {
         } catch (e) {
             console.error('Failed to load notifications from localStorage:', e);
         }
+        this.startedEmpty = true;
         return null;
     }
 
-    save(data) {
+    save(data, pushToCloud = true) {
         try {
             localStorage.setItem(this.storageKey, JSON.stringify(data));
-            if (typeof this.onSave === 'function') {
+            if (pushToCloud && this.isHydrated && typeof this.onSave === 'function') {
                 this.onSave(data);
             }
         } catch (e) {
@@ -43,6 +47,7 @@ export class NotificationStorage {
     }
 
     syncFromCloud(currentData, cloudData) {
+        this.isHydrated = true;
         if (!cloudData) {
             if (currentData.reminders.length > 0 && typeof this.onSave === 'function') {
                 this.onSave(currentData);
@@ -51,13 +56,19 @@ export class NotificationStorage {
         }
 
         const cloudTime = typeof cloudData.updatedAt === 'number' ? cloudData.updatedAt : 0;
-        if (cloudTime > (currentData.updatedAt || 0)) {
+        
+        // If local storage started empty in this session, unconditionally accept cloud data.
+        // Otherwise, use standard timestamp resolution for offline edits.
+        const shouldOverwriteLocal = this.startedEmpty || cloudTime > (currentData.updatedAt || 0);
+
+        if (shouldOverwriteLocal) {
+            this.startedEmpty = false;
             const merged = {
                 reminders: Array.isArray(cloudData.reminders) ? cloudData.reminders : [],
                 history: Array.isArray(cloudData.history) ? cloudData.history : [],
                 updatedAt: cloudTime
             };
-            this.save(merged);
+            this.save(merged, false); // Don't push back to cloud immediately
             return merged;
         }
 

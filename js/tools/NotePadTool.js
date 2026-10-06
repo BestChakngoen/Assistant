@@ -1,9 +1,11 @@
 import { ShareUI } from '../ui/share/ShareUI.js';
-import { NoteSmartDetector } from './notepad/NoteSmartDetector.js';
+
 import { NoteSheetManager } from './notepad/NoteSheetManager.js';
 import { NoteFormatter } from './notepad/NoteFormatter.js';
 import { NoteHistoryManager } from './notepad/NoteHistoryManager.js';
 import { ToolZoomManager } from './common/ToolZoomManager.js';
+import { NoteManagerModal } from './notepad/NoteManagerModal.js';
+import { NoteStickerManager } from './notepad/NoteStickerManager.js';
 
 /**
  * NotePadTool - Instant Digital Scratchpad Tool with Realtime Auto-Save & Smart Detection
@@ -17,9 +19,12 @@ export class NotePadTool {
         this.saveTimer = null;
         this.onSave = null;
         this.lastSavedTimestamp = 0;
-        this.detector = new NoteSmartDetector();
+        this.startedEmpty = false; // Hydration flag
+        
         this.sheetManager = new NoteSheetManager();
         this.historyManager = new NoteHistoryManager();
+        this.managerModal = new NoteManagerModal(this.sheetManager, this);
+        this.stickerManager = new NoteStickerManager(this.sheetManager);
         this.zoomManager = null;
         this.dom = {
             titleInput: null,
@@ -59,6 +64,7 @@ export class NotePadTool {
         this.dom.sheetsTabs = document.getElementById('note-sheets-tabs');
         this.dom.sheetsScrollContainer = document.getElementById('note-sheets-scroll-container');
         this.dom.btnAddSheet = document.getElementById('btn-note-add-sheet');
+        this.dom.btnManageSheets = document.getElementById('btn-note-manage-sheets');
         this.dom.btnFormatBold = document.getElementById('btn-note-format-bold');
         this.dom.btnFormatDivider = document.getElementById('btn-note-format-divider');
         this.dom.btnUndo = document.getElementById('btn-note-undo');
@@ -81,6 +87,9 @@ export class NotePadTool {
                     const baseLineHeight = 22;
                     this.dom.contentInput.style.fontSize = `${Math.round(baseFontSize * zoomLevel)}px`;
                     this.dom.contentInput.style.lineHeight = `${Math.round(baseLineHeight * zoomLevel)}px`;
+                    if (this.stickerManager) {
+                        this.stickerManager.setZoom(zoomLevel);
+                    }
                 }
             });
             this.zoomManager.init();
@@ -94,18 +103,19 @@ export class NotePadTool {
                 if (previousSheet && this.dom.contentInput) {
                     this.historyManager.flushPendingTyping();
                     previousSheet.title = (this.dom.titleInput?.value || '').trim();
-                    previousSheet.content = this.dom.contentInput?.value || '';
+                    previousSheet.content = this.getEditorContent() || '';
                     previousSheet.updatedAt = Date.now();
                 }
                 if (this.dom.titleInput) {
                     this.dom.titleInput.value = targetSheet.title || '';
                 }
                 if (this.dom.contentInput) {
-                    this.dom.contentInput.value = targetSheet.content || '';
+                    this.setEditorContent(targetSheet.content || '');
                 }
                 this.historyManager.setSheet(targetSheet.id, targetSheet.content || '', 0, 0, targetSheet.title || '');
                 this.updateStats();
-                this.detector.scan();
+                
+                this.stickerManager.renderStickers();
                 this.saveToStorage();
                 this.updateUndoRedoButtons();
             },
@@ -117,7 +127,8 @@ export class NotePadTool {
             }
         });
 
-        this.detector.init();
+        
+        this.initQuill();
         this.loadFromStorage();
         this.bindEvents();
         this.updateUndoRedoButtons();
@@ -127,15 +138,137 @@ export class NotePadTool {
         }
     }
 
-    bindEvents() {
-        // Auto-save & stats update on input
-        this.dom.contentInput.addEventListener('input', () => {
-            this.handleInput();
+    initQuill() {
+        if (!window.Quill || !this.dom.contentInput) return;
+        
+        // Ensure container is empty before init
+        this.dom.contentInput.innerHTML = '';
+        
+        this.quill = new window.Quill('#note-content-input', {
+            theme: 'snow',
+            modules: {
+                toolbar: false, // No toolbar, clean scratchpad look
+                clipboard: {
+                    matchVisual: false // prevents weird spacing on paste
+                }
+            },
+            placeholder: 'Start typing here...'
         });
 
+        // Intercept typing for history/save
+        this.quill.on('text-change', (delta, oldDelta, source) => {
+            if (source === 'user') {
+                this.handleInput();
+            }
+        });
+    }
+
+    getEditorContent() {
+        if (this.quill) {
+            return this.quill.root.innerHTML;
+        }
+        return '';
+    }
+
+    setEditorContent(html) {
+        if (this.quill) {
+            // Check if it's legacy plain text (no HTML tags)
+            if (html && !html.includes('<') && html.includes('\n')) {
+                html = html.replace(/\n/g, '<br>');
+            }
+            this.quill.clipboard.dangerouslyPasteHTML(html, 'api');
+        }
+    }
+
+    getEditorSelectionStart() {
+        if (this.quill) {
+            const range = this.quill.getSelection();
+            return range ? range.index : 0;
+        }
+        return 0;
+    }
+
+    getEditorSelectionEnd() {
+        if (this.quill) {
+            const range = this.quill.getSelection();
+            return range ? range.index + range.length : 0;
+        }
+        return 0;
+    }
+
+    setEditorSelectionStart(index) {
+        if (this.quill) {
+            const range = this.quill.getSelection();
+            this.quill.setSelection(index, range ? range.length : 0, 'silent');
+        }
+    }
+
+    setEditorSelectionEnd(index) {
+        if (this.quill) {
+            const range = this.quill.getSelection();
+            const start = range ? range.index : index;
+            this.quill.setSelection(start, index - start, 'silent');
+        }
+    }
+
+    bindEvents() {
         if (this.dom.titleInput) {
             this.dom.titleInput.addEventListener('input', () => {
                 this.handleInput();
+            });
+        }
+        
+        // Custom Paste handler for Quill (URLs and Plain Text)
+        if (this.quill) {
+            this.quill.root.addEventListener('paste', (e) => {
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const pastedText = clipboardData.getData('text');
+                
+                if (pastedText && pastedText.trim().match(/^https?:\/\/[^\s]+$/i)) {
+                    e.preventDefault();
+                    const url = pastedText.trim();
+                    const urlObj = new URL(url);
+                    const shortName = urlObj.hostname.replace('www.', '') + (urlObj.pathname.length > 1 ? '/...' : '');
+                    
+                    const range = this.quill.getSelection(true);
+                    if (range) {
+                        this.quill.insertText(range.index, shortName, 'link', url, 'user');
+                        this.quill.formatText(range.index, shortName.length, {
+                            'color': '#22d3ee' // cyan-400
+                        });
+                        this.quill.setSelection(range.index + shortName.length, 0, 'silent');
+                    }
+                } else {
+                    // Force plain text paste to prevent unwanted HTML formatting
+                    e.preventDefault();
+                    const range = this.quill.getSelection(true);
+                    if (range && pastedText) {
+                        this.quill.insertText(range.index, pastedText, 'user');
+                        this.quill.setSelection(range.index + pastedText.length, 0, 'silent');
+                    }
+                }
+            });
+
+            // Make Quill links clickable with double-click or ctrl-click
+            this.quill.root.addEventListener('click', (e) => {
+                if ((e.ctrlKey || e.metaKey || e.detail >= 2) && e.target.tagName === 'A') {
+                    window.open(e.target.href, '_blank');
+                }
+            });
+        }
+
+        // Action: Manage Notes Modal
+        if (this.dom.btnManageSheets) {
+            this.dom.btnManageSheets.addEventListener('click', () => {
+                this.historyManager.flushPendingTyping();
+                const active = this.sheetManager.getActiveSheet();
+                if (active) {
+                    active.title = (this.dom.titleInput?.value || '').trim();
+                    active.content = this.getEditorContent() || '';
+                    active.updatedAt = Date.now();
+                }
+                this.saveToStorage();
+                this.managerModal.open();
             });
         }
 
@@ -180,8 +313,9 @@ export class NotePadTool {
         }
 
         // Keyboard Shortcuts (Universal layout support for English & Thai)
-        if (this.dom.contentInput) {
-            this.dom.contentInput.addEventListener('keydown', (e) => {
+        const editorTarget = this.quill ? this.quill.root : this.dom.contentInput;
+        if (editorTarget) {
+            editorTarget.addEventListener('keydown', (e) => {
                 const isCtrlOrCmd = e.ctrlKey || e.metaKey;
                 if (!isCtrlOrCmd) return;
 
@@ -189,40 +323,74 @@ export class NotePadTool {
                 const key = e.key.toLowerCase();
 
                 // Undo: Ctrl+Z (without Shift)
-                // Physical KeyZ, or key 'z', or Thai 'ผ'
-                if ((code === 'KeyZ' || key === 'z' || key === 'ผ') && !e.shiftKey && !e.altKey) {
+                if ((code === 'KeyZ' || key === 'z' || key === '?') && !e.shiftKey && !e.altKey) {
                     e.preventDefault();
+                    e.stopPropagation();
                     this.undo();
                     return;
                 }
 
                 // Redo: Ctrl+Y or Ctrl+Shift+Z
-                // Physical KeyY, or key 'y', or Thai 'ั'
-                // Physical KeyZ + Shift, or Thai 'ฉ'/'ผ' + Shift
-                const isRedoZ = (code === 'KeyZ' || key === 'z' || key === 'ผ' || key === 'ฉ') && e.shiftKey;
-                const isRedoY = (code === 'KeyY' || key === 'y' || key === 'ั') && !e.shiftKey;
+                const isRedoZ = (code === 'KeyZ' || key === 'z' || key === '?' || key === '(') && e.shiftKey;
+                const isRedoY = (code === 'KeyY' || key === 'y' || key === '?') && !e.shiftKey;
                 if ((isRedoZ || isRedoY) && !e.altKey) {
                     e.preventDefault();
+                    e.stopPropagation();
                     this.redo();
                     return;
                 }
 
                 // Bold: Ctrl+B
-                // Physical KeyB, or key 'b', or Thai 'ิ'
-                if ((code === 'KeyB' || key === 'b' || key === 'ิ') && !e.shiftKey && !e.altKey) {
+                if ((code === 'KeyB' || key === 'b' || key === '?') && !e.shiftKey && !e.altKey) {
                     e.preventDefault();
+                    e.stopPropagation();
                     this.applyFormatBold();
                     return;
                 }
 
                 // Divider Line: Ctrl+Shift+H
-                // Physical KeyH, or key 'h', or Thai '้'
-                if ((code === 'KeyH' || key === 'h' || key === '้') && e.shiftKey && !e.altKey) {
+                if ((code === 'KeyH' || key === 'h' || key === '?') && e.shiftKey && !e.altKey) {
                     e.preventDefault();
+                    e.stopPropagation();
                     this.applyFormatDivider();
                     return;
                 }
+            }, { capture: true });
+        }
+
+        // Action: Manage Notes Modal
+        if (this.dom.btnManageSheets) {
+            this.dom.btnManageSheets.addEventListener('click', () => {
+                this.historyManager.flushPendingTyping();
+                const active = this.sheetManager.getActiveSheet();
+                if (active) {
+                    active.title = (this.dom.titleInput?.value || '').trim();
+                    active.content = this.getEditorContent() || '';
+                    active.updatedAt = Date.now();
+                }
+                this.saveToStorage();
+                this.managerModal.open();
             });
+        }
+
+        // Action: Clear
+        if (this.dom.btnClear) {
+            this.dom.btnClear.addEventListener('click', () => this.clear());
+        }
+
+        // Action: Copy
+        if (this.dom.btnCopy) {
+            this.dom.btnCopy.addEventListener('click', () => this.copyAll());
+        }
+
+        // Action: Export TXT
+        if (this.dom.btnExportTxt) {
+            this.dom.btnExportTxt.addEventListener('click', () => this.exportFile('txt'));
+        }
+
+        // Action: Export Markdown
+        if (this.dom.btnExportMd) {
+            this.dom.btnExportMd.addEventListener('click', () => this.exportFile('md'));
         }
     }
 
@@ -230,9 +398,9 @@ export class NotePadTool {
         if (!this.dom.contentInput) return;
         const currentTitle = (this.dom.titleInput?.value || '').trim();
         const snapshot = this.historyManager.undo(
-            this.dom.contentInput.value,
-            this.dom.contentInput.selectionStart,
-            this.dom.contentInput.selectionEnd,
+            this.getEditorContent(),
+            this.getEditorSelectionStart(),
+            this.getEditorSelectionEnd(),
             currentTitle
         );
         if (snapshot) {
@@ -244,9 +412,9 @@ export class NotePadTool {
         if (!this.dom.contentInput) return;
         const currentTitle = (this.dom.titleInput?.value || '').trim();
         const snapshot = this.historyManager.redo(
-            this.dom.contentInput.value,
-            this.dom.contentInput.selectionStart,
-            this.dom.contentInput.selectionEnd,
+            this.getEditorContent(),
+            this.getEditorSelectionStart(),
+            this.getEditorSelectionEnd(),
             currentTitle
         );
         if (snapshot) {
@@ -256,20 +424,20 @@ export class NotePadTool {
 
     applyNoteSnapshot(snapshot, currentTitle) {
         const titleChanged = snapshot.title !== undefined && snapshot.title !== currentTitle;
-        const contentChanged = snapshot.value !== this.dom.contentInput.value;
+        const contentChanged = snapshot.value !== this.getEditorContent();
 
         if (titleChanged && this.dom.titleInput) {
             this.dom.titleInput.value = snapshot.title;
         }
 
-        this.dom.contentInput.value = snapshot.value;
+        this.setEditorContent(snapshot.value);
         const cursorStart = snapshot.selectionStart ?? snapshot.value.length;
         const cursorEnd = snapshot.selectionEnd ?? snapshot.value.length;
-        this.dom.contentInput.selectionStart = cursorStart;
-        this.dom.contentInput.selectionEnd = cursorEnd;
+        this.setEditorSelectionStart(cursorStart);
+        this.setEditorSelectionEnd(cursorEnd);
 
         this.handleInput(false);
-        this.detector.scan();
+        
         this.updateUndoRedoButtons();
 
         // Move to and view changed data without temporary highlight effects
@@ -298,75 +466,70 @@ export class NotePadTool {
     }
 
     scrollToCursorPosition(textarea, cursorIndex) {
-        if (!textarea) return;
-        const textBefore = textarea.value.substring(0, cursorIndex);
-        const lineIndex = (textBefore.match(/\n/g) || []).length;
-        const computedLineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight) || 20;
-
-        // Position inside textarea with contextual headroom
-        const targetScrollTop = Math.max(0, (lineIndex - 2) * computedLineHeight);
-        textarea.scrollTop = targetScrollTop;
-
-        // Ensure textarea element is visible within viewport
-        textarea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (!this.quill) return;
+        try {
+            const bounds = this.quill.getBounds(cursorIndex || 0);
+            if (bounds) {
+                // Find the scroll container (note-sheet-canvas)
+                const scrollContainer = document.getElementById('note-sheet-canvas');
+                if (scrollContainer) {
+                    // bounds.top is relative to the editor container
+                    // Add some headroom
+                    const targetScrollTop = Math.max(0, bounds.top - 40);
+                    scrollContainer.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+                }
+            }
+        } catch (e) {
+            console.warn('Scroll to cursor failed:', e);
+        }
     }
 
     applyFormatBold() {
-        if (!this.dom.contentInput) return;
-        const title = (this.dom.titleInput?.value || '').trim();
-        this.historyManager.recordImmediate(
-            this.dom.contentInput.value,
-            this.dom.contentInput.selectionStart,
-            this.dom.contentInput.selectionEnd,
-            title
-        );
-        const changed = NoteFormatter.applyBold(this.dom.contentInput);
-        if (changed) {
-            this.historyManager.recordImmediate(
-                this.dom.contentInput.value,
-                this.dom.contentInput.selectionStart,
-                this.dom.contentInput.selectionEnd,
-                title
-            );
-            this.handleInput(false);
-            this.detector.scan();
-            this.updateUndoRedoButtons();
+        if (!this.quill) return;
+        const range = this.quill.getSelection(true);
+        if (!range) return;
+
+        if (range.length > 0) {
+            // Has selection: wrap selected text with **
+            const selectedText = this.quill.getText(range.index, range.length);
+            
+            // Toggle: if already wrapped with **, remove them
+            if (selectedText.startsWith('**') && selectedText.endsWith('**') && selectedText.length > 4) {
+                const inner = selectedText.slice(2, -2);
+                this.quill.deleteText(range.index, range.length, 'user');
+                this.quill.insertText(range.index, inner, 'user');
+                this.quill.setSelection(range.index, inner.length, 'silent');
+            } else {
+                this.quill.insertText(range.index + range.length, '**', 'user');
+                this.quill.insertText(range.index, '**', 'user');
+                this.quill.setSelection(range.index + 2, range.length, 'silent');
+            }
+        } else {
+            // No selection: insert ** cursor ** and place cursor in between
+            this.quill.insertText(range.index, '****', 'user');
+            this.quill.setSelection(range.index + 2, 0, 'silent');
         }
     }
 
     applyFormatDivider() {
-        if (!this.dom.contentInput) return;
-        const title = (this.dom.titleInput?.value || '').trim();
-        this.historyManager.recordImmediate(
-            this.dom.contentInput.value,
-            this.dom.contentInput.selectionStart,
-            this.dom.contentInput.selectionEnd,
-            title
-        );
-        const changed = NoteFormatter.insertDivider(this.dom.contentInput);
-        if (changed) {
-            this.historyManager.recordImmediate(
-                this.dom.contentInput.value,
-                this.dom.contentInput.selectionStart,
-                this.dom.contentInput.selectionEnd,
-                title
-            );
-            this.handleInput(false);
-            this.detector.scan();
-            this.updateUndoRedoButtons();
+        if (!this.quill) return;
+        const range = this.quill.getSelection(true);
+        if (range) {
+            this.quill.insertText(range.index, '\n\n---\n\n', 'user');
+            this.quill.setSelection(range.index + 6, 0, 'silent');
         }
     }
 
     handleInput(recordHistory = true) {
         const title = (this.dom.titleInput?.value || '').trim();
-        const content = this.dom.contentInput?.value || '';
+        const content = this.getEditorContent() || '';
         this.sheetManager.updateActiveSheet(title, content);
 
         if (recordHistory && this.dom.contentInput) {
             this.historyManager.recordTyping(
                 content,
-                this.dom.contentInput.selectionStart,
-                this.dom.contentInput.selectionEnd,
+                this.getEditorSelectionStart(),
+                this.getEditorSelectionEnd(),
                 title
             );
         }
@@ -381,12 +544,57 @@ export class NotePadTool {
         }, 400);
     }
 
+    setSyncingState(isSyncing) {
+        if (!this.dom.section) return;
+        const card = this.dom.section.querySelector('.rounded-3xl') || this.dom.section;
+        let overlay = card.querySelector('.syncing-overlay');
+        
+        if (isSyncing) {
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'syncing-overlay absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/50 backdrop-blur-sm rounded-3xl pointer-events-auto transition-opacity duration-300 opacity-0';
+                overlay.innerHTML = `
+                    <div class="p-5 rounded-2xl bg-slate-900/90 shadow-2xl border border-slate-700/50 flex flex-col items-center gap-3">
+                        <i data-lucide="cloud-download" class="w-8 h-8 text-sky-400 animate-bounce"></i>
+                        <span class="text-sm font-mono font-bold text-sky-400">Syncing data from Cloud...</span>
+                    </div>
+                `;
+                if (window.getComputedStyle(card).position === 'static') {
+                    card.style.position = 'relative';
+                }
+                card.appendChild(overlay);
+                if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                // trigger reflow
+                void overlay.offsetWidth;
+            }
+            overlay.classList.remove('opacity-0');
+        } else {
+            if (overlay) {
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    if (overlay && overlay.parentNode) {
+                        overlay.parentNode.removeChild(overlay);
+                    }
+                }, 300);
+            }
+        }
+    }
+
     updateStats() {
-        const text = this.dom.contentInput?.value || '';
+        let text = '';
+        if (this.quill) {
+            text = this.quill.getText();
+        } else {
+            const rawHtml = this.getEditorContent() || '';
+            const tmp = document.createElement('div');
+            tmp.innerHTML = rawHtml;
+            text = tmp.textContent || tmp.innerText || '';
+        }
+
         const trimmed = text.trim();
 
-        // Characters
-        const chars = text.length;
+        // Characters (subtract 1 for Quill's trailing newline)
+        const chars = Math.max(0, text.length - (this.quill ? 1 : 0));
         if (this.dom.charsCount) {
             this.dom.charsCount.textContent = `${chars.toLocaleString()} characters`;
         }
@@ -398,9 +606,9 @@ export class NotePadTool {
         }
 
         // Lines
-        const lines = text.length > 0 ? text.split('\n').length : 0;
+        const lines = text.length > 0 ? text.split('\n').length - (this.quill ? 1 : 0) : 0;
         if (this.dom.linesCount) {
-            this.dom.linesCount.textContent = `${lines.toLocaleString()} lines`;
+            this.dom.linesCount.textContent = `${Math.max(0, lines).toLocaleString()} lines`;
         }
     }
 
@@ -417,7 +625,7 @@ export class NotePadTool {
         try {
             const active = this.sheetManager.getActiveSheet();
             active.title = (this.dom.titleInput?.value || '').trim();
-            active.content = this.dom.contentInput?.value || '';
+            active.content = this.getEditorContent() || '';
             active.updatedAt = Date.now();
 
             const data = this.sheetManager.getStatePayload();
@@ -442,27 +650,34 @@ export class NotePadTool {
     loadFromStorage() {
         try {
             const data = this.getLocalData();
+            if (!data) {
+                this.startedEmpty = true;
+            } else {
+                this.startedEmpty = false;
+            }
             this.sheetManager.loadState(data);
             const active = this.sheetManager.getActiveSheet();
             if (this.dom.titleInput) {
                 this.dom.titleInput.value = active.title || '';
             }
             if (this.dom.contentInput) {
-                this.dom.contentInput.value = active.content || '';
+                this.setEditorContent(active.content || '');
             }
             this.lastSavedTimestamp = (data && data.updatedAt) ? data.updatedAt : 0;
             this.historyManager.setSheet(active.id, active.content || '', 0, 0, active.title || '');
             this.updateStats();
-            this.detector.scan();
+            
+            this.stickerManager.renderStickers();
             this.updateUndoRedoButtons();
             this.setSaveStatus('saved', this.lastSavedTimestamp);
             return;
         } catch (e) {
             console.error('Failed to load note from localStorage:', e);
+            this.startedEmpty = true;
         }
 
         this.updateStats();
-        this.detector.scan();
+        
         this.updateUndoRedoButtons();
         this.setSaveStatus('ready');
     }
@@ -487,31 +702,38 @@ export class NotePadTool {
         const isEditing = document.activeElement === this.dom.contentInput || document.activeElement === this.dom.titleInput;
 
         // If user is actively typing right now and local changes are at least as new as cloud, don't interrupt typing
-        if (isEditing && localTime >= cloudTime) {
+        // UNLESS we started empty (so local changes are just typing on a blank sheet before cloud loaded)
+        if (isEditing && localTime >= cloudTime && !this.startedEmpty) {
             return;
         }
 
         const localHasContent = local && (
-            (Array.isArray(local.sheets) && local.sheets.some(s => (s.title && s.title.trim()) || (s.content && s.content.trim()))) ||
+            (Array.isArray(local.sheets) && local.sheets.some(s => (s.title && s.title.trim()) || (s.content && s.content.trim()) || (Array.isArray(s.stickers) && s.stickers.length > 0))) ||
+            (Array.isArray(local.folders) && local.folders.length > 0) ||
             (local.title && local.title.trim()) ||
             (local.content && local.content.trim())
         );
 
         const cloudHasContent = cloudData && (
-            (Array.isArray(cloudData.sheets) && cloudData.sheets.some(s => (s.title && s.title.trim()) || (s.content && s.content.trim()))) ||
+            (Array.isArray(cloudData.sheets) && cloudData.sheets.some(s => (s.title && s.title.trim()) || (s.content && s.content.trim()) || (Array.isArray(s.stickers) && s.stickers.length > 0))) ||
+            (Array.isArray(cloudData.folders) && cloudData.folders.length > 0) ||
             (cloudData.title && cloudData.title.trim()) ||
             (cloudData.content && cloudData.content.trim())
         );
 
-        // If cloud is newer OR local has no actual notes yet while cloud does
-        if (cloudTime > localTime || (!localHasContent && cloudHasContent)) {
+        // If we started with empty local storage in this session, unconditionally accept cloud data.
+        const shouldOverwriteLocal = this.startedEmpty || cloudTime > localTime || (!localHasContent && cloudHasContent);
+
+        // If cloud is newer OR local has no actual notes yet while cloud does, OR we started empty
+        if (shouldOverwriteLocal) {
+            this.startedEmpty = false;
             this.sheetManager.loadState(cloudData);
             const active = this.sheetManager.getActiveSheet();
             if (this.dom.titleInput) {
                 this.dom.titleInput.value = active.title || '';
             }
             if (this.dom.contentInput) {
-                this.dom.contentInput.value = active.content || '';
+                this.setEditorContent(active.content || '');
             }
             this.historyManager.setSheet(active.id, active.content || '', 0, 0, active.title || '');
             this.lastSavedTimestamp = cloudTime;
@@ -523,7 +745,8 @@ export class NotePadTool {
                 console.error('Failed to cache cloud note to localStorage:', e);
             }
             this.updateStats();
-            this.detector.scan();
+            
+            this.stickerManager.renderStickers();
             this.updateUndoRedoButtons();
             this.setSaveStatus('saved', cloudTime);
         } else if (localTime > cloudTime && typeof this.onSave === 'function') {
@@ -568,9 +791,21 @@ export class NotePadTool {
         }
     }
 
+    // Helper: get plain text representation from the rich text editor
+    getPlainText() {
+        if (this.quill) {
+            // Quill getText() returns plain text with a trailing newline
+            return this.quill.getText().replace(/\n$/, '');
+        }
+        // Fallback: strip HTML
+        const tmp = document.createElement('div');
+        tmp.innerHTML = this.getEditorContent() || '';
+        return tmp.textContent || tmp.innerText || '';
+    }
+
     copyAll() {
         const title = (this.dom.titleInput?.value || '').trim();
-        const content = this.dom.contentInput?.value || '';
+        const content = this.getPlainText();
 
         if (!title && !content) {
             ShareUI.showToast('Notice', 'Notepad is empty', 'error');
@@ -610,7 +845,7 @@ export class NotePadTool {
 
     exportFile(format = 'txt') {
         const title = (this.dom.titleInput?.value || '').trim();
-        const content = this.dom.contentInput?.value || '';
+        const content = this.getPlainText();
 
         if (!title && !content) {
             ShareUI.showToast('Notice', 'Cannot export empty notepad', 'error');
@@ -649,7 +884,7 @@ export class NotePadTool {
 
     async clear() {
         const title = this.dom.titleInput?.value || '';
-        const content = this.dom.contentInput?.value || '';
+        const content = this.getEditorContent() || '';
 
         if (!title && !content) {
             this.dom.contentInput?.focus();
@@ -672,18 +907,18 @@ export class NotePadTool {
         // Record snapshot before clearing so user can undo clear
         this.historyManager.recordImmediate(
             content,
-            this.dom.contentInput?.selectionStart || 0,
-            this.dom.contentInput?.selectionEnd || 0,
+            this.getEditorSelectionStart() || 0,
+            this.getEditorSelectionEnd() || 0,
             title
         );
 
         if (this.dom.titleInput) this.dom.titleInput.value = '';
-        if (this.dom.contentInput) this.dom.contentInput.value = '';
+        if (this.dom.contentInput) this.setEditorContent('');
 
         this.sheetManager.updateActiveSheet('', '');
         this.saveToStorage();
         this.updateStats();
-        this.detector.scan();
+        
         this.historyManager.recordImmediate('', 0, 0, '');
         this.updateUndoRedoButtons();
         if (this.dom.contentInput) this.dom.contentInput.focus();

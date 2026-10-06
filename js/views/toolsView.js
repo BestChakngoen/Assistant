@@ -62,14 +62,23 @@ export const toolsViewHtml = `
                 </div>
 
                 <!-- Sheet Tabs Navigation Bar -->
-                <div id="note-sheets-scroll-container" class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 cursor-grab select-none">
-                    <div id="note-sheets-tabs" class="flex items-center gap-1.5 flex-nowrap shrink-0">
-                        <!-- Dynamic sheet tabs injected here -->
-                    </div>
-                    <button id="btn-note-add-sheet" type="button" title="Add new sheet" class="btn-press shrink-0 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 transition-all flex items-center gap-1.5 text-xs font-mono font-medium">
-                        <i data-lucide="plus" class="size-3.5"></i>
-                        <span>New Sheet</span>
+                <div class="w-full flex items-center gap-3 relative">
+                    <!-- Manage Notes Button (Floating Left) -->
+                    <button id="btn-note-manage-sheets" type="button" title="Manage all notes and folders" class="btn-press shrink-0 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 transition-all shadow-lg shadow-amber-500/5 flex items-center gap-2 relative z-10">
+                        <i data-lucide="layout-grid" class="size-4"></i>
+                        <span class="text-xs font-mono font-bold hidden sm:inline">Manage</span>
                     </button>
+
+                    <!-- Scrollable Tabs -->
+                    <div id="note-sheets-scroll-container" class="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar py-1 cursor-grab select-none">
+                        <div id="note-sheets-tabs" class="flex items-center gap-1.5 flex-nowrap shrink-0">
+                            <!-- Dynamic sheet tabs injected here -->
+                        </div>
+                        <button id="btn-note-add-sheet" type="button" title="Add new sheet" class="btn-press shrink-0 px-3 py-1.5 rounded-xl bg-slate-800/50 hover:bg-slate-800/80 text-slate-400 transition-all flex items-center gap-1.5 text-xs font-mono font-medium">
+                            <i data-lucide="plus" class="size-3.5"></i>
+                            <span>New Sheet</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Note Title Input -->
@@ -102,32 +111,15 @@ export const toolsViewHtml = `
                     </div>
                 </div>
 
-                <!-- Note Content Textarea -->
-                <div class="w-full relative">
-                    <textarea id="note-content-input" rows="10" placeholder="Type or paste your notes here... Paste images (Ctrl+V) or drop files directly onto this sheet." class="w-full px-4 py-3 rounded-2xl bg-slate-950/70 text-slate-100 placeholder:text-slate-600 outline-none focus:bg-slate-950 focus:ring-2 focus:ring-amber-500/30 text-xs sm:text-sm font-mono leading-relaxed transition-all resize-y select-text"></textarea>
-                </div>
-
-                <!-- Smart Auto-Detected Media & Links Section (Hidden by default, shown automatically when media/links detected) -->
-                <div id="note-smart-detector-container" class="hidden w-full flex flex-col space-y-3 pt-1">
-                    <!-- Header Bar -->
-                    <div class="flex items-center justify-between flex-wrap gap-2">
-                        <div class="flex items-center gap-2">
-                            <span class="p-1.5 rounded-xl bg-amber-500/10 text-amber-400">
-                                <i data-lucide="sparkles" class="size-3.5"></i>
-                            </span>
-                            <span class="text-xs font-mono font-semibold text-slate-300">Auto-Detected Media & Links</span>
-                            <span id="note-detected-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800/60 text-slate-400">0 detected</span>
-                        </div>
-                    </div>
-
-                    <!-- Detected Items Container -->
-                    <div class="w-full flex flex-col space-y-2">
-                        <!-- Detected Links -->
-                        <div id="note-detected-links" class="hidden flex flex-col space-y-1.5"></div>
-                        <!-- Detected Images Grid -->
-                        <div id="note-detected-images" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5"></div>
-                        <!-- Detected Files List -->
-                        <div id="note-detected-files" class="hidden flex flex-col space-y-1.5"></div>
+                <!-- Note Content Textarea with Sticker Support -->
+                <div id="note-sheet-canvas" class="w-full relative rounded-2xl bg-slate-950/70 focus-within:bg-slate-950 focus-within:ring-2 focus-within:ring-amber-500/30 transition-colors h-[400px] resize-y overflow-y-auto">
+                    <!-- Wrapper that grows with content -->
+                    <div class="relative w-full min-h-full">
+                        <!-- Stickers Layer -->
+                        <div id="note-stickers-layer" class="absolute inset-0 pointer-events-none z-10"></div>
+                        
+                        <!-- Quill Container -->
+                        <div id="note-content-input" class="w-full min-h-full text-slate-100 outline-none text-xs sm:text-sm font-mono leading-relaxed relative z-0 block border-none"></div>
                     </div>
                 </div>
 

@@ -167,6 +167,74 @@ export class ShareUI {
         });
     }
 
+    static showPromptModal(options) {
+        return new Promise((resolve) => {
+            const existing = document.getElementById('share-prompt-modal');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'share-prompt-modal';
+            overlay.className = 'share-overlay';
+            overlay.innerHTML = `
+                <div class="share-modal-card">
+                    <div class="share-modal-body">
+                        <div class="share-modal-icon-badge ${options.iconColor || 'text-amber-400'}">
+                            <i data-lucide="${options.icon || 'edit-3'}" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="share-modal-title">${options.title || 'Input Required'}</h3>
+                        <p class="share-modal-message">${options.message || 'Please enter text:'}</p>
+                        <div class="w-full mt-4">
+                            <input id="prompt-input-field" type="text" placeholder="${options.placeholder || ''}" class="w-full px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700/50 text-slate-100 placeholder:text-slate-500 outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 text-sm font-mono transition-all">
+                        </div>
+                        <div class="share-modal-divider"></div>
+                        <div class="share-modal-actions">
+                            <button id="btn-prompt-cancel" class="share-modal-btn share-modal-btn-cancel">
+                                Cancel
+                            </button>
+                            <button id="btn-prompt-ok" class="share-modal-btn share-modal-btn-confirm ${options.confirmClass || 'bg-amber-500 hover:bg-amber-400 text-slate-950'} shadow-lg shadow-amber-500/20">
+                                ${options.confirmLabel || 'Confirm'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            if (window.lucide) window.lucide.createIcons();
+
+            const inputField = overlay.querySelector('#prompt-input-field');
+            
+            requestAnimationFrame(() => {
+                overlay.classList.add('share-overlay-visible');
+                const card = overlay.querySelector('.share-modal-card');
+                if (card) card.classList.add('share-modal-card-visible');
+                inputField.focus();
+            });
+
+            const close = (result) => {
+                this.playSound('mouse-click');
+                overlay.classList.remove('share-overlay-visible');
+                const card = overlay.querySelector('.share-modal-card');
+                if (card) card.classList.remove('share-modal-card-visible');
+                setTimeout(() => { overlay.remove(); resolve(result); }, 200);
+            };
+
+            const btnCancel = overlay.querySelector('#btn-prompt-cancel');
+            const btnOk = overlay.querySelector('#btn-prompt-ok');
+            
+            const submit = () => {
+                const val = inputField.value.trim();
+                close(val || null);
+            };
+
+            btnCancel.onclick = () => close(null);
+            btnOk.onclick = submit;
+            inputField.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') submit();
+                if (e.key === 'Escape') close(null);
+            });
+        });
+    }
+
     static showAlertModal(options = {}) {
         return new Promise((resolve) => {
             const existing = document.getElementById('share-alert-modal');
