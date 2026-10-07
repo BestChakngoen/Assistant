@@ -1,8 +1,8 @@
-import { QRCodeTool } from './QRCodeTool.js';
-import { ImageResizerTool } from './ImageResizerTool.js';
-import { PdfConverterTool } from './PdfConverterTool.js';
-import { NotePadTool } from './NotePadTool.js';
-import { TableGridTool } from './TableGridTool.js';
+import { QRCodeTool } from './qrcode/QRCodeTool.js';
+import { ImageResizerTool } from './resizer/ImageResizerTool.js';
+import { PdfConverterTool } from './pdf/PdfConverterTool.js';
+import { NotePadTool } from './notepad/NotePadTool.js';
+import { TableGridTool } from './table/TableGridTool.js';
 
 /**
  * ToolsManager - Central manager for utility tools and features in the Assistant workspace.

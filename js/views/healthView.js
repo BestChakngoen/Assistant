@@ -15,6 +15,9 @@ export const healthViewHtml = `
                 <button class="nav-tab flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2" data-target="section-diet">
                     <i data-lucide="utensils" class="w-4 h-4"></i> Food Journal
                 </button>
+                <button class="nav-tab flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2" data-target="section-detox">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> Detox
+                </button>
             </div>
             <button id="btnSaveAllGlobal" class="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-2xl shadow-xl shadow-cyan-500/10 hover:scale-105 transition-all flex items-center gap-2 font-bold border border-cyan-400/30 btn-press shrink-0 text-xs sm:text-sm font-mono whitespace-nowrap self-stretch sm:self-auto justify-center">
                 <i data-lucide="save" class="w-4 h-4"></i>
@@ -303,6 +306,116 @@ export const healthViewHtml = `
                     </div>
                 </div>
             </div>
+
+            <!-- Sub-Tab 4: Detox Tracker -->
+            <div id="section-detox" class="tab-section hidden glass-panel rounded-3xl p-6 shadow-sm border border-slate-800 h-full flex flex-col gap-6">
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="p-2.5 rounded-2xl bg-slate-900/50 text-cyan-400">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-mono font-bold text-cyan-400 tracking-wide">Dopamine Detox</h3>
+                </div>
+
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase">Select Date</label>
+                    <input type="date" id="detoxDateInput" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white">
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 h-full min-h-0">
+                    <!-- Left Col: Checklist & Streak -->
+                    <div class="flex flex-col gap-6">
+                        <!-- Streak Display -->
+                        <div class="bg-slate-900/30 p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+                            <div>
+                                <h4 class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">Current Streak</h4>
+                                <div class="flex items-baseline gap-2">
+                                    <span id="detoxStreakDays" class="text-4xl font-mono font-bold text-cyan-400 tabular-nums">0</span>
+                                    <span class="text-sm text-slate-400 font-bold">days</span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-slate-950 rounded-full border border-slate-800 text-cyan-400 flex items-center justify-center shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+                                <i data-lucide="flame" class="w-8 h-8"></i>
+                            </div>
+                        </div>
+
+                        <!-- Habit Target Checklist -->
+                        <div class="bg-slate-900/30 p-5 rounded-2xl border border-slate-800 flex-1 flex flex-col min-h-0">
+                            <h4 class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-4 flex items-center justify-between shrink-0">
+                                <span class="flex items-center gap-2"><i data-lucide="list-checks" class="w-4 h-4 text-cyan-400"></i> Daily Targets</span>
+                            </h4>
+                            <div id="detoxChecklist" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[150px] auto-hide-scrollbar">
+                                <!-- Checkbox items dynamically rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Col: Monthly Progress & Heatmap -->
+                    <div class="flex flex-col gap-6 h-full min-h-0">
+                        
+                        <!-- Brain Recovery Level / Progress Bar -->
+                        <div class="bg-slate-900/80 border border-slate-800 text-slate-200 rounded-2xl p-5 relative overflow-hidden shadow-lg shadow-emerald-500/5 shrink-0">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                            <div class="relative z-10">
+                                <div class="flex justify-between items-end mb-3">
+                                    <div>
+                                        <span class="text-xs text-slate-400 block mb-1 font-bold uppercase tracking-wider">Brain Recovery</span>
+                                        <div class="flex items-baseline gap-1">
+                                            <span id="detoxProgressDays" class="text-3xl font-mono font-bold text-white tabular-nums">0</span>
+                                            <span class="text-xs text-slate-400">/ <span id="detoxTargetDays">15</span> EXP</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span id="brainPhaseText" class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Crash & Cravings</span>
+                                        <span id="detoxRankText" class="text-lg font-mono font-bold text-emerald-400 tracking-widest">INITIAL</span>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden mb-1 border border-slate-800 shadow-inner">
+                                    <div id="detoxProgressBar" class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-1000 w-0 shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Heat Map -->
+                        <div class="bg-slate-900/30 p-5 rounded-2xl border border-slate-800 flex-1 flex flex-col min-h-[250px]">
+                            <h4 class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-4 flex items-center justify-between shrink-0">
+                                <span class="flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4 text-cyan-400"></i> Yearly Heatmap</span>
+                                <div class="flex items-center gap-2">
+                                    <button id="btnResetDetox" class="text-[9px] px-2 py-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded hover:bg-red-500 hover:text-white transition-colors">RESET</button>
+                                    <span id="heatmapMonthLabel" class="text-cyan-400 font-mono text-[10px] font-bold tracking-widest">YEAR</span>
+                                </div>
+                            </h4>
+                            <div class="flex-1 w-full overflow-x-auto auto-hide-scrollbar flex items-center py-2">
+                                <div class="min-w-max flex flex-col gap-1.5 mx-auto">
+                                    <div id="heatmapMonthsRow" class="flex text-[9px] text-slate-500 font-bold ml-[18px] relative h-3">
+                                        <!-- Month labels rendered dynamically -->
+                                    </div>
+                                    <div class="flex gap-1.5">
+                                        <div class="flex flex-col gap-1.5 text-[8px] text-slate-500 font-bold leading-[10px] text-right justify-between py-1">
+                                            <span>Mon</span>
+                                            <span>Wed</span>
+                                            <span>Fri</span>
+                                        </div>
+                                        <div id="detoxHeatmapGrid" class="grid grid-rows-7 grid-flow-col gap-1">
+                                            <!-- Cells rendered dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center justify-center gap-1.5 shrink-0">
+                                <span class="text-[9px] text-slate-500 font-bold">0</span>
+                                <div class="w-2.5 h-2.5 rounded-[2px] bg-slate-800 border border-slate-700"></div>
+                                <div class="w-2.5 h-2.5 rounded-[2px] bg-emerald-900/60 border border-emerald-900"></div>
+                                <div class="w-2.5 h-2.5 rounded-[2px] bg-emerald-800 border border-emerald-700"></div>
+                                <div class="w-2.5 h-2.5 rounded-[2px] bg-emerald-600 border border-emerald-500"></div>
+                                <div class="w-2.5 h-2.5 rounded-[2px] bg-emerald-400 border border-emerald-300"></div>
+                                <div class="w-2.5 h-2.5 rounded-[2px] bg-green-300 border border-green-200 shadow-[0_0_5px_rgba(134,239,172,0.6)]"></div>
+                                <span class="text-[9px] text-slate-500 font-bold">13</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 `;

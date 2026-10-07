@@ -1,8 +1,8 @@
-import { ShareUI } from '../ui/share/ShareUI.js';
-import { initPdfJsWorker } from './pdf/pdfUtils.js';
-import { ImageToPdfManager } from './pdf/ImageToPdfManager.js';
-import { PdfToImageManager } from './pdf/PdfToImageManager.js';
-import { PdfToTextManager } from './pdf/PdfToTextManager.js';
+import { ShareUI } from '../../ui/share/ShareUI.js';
+import { initPdfJsWorker } from './pdfUtils.js';
+import { ImageToPdfManager } from './ImageToPdfManager.js';
+import { PdfToImageManager } from './PdfToImageManager.js';
+import { PdfToTextManager } from './PdfToTextManager.js';
 
 /**
  * PdfConverterTool - Central coordinator for PDF Studio features:

@@ -43,11 +43,6 @@ export const sidebarViewHtml = `
                 <i data-lucide="heart" class="w-4 h-4"></i>
                 <span>Health Track</span>
             </button>
-            <!-- Air & Climate -->
-            <button id="tab-air" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
-                <i data-lucide="cloud-sun" class="w-4 h-4"></i>
-                <span>Air & Climate</span>
-            </button>
             <!-- Net Worth -->
             <button id="tab-networth" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                 <i data-lucide="wallet" class="w-4 h-4"></i>
@@ -71,6 +66,16 @@ export const sidebarViewHtml = `
                 </div>
                 <span id="tab-notif-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-mono font-bold text-white bg-rose-500">0</span>
             </button>
+            <!-- Air & Climate -->
+            <button id="tab-air" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                <i data-lucide="cloud-sun" class="w-4 h-4"></i>
+                <span>Air & Climate</span>
+            </button>
+            <!-- Game -->
+            <button id="tab-game" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
+                <i data-lucide="gamepad-2" class="w-4 h-4"></i>
+                <span>Game</span>
+            </button>
             <!-- Learning Others -->
             <button id="tab-learning" onclick="window.toggleLearningMenu()" class="w-full flex items-center justify-between px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                 <div class="flex items-center gap-3">
@@ -93,11 +98,6 @@ export const sidebarViewHtml = `
                     <span>Agriculture</span>
                 </a>
             </div>
-            <!-- Game -->
-            <button id="tab-game" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
-                <i data-lucide="gamepad-2" class="w-4 h-4"></i>
-                <span>Game</span>
-            </button>
             <!-- Settings -->
             <button id="tab-settings" class="w-full flex items-center gap-3 px-4 py-3 border-l-4 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 text-sm rounded-r-xl transition-all btn-press">
                 <i data-lucide="settings" class="w-4 h-4"></i>

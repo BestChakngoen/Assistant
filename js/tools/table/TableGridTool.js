@@ -1,13 +1,13 @@
-import { ShareUI } from '../ui/share/ShareUI.js';
-import { TableCellParser } from './table/TableCellParser.js';
-import { TableStorage } from './table/TableStorage.js';
-import { TableExporter } from './table/TableExporter.js';
-import { TableClipboard } from './table/TableClipboard.js';
-import { TableGridRenderer } from './table/TableGridRenderer.js';
-import { TableSheetManager } from './table/TableSheetManager.js';
-import { TableHistoryManager } from './table/TableHistoryManager.js';
-import { TablePanManager } from './table/TablePanManager.js';
-import { ToolZoomManager } from './common/ToolZoomManager.js';
+import { ShareUI } from '../../ui/share/ShareUI.js';
+import { TableCellParser } from './TableCellParser.js';
+import { TableStorage } from './TableStorage.js';
+import { TableExporter } from './TableExporter.js';
+import { TableClipboard } from './TableClipboard.js';
+import { TableGridRenderer } from './TableGridRenderer.js';
+import { TableSheetManager } from './TableSheetManager.js';
+import { TableHistoryManager } from './TableHistoryManager.js';
+import { TablePanManager } from './TablePanManager.js';
+import { ToolZoomManager } from '../common/ToolZoomManager.js';
 
 /**
  * TableGridTool - Freeform Dynamic Data Grid Tool (Refactored Controller)

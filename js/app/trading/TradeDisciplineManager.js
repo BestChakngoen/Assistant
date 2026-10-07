@@ -3,7 +3,7 @@
  * Enforces monthly trade quotas (20 trades/month), daily profit targets (+10%),
  * and daily loss circuit breakers (-5%) with Smart Warning Mode.
  */
-import { ShareUI } from '../ui/share/ShareUI.js';
+import { ShareUI } from '../../ui/share/ShareUI.js';
 
 export class TradeDisciplineManager {
     constructor(app) {

@@ -14,6 +14,7 @@ export default class DataManager {
             chkSleep: document.getElementById('chkDeleteSleep'),
             chkBody: document.getElementById('chkDeleteBody'),
             chkDiet: document.getElementById('chkDeleteDiet'),
+            chkDetox: document.getElementById('chkDeleteDetox'),
             btnConfirm: document.getElementById('btnConfirmDeleteData')
         };
     }
@@ -63,6 +64,10 @@ export default class DataManager {
         
         if (this.dom.chkDiet && this.dom.chkDiet.checked) {
             await this.deleteForCollection('diet', 'foodLog', targetYear, targetMonth);
+        }
+        
+        if (this.dom.chkDetox && this.dom.chkDetox.checked) {
+            await this.deleteForCollection('detox', 'history', targetYear, targetMonth);
         }
 
         this.closeModal();

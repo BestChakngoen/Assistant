@@ -1,11 +1,11 @@
-import { ShareUI } from '../ui/share/ShareUI.js';
+import { ShareUI } from '../../ui/share/ShareUI.js';
 
-import { NoteSheetManager } from './notepad/NoteSheetManager.js';
-import { NoteFormatter } from './notepad/NoteFormatter.js';
-import { NoteHistoryManager } from './notepad/NoteHistoryManager.js';
-import { ToolZoomManager } from './common/ToolZoomManager.js';
-import { NoteManagerModal } from './notepad/NoteManagerModal.js';
-import { NoteStickerManager } from './notepad/NoteStickerManager.js';
+import { NoteSheetManager } from './NoteSheetManager.js';
+import { NoteFormatter } from './NoteFormatter.js';
+import { NoteHistoryManager } from './NoteHistoryManager.js';
+import { ToolZoomManager } from '../common/ToolZoomManager.js';
+import { NoteManagerModal } from './NoteManagerModal.js';
+import { NoteStickerManager } from './NoteStickerManager.js';
 
 /**
  * NotePadTool - Instant Digital Scratchpad Tool with Realtime Auto-Save & Smart Detection

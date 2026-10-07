@@ -1,6 +1,6 @@
-import { ShareUI } from '../ui/share/ShareUI.js';
-import { ImageResizerMath } from './resizer/ImageResizerMath.js';
-import { ImageResizerEngine } from './resizer/ImageResizerEngine.js';
+import { ShareUI } from '../../ui/share/ShareUI.js';
+import { ImageResizerMath } from './ImageResizerMath.js';
+import { ImageResizerEngine } from './ImageResizerEngine.js';
 
 /**
  * ImageResizerTool - Controller managing UI interactions, event binding,

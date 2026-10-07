@@ -4,6 +4,7 @@ export default class GlobalSaveManager {
         this.btnSleep = document.getElementById('btnRecordSleep');
         this.btnBody = document.getElementById('btnRecordWeight');
         this.btnDiet = document.getElementById('btnAddFood');
+        this.btnDetox = document.getElementById('btnSaveDetox');
         
         this.bindEvents();
     }
@@ -18,6 +19,7 @@ export default class GlobalSaveManager {
         if (this.btnSleep) this.btnSleep.click();
         if (this.btnBody) this.btnBody.click();
         if (this.btnDiet) this.btnDiet.click();
+        if (this.btnDetox) this.btnDetox.click();
         
         const originalHTML = this.btnSaveAll.innerHTML;
         this.btnSaveAll.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span class="text-xs sm:text-sm tracking-wide font-mono">ALL DATA SAVED</span>`;

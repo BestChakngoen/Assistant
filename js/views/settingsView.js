@@ -186,6 +186,10 @@ export const settingsViewHtml = `
                             <input type="checkbox" id="chkDeleteDiet" class="rounded border-slate-800 bg-slate-800 text-cyan-500 focus:ring-cyan-500" checked>
                             <span class="text-sm text-slate-300 font-bold">Food Journal</span>
                         </label>
+                        <label class="flex items-center gap-3 cursor-pointer select-none">
+                            <input type="checkbox" id="chkDeleteDetox" class="rounded border-slate-800 bg-slate-800 text-cyan-500 focus:ring-cyan-500" checked>
+                            <span class="text-sm text-slate-300 font-bold">Dopamine Detox</span>
+                        </label>
                     </div>
                 </div>
                 <button id="btnConfirmDeleteData" class="w-full bg-red-600 hover:bg-red-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-red-500/20 transition btn-press">

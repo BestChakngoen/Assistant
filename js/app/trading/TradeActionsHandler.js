@@ -1,4 +1,4 @@
-import { ShareUI } from '../ui/share/ShareUI.js';
+import { ShareUI } from '../../ui/share/ShareUI.js';
 
 export class TradeActionsHandler {
     constructor(app) {

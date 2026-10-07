@@ -1,8 +1,8 @@
 import { NetWorthChartEngine } from './NetWorthChartEngine.js';
-import { NetWorthSyncService } from './networth/NetWorthSyncService.js';
-import { NetWorthCardRenderer } from './networth/NetWorthCardRenderer.js';
-import { NetWorthVolatileAssetService } from './networth/NetWorthVolatileAssetService.js';
-import { NetWorthPortfolioService } from './networth/NetWorthPortfolioService.js';
+import { NetWorthSyncService } from './NetWorthSyncService.js';
+import { NetWorthCardRenderer } from './NetWorthCardRenderer.js';
+import { NetWorthVolatileAssetService } from './NetWorthVolatileAssetService.js';
+import { NetWorthPortfolioService } from './NetWorthPortfolioService.js';
 
 /**
  * NetWorthManager.js - Net Worth Data & State Coordinator

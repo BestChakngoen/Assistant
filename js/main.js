@@ -2,13 +2,13 @@ import { AuthService } from './services/AuthService.js';
 import { DataService } from './services/DataService.js';
 import { MarketService } from './services/MarketService.js';
 import { UIManager } from './ui/UIManager.js';
-import { RiskCalculator } from './app/RiskCalculator.js';
-import { NoteHandler } from './app/NoteHandler.js';
-import { TradeActionsHandler } from './app/TradeActionsHandler.js';
-import { MarketWidgetManager } from './app/MarketWidgetManager.js';
-import { NetWorthManager } from './app/NetWorthManager.js';
-import { SystemSettingsManager } from './app/SystemSettingsManager.js';
-import { TradeDisciplineManager } from './app/TradeDisciplineManager.js';
+import { RiskCalculator } from './app/trading/RiskCalculator.js';
+import { NoteHandler } from './app/notes/NoteHandler.js';
+import { TradeActionsHandler } from './app/trading/TradeActionsHandler.js';
+import { MarketWidgetManager } from './app/market/MarketWidgetManager.js';
+import { NetWorthManager } from './app/networth/NetWorthManager.js';
+import { SystemSettingsManager } from './app/settings/SystemSettingsManager.js';
+import { TradeDisciplineManager } from './app/trading/TradeDisciplineManager.js';
 import { NotificationManager } from './notifications/NotificationManager.js';
 
 /**
@@ -669,12 +669,13 @@ export class TradeApp {
     async initHealthTrack() {
         if (!this.auth.currentUser) return;
         
-        const { default: SleepManager } = await import('./health/sleepManager.js');
-        const { default: BodyManager } = await import('./health/bodyManager.js');
-        const { default: DietManager } = await import('./health/dietManager.js');
+        const { default: SleepManager } = await import('./health/sleep/sleepManager.js');
+        const { default: BodyManager } = await import('./health/body/bodyManager.js');
+        const { default: DietManager } = await import('./health/diet/dietManager.js');
         const { default: DataManager } = await import('./health/dataManager.js');
         const { default: TabManager } = await import('./health/tabManager.js');
         const { default: GlobalSaveManager } = await import('./health/globalSaveManager.js');
+        const { default: DetoxManager } = await import('./health/detox/detoxManager.js');
 
         const healthFirebaseAdapter = {
             subscribe: (collectionName, callback) => {
@@ -695,6 +696,7 @@ export class TradeApp {
         });
         this.healthSleepManager = new SleepManager(healthFirebaseAdapter);
         this.healthDataManager = new DataManager(healthFirebaseAdapter);
+        this.healthDetoxManager = new DetoxManager(healthFirebaseAdapter);
         this.healthGlobalSaveManager = new GlobalSaveManager();
 
         this.healthInitialized = true;
