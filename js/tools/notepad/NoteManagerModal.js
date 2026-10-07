@@ -1,4 +1,4 @@
-import { ShareUI } from '../../ui/share/ShareUI.js';
+import { ShareUI } from '../../share/ShareUI.js';
 
 /**
  * NoteManagerModal.js - Provides a visual grid UI for managing and grouping sheets into folders.

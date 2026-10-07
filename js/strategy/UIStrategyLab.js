@@ -1,4 +1,4 @@
-import { DiagramManager } from '../DiagramManager.js';
+import { DiagramManager } from './DiagramManager.js';
 
 export class UIStrategyLab {
     static initStrategyLab(uiManager) {

@@ -2,14 +2,15 @@ import { AuthService } from './services/AuthService.js';
 import { DataService } from './services/DataService.js';
 import { MarketService } from './services/MarketService.js';
 import { UIManager } from './ui/UIManager.js';
-import { RiskCalculator } from './app/trading/RiskCalculator.js';
-import { NoteHandler } from './app/notes/NoteHandler.js';
-import { TradeActionsHandler } from './app/trading/TradeActionsHandler.js';
-import { MarketWidgetManager } from './app/market/MarketWidgetManager.js';
-import { NetWorthManager } from './app/networth/NetWorthManager.js';
-import { SystemSettingsManager } from './app/settings/SystemSettingsManager.js';
-import { TradeDisciplineManager } from './app/trading/TradeDisciplineManager.js';
+import { RiskCalculator } from './trade/RiskCalculator.js';
+import { NoteHandler } from './trade/NoteHandler.js';
+import { TradeActionsHandler } from './trade/TradeActionsHandler.js';
+import { MarketWidgetManager } from './market/MarketWidgetManager.js';
+import { NetWorthManager } from './networth/NetWorthManager.js';
+import { SystemSettingsManager } from './settings/SystemSettingsManager.js';
+import { TradeDisciplineManager } from './trade/TradeDisciplineManager.js';
 import { NotificationManager } from './notifications/NotificationManager.js';
+import { UIUtils } from './ui/UIUtils.js';
 
 /**
  * TradeApp - Main Application Facade Coordinator
@@ -331,21 +332,21 @@ export class TradeApp {
             if (el) el.onclick = () => this.ui.switchTab(target);
         };
 
-        const tabCode = document.getElementById('tab-code');
+        const tabCode = document.getElementById('tab-trade');
         if (tabCode) {
             tabCode.onclick = () => {
-                this.ui.switchTab('code');
+                this.ui.switchTab('trade');
                 if (this._disciplineManager) this._disciplineManager.updateUI(this.trades);
             };
         }
-        bindTab('tab-issues', 'issues');
-        bindTab('tab-pulls', 'pulls');
+        bindTab('tab-strategy', 'strategy');
+        bindTab('tab-health', 'health');
         bindTab('tab-air', 'air');
 
-        const tabWiki = document.getElementById('tab-wiki');
+        const tabWiki = document.getElementById('tab-news');
         if (tabWiki) {
             tabWiki.onclick = () => {
-                this.ui.switchTab('wiki');
+                this.ui.switchTab('news');
                 const savedCurrency = this.getSavedNewsCurrency();
                 const container = document.getElementById('economic-calendar-container');
                 if (container && (!container.children.length || container.dataset.activeCurrency !== savedCurrency)) {
@@ -392,10 +393,10 @@ export class TradeApp {
             };
         }
 
-        const tabActions = document.getElementById('tab-actions');
+        const tabActions = document.getElementById('tab-market');
         if (tabActions) {
             tabActions.onclick = () => {
-                this.ui.switchTab('actions');
+                this.ui.switchTab('market');
                 const savedSymbol = this.getSavedMarketSymbol();
                 const container = document.getElementById('tv-chart-container');
                 if (container && (!container.children.length || container.dataset.activeSymbol !== savedSymbol)) {
@@ -460,7 +461,7 @@ export class TradeApp {
             });
 
             // Setup universal horizontal slide bar (Wheel scroll + Auto-hide)
-            this.setupCustomSlideBar(container);
+            UIUtils.setupCustomSlideBar(container);
         }
 
         // Initial UI Date & Market Rates

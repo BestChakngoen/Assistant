@@ -1,4 +1,4 @@
-import { ShareUI } from '../../ui/share/ShareUI.js';
+import { ShareUI } from '../../share/ShareUI.js';
 import { ImageResizerMath } from './ImageResizerMath.js';
 import { ImageResizerEngine } from './ImageResizerEngine.js';
 

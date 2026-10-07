@@ -1,6 +1,6 @@
-import { API_ENDPOINTS, API_TIMEOUTS } from '../../config/apiConfig.js';
-import { HttpClient } from '../../services/api/HttpClient.js';
-import { getSupabaseClient } from '../../services/api/SupabaseClient.js';
+import { API_ENDPOINTS, API_TIMEOUTS } from '../config/apiConfig.js';
+import { HttpClient } from '../services/api/HttpClient.js';
+import { getSupabaseClient } from '../services/api/SupabaseClient.js';
 import { NetWorthPortfolioService } from './NetWorthPortfolioService.js';
 
 /**

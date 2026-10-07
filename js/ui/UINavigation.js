@@ -53,18 +53,18 @@ export class UINavigation {
             ShareFeedRenderer.exitEditMode(window.shareManager);
         }
 
-        const previousTab = uiManager.currentTab || 'code';
+        const previousTab = uiManager.currentTab || 'trade';
         if (uiManager.currentTab !== 'game') {
             uiManager.previousTab = previousTab;
         }
         uiManager.currentTab = tabName;
 
         const panels = {
-            code: document.getElementById('journal-panel'),
-            issues: document.getElementById('strategy-menu-container'),
-            pulls: document.getElementById('health-menu-container'),
-            actions: document.getElementById('market-panel'),
-            wiki: document.getElementById('news-panel'),
+            trade: document.getElementById('journal-panel'),
+            strategy: document.getElementById('strategy-menu-container'),
+            health: document.getElementById('health-menu-container'),
+            market: document.getElementById('market-panel'),
+            news: document.getElementById('news-panel'),
             share: document.getElementById('share-panel'),
             networth: document.getElementById('networth-panel'),
             game: document.getElementById('game-panel'),
@@ -75,11 +75,11 @@ export class UINavigation {
         };
         
         const tabs = {
-            code: document.getElementById('tab-code'),
-            issues: document.getElementById('tab-issues'),
-            pulls: document.getElementById('tab-pulls'),
-            actions: document.getElementById('tab-actions'),
-            wiki: document.getElementById('tab-wiki'),
+            trade: document.getElementById('tab-trade'),
+            strategy: document.getElementById('tab-strategy'),
+            health: document.getElementById('tab-health'),
+            market: document.getElementById('tab-market'),
+            news: document.getElementById('tab-news'),
             share: document.getElementById('tab-share'),
             networth: document.getElementById('tab-networth'),
             game: document.getElementById('tab-game'),
@@ -96,16 +96,16 @@ export class UINavigation {
 
             if (key === tabName) {
                 panel.classList.remove('hidden');
-                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air' || key === 'notifications') {
+                if (key === 'trade' || key === 'news' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air' || key === 'notifications') {
                     panel.classList.add('flex');
-                } else if (key === 'pulls' || key === 'issues') {
+                } else if (key === 'health' || key === 'strategy') {
                     panel.classList.add('flex', 'flex-col');
                 }
                 
                 tab.classList.remove('border-transparent', 'text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/30');
                 tab.classList.add('border-cyan-500', 'bg-cyan-500/10', 'text-cyan-400', 'font-bold');
                 
-                if (key === 'issues') {
+                if (key === 'strategy') {
                     uiManager.updateStrategyLabTime();
                 } else if (key === 'air') {
                     if (uiManager.airQuality) {
@@ -127,7 +127,7 @@ export class UINavigation {
                         }
                     }
                     if (window.__phonkMobileAdapter) {
-                        window.__phonkMobileAdapter.enterGame(uiManager.previousTab || 'code');
+                        window.__phonkMobileAdapter.enterGame(uiManager.previousTab || 'trade');
                     }
                 }
             } else {
@@ -140,9 +140,9 @@ export class UINavigation {
                         window.__phonkMobileAdapter.exitGame(false, false);
                     }
                 }
-                if (key === 'code' || key === 'wiki' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air' || key === 'notifications') {
+                if (key === 'trade' || key === 'news' || key === 'settings' || key === 'share' || key === 'networth' || key === 'game' || key === 'tools' || key === 'air' || key === 'notifications') {
                     panel.classList.remove('flex');
-                } else if (key === 'pulls' || key === 'issues') {
+                } else if (key === 'health' || key === 'strategy') {
                     panel.classList.remove('flex', 'flex-col');
                 }
                 
@@ -174,8 +174,8 @@ export class UINavigation {
     }
 
     static switchMainMenu(uiManager, menuName) {
-        if (menuName === 'dashboard') this.switchTab(uiManager, 'code');
-        else if (menuName === 'strategy') this.switchTab(uiManager, 'issues');
-        else if (menuName === 'health') this.switchTab(uiManager, 'pulls');
+        if (menuName === 'dashboard') this.switchTab(uiManager, 'trade');
+        else if (menuName === 'strategy') this.switchTab(uiManager, 'strategy');
+        else if (menuName === 'health') this.switchTab(uiManager, 'health');
     }
 }

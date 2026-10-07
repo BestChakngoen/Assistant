@@ -1,4 +1,4 @@
-import { ShareUI } from '../../ui/share/ShareUI.js';
+import { ShareUI } from '../share/ShareUI.js';
 
 /**
  * RiskCalculator - Handles Risk Management, Position Sizing, and Auto SL/TP Math.

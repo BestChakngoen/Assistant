@@ -1,5 +1,5 @@
-import { ShareUI } from '../../ui/share/ShareUI.js';
-import { ShareLightbox } from '../../ui/share/ShareLightbox.js';
+import { ShareUI } from '../../share/ShareUI.js';
+import { ShareLightbox } from '../../share/ShareLightbox.js';
 import { setupDropZone, downloadDataUrl } from './pdfUtils.js';
 
 /**

@@ -1,8 +1,8 @@
-import { ShareDatabase } from './share/ShareDatabase.js';
-import { ShareCloud } from './share/ShareCloud.js';
-import { ShareUI } from './share/ShareUI.js';
-import { ShareFeedRenderer } from './share/ShareFeedRenderer.js';
-import { ShareActions } from './share/ShareActions.js';
+import { ShareDatabase } from './ShareDatabase.js';
+import { ShareCloud } from './ShareCloud.js';
+import { ShareUI } from './ShareUI.js';
+import { ShareFeedRenderer } from './ShareFeedRenderer.js';
+import { ShareActions } from './ShareActions.js';
 import { SUPABASE_CONFIG } from '../config/apiConfig.js';
 import { getSupabaseClient } from '../services/api/SupabaseClient.js';
 
@@ -253,3 +253,5 @@ export class ShareManager {
         return ShareUI.hideLoadingModal(this);
     }
 }
+
+

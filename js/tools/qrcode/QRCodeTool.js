@@ -1,4 +1,4 @@
-import { ShareUI } from '../../ui/share/ShareUI.js';
+import { ShareUI } from '../../share/ShareUI.js';
 
 /**
  * QRCodeTool - Handles URL/Text to QR Code conversion, realtime preview, and PNG downloading.

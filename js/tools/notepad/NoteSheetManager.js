@@ -1,4 +1,4 @@
-import { ShareUI } from '../../ui/share/ShareUI.js';
+import { ShareUI } from '../../share/ShareUI.js';
 import { TabScrollManager } from '../common/TabScrollManager.js';
 
 /**

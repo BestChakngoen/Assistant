@@ -4,7 +4,7 @@ import { NotificationModalPicker } from './NotificationModalPicker.js';
 import { NotificationStorage } from './NotificationStorage.js';
 import { NotificationAlertService } from './NotificationAlertService.js';
 import { NotificationFormModal } from './NotificationFormModal.js';
-import { ShareUI } from '../ui/share/ShareUI.js';
+import { ShareUI } from '../share/ShareUI.js';
 
 /**
  * NotificationManager - Coordinates reminders, schedules, and alert triggers (Refactored Facade).

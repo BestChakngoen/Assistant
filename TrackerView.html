@@ -66,10 +66,10 @@
     <!-- MAIN SCRIPT (OOP MODULES) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { initViewComponents } from './js/views/ViewLoader.js';
+        import { initViewComponents } from './js/ui/ViewLoader.js';
         import { TradeApp } from './js/main.js';
         import { initLayoutSync } from './js/ui/helpers/layoutSync.js';
-        import { initPhonkRunner } from './js/ui/games/phonkRunner.js';
+        import { initPhonkRunner } from './js/game/phonkRunner.js';
 
         // 1. Mount Modular View Components
         initViewComponents();
@@ -176,3 +176,5 @@
 </body>
 
 </html>
+
+

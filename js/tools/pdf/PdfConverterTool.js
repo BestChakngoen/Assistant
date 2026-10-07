@@ -1,4 +1,4 @@
-import { ShareUI } from '../../ui/share/ShareUI.js';
+import { ShareUI } from '../../share/ShareUI.js';
 import { initPdfJsWorker } from './pdfUtils.js';
 import { ImageToPdfManager } from './ImageToPdfManager.js';
 import { PdfToImageManager } from './PdfToImageManager.js';

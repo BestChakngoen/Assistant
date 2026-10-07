@@ -1,6 +1,6 @@
 import { WeatherService } from './WeatherService.js';
 import { ComfortScoreCalculator } from './ComfortScoreCalculator.js';
-import { ShareUI } from '../ui/share/ShareUI.js';
+import { ShareUI } from '../share/ShareUI.js';
 
 /**
  * AirQualityManager - Main Controller for Daily Air Quality & Weather Dashboard.

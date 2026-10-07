@@ -1,13 +1,13 @@
 // --- FILE 4: UI MANAGER ---
-import { DiagramManager } from './DiagramManager.js';
-import { ShareManager } from './ShareManager.js';
+import { DiagramManager } from '../strategy/DiagramManager.js';
+import { ShareManager } from '../share/ShareManager.js';
 import { ToolsManager } from '../tools/ToolsManager.js';
 import { AirQualityManager } from '../air/AirQualityManager.js';
-import { UIChartEngine } from './uimanager/UIChartEngine.js';
-import { UIStatsCalculator } from './uimanager/UIStatsCalculator.js';
-import { UIHistoryRenderer } from './uimanager/UIHistoryRenderer.js';
-import { UIStrategyLab } from './uimanager/UIStrategyLab.js';
-import { UINavigation } from './uimanager/UINavigation.js';
+import { UIChartEngine } from '../trade/UIChartEngine.js';
+import { UIStatsCalculator } from '../trade/UIStatsCalculator.js';
+import { UIHistoryRenderer } from '../trade/UIHistoryRenderer.js';
+import { UIStrategyLab } from '../strategy/UIStrategyLab.js';
+import { UINavigation } from './UINavigation.js';
 
 /**
  * UIManager - Main User Interface Coordinator

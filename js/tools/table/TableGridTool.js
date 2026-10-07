@@ -1,4 +1,4 @@
-import { ShareUI } from '../../ui/share/ShareUI.js';
+import { ShareUI } from '../../share/ShareUI.js';
 import { TableCellParser } from './TableCellParser.js';
 import { TableStorage } from './TableStorage.js';
 import { TableExporter } from './TableExporter.js';

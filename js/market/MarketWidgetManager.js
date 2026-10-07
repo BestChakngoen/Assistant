@@ -1,5 +1,5 @@
-import { MARKET_ASSET_INTEL } from '../../data/marketAssetIntel.js';
-import { API_ENDPOINTS } from '../../config/apiConfig.js';
+import { MARKET_ASSET_INTEL } from '../data/marketAssetIntel.js';
+import { API_ENDPOINTS } from '../config/apiConfig.js';
 
 /**
  * MarketWidgetManager - Controls TradingView charts, Economic Calendar news feeds, and THB loops.

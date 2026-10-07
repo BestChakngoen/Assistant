@@ -6,9 +6,7 @@ export const loginViewHtml = `
         class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1121] bg-opacity-95 backdrop-blur-sm">
         <div
             class="glass-panel p-8 rounded-2xl max-w-md w-full text-center relative overflow-hidden">
-            <div
-                class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-b from-transparent via-cyan-500 to-transparent h-[20%] w-full animate-scan">
-            </div>
+
 
             <h1
                 class="text-4xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-2">

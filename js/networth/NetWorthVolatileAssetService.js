@@ -1,5 +1,5 @@
-import { API_ENDPOINTS, API_TIMEOUTS } from '../../config/apiConfig.js';
-import { HttpClient } from '../../services/api/HttpClient.js';
+import { API_ENDPOINTS, API_TIMEOUTS } from '../config/apiConfig.js';
+import { HttpClient } from '../services/api/HttpClient.js';
 
 /**
  * NetWorthVolatileAssetService.js - Market Pricing & PnL Engine for Volatile Assets

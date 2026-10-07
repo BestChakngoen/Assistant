@@ -1,18 +1,18 @@
 import { loginViewHtml } from './loginView.js';
 import { sidebarViewHtml } from './sidebarView.js';
 import { headerViewHtml } from './headerView.js';
-import { tradeTrackViewHtml } from './tradeTrackView.js';
-import { marketViewHtml } from './marketView.js';
-import { calendarViewHtml } from './calendarView.js';
-import { strategyViewHtml } from './strategyView.js';
-import { healthViewHtml } from './healthView.js';
-import { netWorthViewHtml } from './netWorthView.js';
-import { shareViewHtml } from './shareView.js';
-import { gameViewHtml } from './gameView.js';
-import { settingsViewHtml } from './settingsView.js';
-import { toolsViewHtml } from './toolsView.js';
-import { airQualityViewHtml } from './airQualityView.js';
-import { notificationViewHtml } from './notificationView.js';
+import { tradeTrackViewHtml } from '../trade/tradeTrackView.js';
+import { marketViewHtml } from '../market/marketView.js';
+import { calendarViewHtml } from '../wiki/calendarView.js';
+import { strategyViewHtml } from '../strategy/strategyView.js';
+import { healthViewHtml } from '../health/healthView.js';
+import { netWorthViewHtml } from '../networth/netWorthView.js';
+import { shareViewHtml } from '../share/shareView.js';
+import { gameViewHtml } from '../game/gameView.js';
+import { settingsViewHtml } from '../settings/settingsView.js';
+import { toolsViewHtml } from '../tools/toolsView.js';
+import { airQualityViewHtml } from '../air/airQualityView.js';
+import { notificationViewHtml } from '../notifications/notificationView.js';
 
 /**
  * ViewLoader - Synchronously mounts component templates into TrackerView container shell.
