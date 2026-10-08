@@ -170,19 +170,54 @@ export class NotePadTool {
 
     getEditorContent() {
         if (this.quill) {
-            return this.quill.root.innerHTML;
+            const html = this.quill.root.innerHTML;
+            try {
+                const deltaJson = JSON.stringify(this.quill.getContents());
+                const b64 = btoa(encodeURIComponent(deltaJson));
+                return `<!-- quildelta:${b64} -->\n${html}`;
+            } catch (e) {
+                return html;
+            }
         }
         return '';
     }
 
-    setEditorContent(html) {
-        if (this.quill) {
-            // Check if it's legacy plain text (no HTML tags)
-            if (html && !html.includes('<') && html.includes('\n')) {
-                html = html.replace(/\n/g, '<br>');
-            }
-            this.quill.clipboard.dangerouslyPasteHTML(html, 'api');
+    setEditorContent(content) {
+        if (!this.quill) return;
+        
+        if (!content) {
+            this.quill.setContents([{ insert: '\n' }], 'api');
+            return;
         }
+
+        if (typeof content === 'string' && content.startsWith('<!-- quildelta:')) {
+            const endIdx = content.indexOf(' -->\n');
+            if (endIdx !== -1) {
+                const b64 = content.substring(15, endIdx);
+                try {
+                    const deltaJson = decodeURIComponent(atob(b64));
+                    const delta = JSON.parse(deltaJson);
+                    if (delta && delta.ops) {
+                        this.quill.setContents(delta, 'api');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse embedded Quill delta', e);
+                }
+            }
+        }
+
+        // Fallback for older saved data
+        let html = content;
+        if (html && !html.includes('<') && html.includes('\n')) {
+            html = html.replace(/\n/g, '<br>');
+        } else if (html) {
+            // Remove the comment from HTML if parsing failed but it exists
+            html = html.replace(/<!-- quildelta:.+? -->\n?/g, '');
+            // Workaround: Quill's dangerouslyPasteHTML with matchVisual: false strips empty <p><br></p>.
+            html = html.replace(/<p>\s*<br\s*\/?>\s*<\/p>/gi, '<br>');
+        }
+        this.quill.clipboard.dangerouslyPasteHTML(html, 'api');
     }
 
     getEditorSelectionStart() {
