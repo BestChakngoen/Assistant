@@ -5685,7 +5685,7 @@ input:focus, select:focus {
 .ql-editor.ql-blank::before {
   color: #475569 !important;
   font-style: normal !important;
-  left: 0 !important;
+  left: 16px !important;
 }
 
 .ql-editor {

@@ -150,6 +150,11 @@ export class NotePadTool {
                 toolbar: false, // No toolbar, clean scratchpad look
                 clipboard: {
                     matchVisual: false // prevents weird spacing on paste
+                },
+                keyboard: {
+                    bindings: {
+                        'list autofill': null
+                    }
                 }
             },
             placeholder: 'Start typing here...'
